@@ -6,7 +6,11 @@
 	<property name="src.dir" location="src"/>
 	<property name="lib.dir" location="lib"/>
 	<property name="build.dir" location="build"/>
-	<property name="extra_src_resources_to_jar" value="**/*.java"/> <!-- resources under src to include in the jar, besides class files --> 
+	<property name="examples.dir" location="examples"/>
+	
+	<!-- Resources to be copied into build.dir from src.dir with each compile. -->
+	<property name="extra_src_resources_to_jar" value="**/*.java
+		                                               **/templates/*"/>
 	
 	<target depends="" name="compile">
 		
@@ -23,6 +27,11 @@
 		  </classpath>
 		</javac>
 		
+		<!-- Copy other resources from source directory into build directory. -->
+	    <copy todir="${build.dir}">
+			<fileset dir="${src.dir}" includes="${extra_src_resources_to_jar}"/>
+		</copy>
+		
 	</target>
 
 
@@ -31,15 +40,28 @@
 		  depends="clean, compile"
 		  description="generate module jar file">
 
-		<copy todir="${build.dir}">
-			<fileset dir="${src.dir}" includes="${extra_src_resources_to_jar}"/>
-		</copy>
-
 		<jar jarfile="${build.dir}/${jarbasename}.jar" basedir="${build.dir}" includes="**/*" excludes="${jarbasename}.jar" />
 
     </target>
+	
 
+	<!-- gen-example-output -->
+	<target name="gen-example-output"
+		    depends="clean, compile"
+		    description="generate example query and xml schema">
 
+	  <java classname="gov.fda.nctr.xdagen.QueryGenerator" fork="true">
+		  <classpath path="${build.dir}">
+		  	<fileset dir="${lib.dir}" includes="**/*.jar"/>
+		  </classpath>
+		  <arg value="examples/dbmd.xml"/>
+		  <arg value="examples/drugs_query.sql"/>
+		  <arg value="examples/generated_xmlschema.xsd"/>
+	  </java>
+		
+	</target>
+	
+	
 	<!-- clean -->
 	<target name="clean" description="clean up">
 		<delete dir="${build.dir}" failonerror="false"/>
