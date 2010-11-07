@@ -21,11 +21,11 @@ import gov.fda.nctr.util.Pair;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 
@@ -419,74 +418,22 @@ public class QueryGenerator {
     public static void main(String[] args) throws Exception
     {
         int arg_ix = 0;
-        String schema = null;
-    	String props_file_path = null;
-    	String dbmd_xml_path = null;
-    	
-    	boolean loading_from_file;
+        String dbmd_xml_path = null;
+        String query_outfile_path = null;
+        String xmlschema_outfile_path = null;
     	
         if ( args.length == 3 )
         {
-        	schema = args[arg_ix++];
-        	props_file_path = args[arg_ix++];
         	dbmd_xml_path = args[arg_ix++];
-        	
-        	loading_from_file = false;
-        }
-        else if ( args.length == 1 )
-        {
-        	dbmd_xml_path = args[arg_ix++];
-        	loading_from_file = true;
+        	query_outfile_path = args[arg_ix++];
+        	xmlschema_outfile_path = args[arg_ix++];;
         }
         else
-        	throw new IllegalArgumentException("Expected either:\n" +
-        			"     <schema> <properties-file> <metadata-output-file>\n" +
-        			" or  <metadata-input-file>");
+        	throw new IllegalArgumentException("Expected arguments: <db-metadata-file> <query-output-file> <xmlschema-output-file>");
 
-        DBMD dbmd;
+        InputStream dbmd_is = new FileInputStream(dbmd_xml_path);
         
-        if (loading_from_file)
-        {
-        	dbmd = DBMD.readXML(new FileInputStream(dbmd_xml_path));
-        	
-        	System.out.println("Metadata for " + dbmd.getRelationMetaDatas().size() + " relations loaded.");
-        }
-        else
-        {
-        	Properties props = new Properties();
-        
-        	Connection conn = null;
-        
-        	props.load(new FileInputStream(props_file_path));
-            
-            String conn_str = props.getProperty("jdbc-connect-url");
-            String driver_classname = props.getProperty("jdbc-driver-class");
-            String user = props.getProperty("user");
-            String password = props.getProperty("password");
-            
-            if ( conn_str == null )
-                throw new IllegalArgumentException("No jdbc-connect-url property found in config file.");
-            if ( driver_classname == null )
-                throw new IllegalArgumentException("No jdbc-driver-class property found in config file.");
-            if ( user == null )
-                throw new IllegalArgumentException("No user property found in config file.");
-            if ( password == null )
-                throw new IllegalArgumentException("No password property found in config file.");
-            
-            
-            Class.forName(driver_classname);
-            conn = DriverManager.getConnection(conn_str, user, password);
-         
-            DatabaseMetaDataFetcher mdfetcher = new DatabaseMetaDataFetcher();
-            
-            dbmd = mdfetcher.fetchMetaData(conn.getMetaData(), schema, true, true, true, true);
-
-            OutputStream os = new FileOutputStream(dbmd_xml_path);
-            dbmd.writeXML(os);
-            os.close();
-            
-            System.out.println(dbmd.getRelationMetaDatas().size() + " relation metadatas fetched from schema " + schema + ".");
-        }
+        DBMD dbmd = DBMD.readXML(dbmd_is);
         
         QueryGenerator g = new QueryGenerator(dbmd);
             
@@ -495,9 +442,13 @@ public class QueryGenerator {
         		.addChild("drug_link")
         		.addParent("compound");
         
-        System.out.println(g.getRowElementsQuery(ospec));
         
-        System.out.println("\n\n\n");
+        String sqlxml_qry = g.getRowElementsQuery(ospec);
+        
+        OutputStream os = new FileOutputStream(query_outfile_path);
+        os.write(sqlxml_qry.getBytes());
+        os.close();
+        
         
         Set<RelId> rels_getting_toplevel_els = new HashSet<RelId>();
         rels_getting_toplevel_els.add(dbmd.toRelId("ltkb.drug"));
@@ -506,7 +457,10 @@ public class QueryGenerator {
         String xsd = g.getStandardXMLSchema(rels_getting_toplevel_els,
                                             rels_getting_toplevel_els,
                                             "http://nctr.fda.gov/just/an/example");
-        System.out.println(xsd);
+        
+        os = new FileOutputStream(xmlschema_outfile_path);
+        os.write(xsd.getBytes());
+        os.close();
         
         System.exit(0);
     }
