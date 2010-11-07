@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project basedir="." default="jar" name="OXDAGen">
+<project basedir="." default="jar" name="XDAGen">
 	
-	<property name="jarbasename" value="oxdagen"/>
+	<property name="jarbasename" value="xdagen"/>
 	<property name="src.dir" location="src"/>
 	<property name="lib.dir" location="lib"/>
 	<property name="build.dir" location="build"/>
