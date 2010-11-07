@@ -360,7 +360,7 @@ public class QueryGenerator {
     		return "base64Binary";
 
     	default:
-    		return "unknown[jdbctypecode=" + jdbc_type + "]";
+    		return "unknown[jdbctype=" + DatabaseMetaDataFetcher.jdbcTypeToString(jdbc_type) + "]";
     	}
 	}
 	
