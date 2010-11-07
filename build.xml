@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="jar" name="OXDAGen">
+	
+	<property name="jarbasename" value="oxdagen"/>
+	<property name="src.dir" location="src"/>
+	<property name="lib.dir" location="lib"/>
+	<property name="build.dir" location="build"/>
+	<property name="extra_src_resources_to_jar" value="**/*.java"/> <!-- resources under src to include in the jar, besides class files --> 
+	
+	<target depends="" name="compile">
+		
+		<mkdir dir="${build.dir}"/>
+		
+		<javac debug="true" 
+			   deprecation="true"
+			   srcdir="${src.dir}"
+			   destdir="${build.dir}"
+			   target="1.6"
+			   includeantruntime="false">
+		  <classpath>
+			<fileset dir="${lib.dir}" includes="**/*.jar"/>
+		  </classpath>
+		</javac>
+		
+	</target>
+
+
+	<!-- jar -->
+	<target name="jar"
+		  depends="clean, compile"
+		  description="generate module jar file">
+
+		<copy todir="${build.dir}">
+			<fileset dir="${src.dir}" includes="${extra_src_resources_to_jar}"/>
+		</copy>
+
+		<jar jarfile="${build.dir}/${jarbasename}.jar" basedir="${build.dir}" includes="**/*" excludes="${jarbasename}.jar" />
+
+    </target>
+
+
+	<!-- clean -->
+	<target name="clean" description="clean up">
+		<delete dir="${build.dir}" failonerror="false"/>
+	</target>
+
+</project>
