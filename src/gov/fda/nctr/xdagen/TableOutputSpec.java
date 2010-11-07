@@ -1,4 +1,4 @@
-package gov.fda.nctr.oxdagen;
+package gov.fda.nctr.xdagen;
 
 import static gov.fda.nctr.util.StringFunctions.stringFrom;
 import gov.fda.nctr.dbmd.DBMD;

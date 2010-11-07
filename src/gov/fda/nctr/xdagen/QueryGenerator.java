@@ -1,10 +1,10 @@
-package gov.fda.nctr.oxdagen;
+package gov.fda.nctr.xdagen;
 
-import static gov.fda.nctr.oxdagen.TableOutputSpec.table;
 import static gov.fda.nctr.util.StringFunctions.dotQualify;
 import static gov.fda.nctr.util.StringFunctions.indent;
 import static gov.fda.nctr.util.StringFunctions.lowercaseInitials;
 import static gov.fda.nctr.util.StringFunctions.makeNameNotInSet;
+import static gov.fda.nctr.xdagen.TableOutputSpec.table;
 
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
