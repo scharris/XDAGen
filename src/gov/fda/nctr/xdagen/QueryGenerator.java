@@ -154,7 +154,7 @@ public class QueryGenerator {
 		template_model.put("rows_query", indent(rows_query, "   ", false));
 		template_model.put("rows_query_alias", row_els_query_filter.getRowElementsQueryAlias());
 		template_model.put("where_cond", row_els_query_filter.getRowElementsQueryCondition() != null ? "where\n" + indent(row_els_query_filter.getRowElementsQueryCondition(), "  ")
-				                                                                          : "");
+				                                                                                     : "");
 		try
 		{
 			Writer sw = new StringWriter();

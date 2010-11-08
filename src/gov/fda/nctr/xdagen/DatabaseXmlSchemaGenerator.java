@@ -199,21 +199,23 @@ public class DatabaseXmlSchemaGenerator {
     {
         int arg_ix = 0;
         String dbmd_xml_infile_path;
+        String target_namespace;
         String toplevel_el_relids_strlist;
         Set<RelId> toplevel_el_relids;
         String toplevel_el_list_relids_strlist;
         Set<RelId> toplevel_el_list_relids;
         String xmlschema_outfile_path;
     	
-        if ( args.length == 4 )
+        if ( args.length == 5 )
         {
         	dbmd_xml_infile_path = args[arg_ix++];
+        	target_namespace = args[arg_ix++];
         	toplevel_el_relids_strlist = args[arg_ix++];
         	toplevel_el_list_relids_strlist = args[arg_ix++];
         	xmlschema_outfile_path = args[arg_ix++];;
         }
         else
-        	throw new IllegalArgumentException("Expected arguments: <db-metadata-file> <xmlschema-output-file>");
+        	throw new IllegalArgumentException("Expected arguments: <db-metadata-file> <target-namespace> <toplevel-el-relids> <toplevel-el-list-relids> <xmlschema-output-file>");
 
         InputStream dbmd_is = new FileInputStream(dbmd_xml_infile_path);
         
@@ -227,7 +229,7 @@ public class DatabaseXmlSchemaGenerator {
         
         String xsd = g.getStandardXMLSchema(toplevel_el_relids,
                                             toplevel_el_list_relids,
-                                            "http://nctr.fda.gov/just/an/example");
+                                            target_namespace);
         
         OutputStream os = new FileOutputStream(xmlschema_outfile_path);
         os.write(xsd.getBytes());
