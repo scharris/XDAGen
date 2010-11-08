@@ -40,7 +40,7 @@
 		  depends="clean, compile"
 		  description="generate module jar file">
 
-		<jar jarfile="${build.dir}/${jarbasename}.jar" basedir="${build.dir}" includes="**/*" excludes="${jarbasename}.jar" />
+		<jar jarfile="${jarbasename}.jar" basedir="${build.dir}" includes="**/*" excludes="${jarbasename}.jar" />
 
     </target>
 	

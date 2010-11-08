@@ -27,7 +27,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,7 +49,6 @@ public class QueryGenerator {
 	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "templates";
 	private static final String ROWELEMENTSSQUERY_TEMPLATE_NAME = "RowElementsQuery.ftl";
 	private static final String ROWCOLLECTIONELEMENT_QUERY_TEMPLATE = "RowCollectionElementQuery.ftl";
-	private static final String TABLE_XMLSCHEMA_TEMPLATE = "Tables_XMLSchema.ftl";
 
 	
 	// Primary constructor.
@@ -66,7 +64,6 @@ public class QueryGenerator {
 		// Load templates.
 		rowElementsQueryTemplate = templateConfig.getTemplate(ROWELEMENTSSQUERY_TEMPLATE_NAME);
 		rowCollectionElementQueryTemplate = templateConfig.getTemplate(ROWCOLLECTIONELEMENT_QUERY_TEMPLATE);
-		tableXSDTemplate = templateConfig.getTemplate(TABLE_XMLSCHEMA_TEMPLATE);
 	}
 	
 	public QueryGenerator(String schema, Connection conn) throws SQLException, IOException
@@ -245,123 +242,11 @@ public class QueryGenerator {
 	}
 	
 
-	public String getStandardXMLSchema(Set<RelId> rels_getting_toplevel_el,      // define top level elements for these
-	                                   Set<RelId> rels_getting_toplevel_list_el,
-	                                   String target_xml_namespace)
-	{
-		List<TableOutputSpec> ospecs = new ArrayList<TableOutputSpec>();
-		
-		for(RelMetaData relmd: dbmd.getRelationMetaDatas())
-		{
-			TableOutputSpec ospec = new TableOutputSpec(relmd.getRelationId(), dbmd);
-		
-			ospec.addAllChildTables();
-			ospec.addAllParentTables();
-			
-			ospecs.add(ospec);
-		}
-		
-		return getXMLSchema(ospecs,
-		                    rels_getting_toplevel_el,
-		                    rels_getting_toplevel_list_el,
-		                    target_xml_namespace,
-		                    true,  // Part of being the "standard" XMLSchema for this relation is that each parent and child element is optional in the XMLSchema, 
-		                    true); // so the schema will match regardless of which parents/children are included in a particular query.
-	}
-	
-
-	public String getXMLSchema(List<TableOutputSpec> ospecs,
-	                           Set<RelId> toplevel_el_rels,      // define top level elements for these
-	                           Set<RelId> toplevel_list_el_rels, // define top level list elements for these
-	                           String target_xml_namespace,
-	                           boolean child_list_els_optional,  // whether child list elements should be optional (for schema reusability)
-	                           boolean parent_els_optional)      // whether parent elements     "
-	{
-		Map<String,Object> template_model = new HashMap<String,Object>();
-		template_model.put("qgen", this);
-		template_model.put("target_namespace", target_xml_namespace);
-		template_model.put("ospecs", ospecs);
-		template_model.put("toplevel_el_rels", toplevel_el_rels);
-		template_model.put("toplevel_list_el_rels", toplevel_list_el_rels);
-		template_model.put("child_els_opt", child_list_els_optional);
-		template_model.put("parent_els_opt", parent_els_optional);
-		template_model.put("generating_program", getClass().getName());
-		template_model.put("generated_date", new java.util.Date());
-		
-		try
-		{
-			Writer sw = new StringWriter();
-			
-			tableXSDTemplate.process(template_model, sw);
-		
-			return sw.toString();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			throw new RuntimeException("Failed to produce XML Schema from template: " + e.getMessage());
-		}	
-	}
-	
-	
 	public DBMD getDatabaseMetaData()
 	{
 		return dbmd;
 	}
 	
-	
-    public String getXmlSchemaTypeForJdbcTypeCode(int jdbc_type)
-	{
-    	// http://sqltech.cl/doc/oas10gR31/integrate.1013/b28994/adptr_db.htm#CHDBBIEB
-    	switch (jdbc_type)
-    	{
-    	case Types.TINYINT:
-    		return "byte";
-
-    	case Types.SMALLINT:
-    		return "short";
-
-    	case Types.INTEGER:
-    	case Types.BIGINT:
-    		return "integer";
-
-    	case Types.FLOAT:
-    	case Types.REAL:
-    	case Types.DOUBLE:
-    		return "double";
-
-    	case Types.DECIMAL:
-    	case Types.NUMERIC:
-    		return "decimal";
-
-    	case Types.CHAR:
-    	case Types.VARCHAR:
-    	case Types.LONGVARCHAR:
-    	case Types.CLOB:
-    	case Types.OTHER:
-    		return "string";
-
-    	case Types.BIT:
-    	case Types.BOOLEAN:
-    		return "boolean";
-    		
-    	case Types.DATE:
-    		return "date";
-    	case Types.TIME:
-    		return "time";
-    	case Types.TIMESTAMP:
-    		return "dateTime";
-
-    	case Types.BLOB:
-    	case Types.BINARY:
-    	case Types.VARBINARY:
-    	case Types.LONGVARBINARY:
-    		return "base64Binary";
-
-    	default:
-    		return "unknown[jdbctype=" + DatabaseMetaDataFetcher.jdbcTypeToString(jdbc_type) + "]";
-    	}
-	}
 	
 	
 	public static<E> List<E> concat(List<E> l1, List<E> l2)
@@ -414,22 +299,19 @@ public class QueryGenerator {
 	////////////////////////////////////////////////////////////////////////////////////////
 
 
-	
     public static void main(String[] args) throws Exception
     {
         int arg_ix = 0;
         String dbmd_xml_path = null;
         String query_outfile_path = null;
-        String xmlschema_outfile_path = null;
     	
-        if ( args.length == 3 )
+        if ( args.length == 2 )
         {
         	dbmd_xml_path = args[arg_ix++];
         	query_outfile_path = args[arg_ix++];
-        	xmlschema_outfile_path = args[arg_ix++];;
         }
         else
-        	throw new IllegalArgumentException("Expected arguments: <db-metadata-file> <query-output-file> <xmlschema-output-file>");
+        	throw new IllegalArgumentException("Expected arguments: <db-metadata-file> <query-output-file>");
 
         InputStream dbmd_is = new FileInputStream(dbmd_xml_path);
         
@@ -453,14 +335,6 @@ public class QueryGenerator {
         Set<RelId> rels_getting_toplevel_els = new HashSet<RelId>();
         rels_getting_toplevel_els.add(dbmd.toRelId("ltkb.drug"));
         rels_getting_toplevel_els.add(dbmd.toRelId("ltkb.compound"));
-        
-        String xsd = g.getStandardXMLSchema(rels_getting_toplevel_els,
-                                            rels_getting_toplevel_els,
-                                            "http://nctr.fda.gov/just/an/example");
-        
-        os = new FileOutputStream(xmlschema_outfile_path);
-        os.write(xsd.getBytes());
-        os.close();
         
         System.exit(0);
     }
