@@ -1,8 +1,6 @@
 <#assign field_prefix = table_alias + ".">
 select -- rows of ${relid}
-  <#list leading_fields as f>
-  ${f},
-  </#list>
+  ${table_alias}.*,
   -- row_xml
   xmlelement("${row_element_name}"
    <#list all_fields as f>

@@ -1,6 +1,5 @@
 package gov.fda.nctr.xdagen;
 
-import static gov.fda.nctr.util.StringFunctions.dotQualify;
 import static gov.fda.nctr.util.StringFunctions.indent;
 import static gov.fda.nctr.util.StringFunctions.lowercaseInitials;
 import static gov.fda.nctr.util.StringFunctions.makeNameNotInSet;
@@ -71,27 +70,20 @@ public class QueryGenerator {
 		this(new DatabaseMetaDataFetcher().fetchMetaData(conn, schema, true, true, true, true));
 	}
 	
-	
 
+	
 	public String getRowElementsQuery(TableOutputSpec ospec)
 	{
-		return getRowElementsQuery(ospec, null, null);
-	}
-
-	
-	public String getRowElementsQuery(TableOutputSpec ospec,
-	                                  List<String> leading_fields) // Optional, unqualified field names to precede row_xml in select fields list.  Defaults to primary key fields.
-	{
-		return getRowElementsQuery(ospec, leading_fields, null);
+		return getRowElementsQuery(ospec, 
+		                           lowercaseInitials(ospec.getRelationId().getName(),"_"),
+		                           null);
 		
 	}
 	
 	public String getRowElementsQuery(TableOutputSpec ospec,
-	                                  List<String> leading_fields, // Optional, unqualified field names to precede row_xml in select fields list.  Defaults to primary key fields.
 	                                  String table_alias) // Optional, defaults to lowercase initials of underscore separated table words.  Use "" to force using no alias.
 	{
 		return getRowElementsQuery(ospec,
-		                           leading_fields,
 		                           table_alias,
 		                           null); // no WHERE clause condition
 	}
@@ -100,26 +92,18 @@ public class QueryGenerator {
 	 *  the xml representation of the row.  
 	 */
 	public String getRowElementsQuery(TableOutputSpec ospec,
-	                                  List<String> leading_fields, // Optional, unqualified field names to precede row_xml in select fields list.  Defaults to primary key fields.
-	                                  String table_alias, // Optional, defaults to lowercase initials of underscore separated table words.  Use "" to force using no alias.
-	                                  String filter_condition) // Optional, should qualify any fields referenced with table_alias.
+	                                  String table_alias, // Required
+	                                  String filter_condition) // Optional.  Any fields referenced should be qualified with table_alias.
 	{
-		if ( table_alias == null )
-			table_alias = lowercaseInitials(ospec.getRelationId().getName(),"_");
-		else if ( table_alias.length() == 0 )
-			table_alias = null;
+		if ( table_alias == null || table_alias.trim().length() == 0 )
+			throw new IllegalArgumentException("Table alias is required.");
 		
 		final RelId relid = ospec.getRelationId();
 		
 		final RelMetaData relmd = dbmd.getRelationMetaData(relid);
 
-		List<String> leading_select_fields = leading_fields == null ? dbmd.getPrimaryKeyFieldNames(ospec.getRelationId(), table_alias)
-				                                                    : dotQualify(leading_fields, table_alias);
-		
-		
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		template_model.put("relid", relid);
-		template_model.put("leading_fields", leading_select_fields);
 		template_model.put("all_fields", relmd.getFields());
 		template_model.put("row_element_name", ospec.getRowElementName());
 		template_model.put("child_subqueries", getChildTableSubqueries(ospec, table_alias, "     "));
@@ -144,17 +128,17 @@ public class QueryGenerator {
 	
 	
 	public String getRowCollectionElementQuery(TableOutputSpec ospec,
-	                                           RowElementsQueryFilter row_els_query_filter) // Optional.
-	                                    
+	                                           String rows_query_alias, // Optional.
+	                                           String filter_cond_over_rows_query) // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
 	{
-		String rows_query = getRowElementsQuery(ospec, row_els_query_filter.getUnqualfiedTableFieldNamesSupportingCondition());
+		String rows_query = getRowElementsQuery(ospec);
 		
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		template_model.put("row_collection_element_name", ospec.getRowCollectionElementName());
 		template_model.put("rows_query", indent(rows_query, "   ", false));
-		template_model.put("rows_query_alias", row_els_query_filter.getRowElementsQueryAlias());
-		template_model.put("where_cond", row_els_query_filter.getRowElementsQueryCondition() != null ? "where\n" + indent(row_els_query_filter.getRowElementsQueryCondition(), "  ")
-				                                                                                     : "");
+		template_model.put("rows_query_alias", rows_query_alias);
+		template_model.put("where_cond", filter_cond_over_rows_query != null ? "where\n" + indent(filter_cond_over_rows_query, "  ")
+				                                                             : "");
 		try
 		{
 			Writer sw = new StringWriter();
@@ -188,13 +172,10 @@ public class QueryGenerator {
 			String child_rowelemsquery_cond = fk.asEquation(child_rowelemsquery_alias,
 			                                                parent_table_alias,
 			                                                EquationStyle.SOURCE_ON_LEFTHAND_SIDE);
-			List<String> child_rowelemsquery_cond_uq_fieldnames = fk.getSourceFieldNames();
 			
-			RowElementsQueryFilter rowelemsquery_filter = new RowElementsQueryFilter(child_rowelemsquery_cond,
-			                                                                         child_rowelemsquery_cond_uq_fieldnames,
-			                                                                         child_rowelemsquery_alias);
-			
-			String child_coll_subqry = getRowCollectionElementQuery(child_ospec, rowelemsquery_filter);
+			String child_coll_subqry = getRowCollectionElementQuery(child_ospec,
+			                                                        child_rowelemsquery_cond,
+			                                                        child_rowelemsquery_alias);
 			
 			if ( trailing_lines_prefix != null )
 				child_coll_subqry = indent(child_coll_subqry, trailing_lines_prefix, false);
@@ -225,10 +206,7 @@ public class QueryGenerator {
 			                                        parent_table_alias,
 			                                        EquationStyle.TARGET_ON_LEFTHAND_SIDE);
 			
-			List<String> no_leading_fields = Collections.emptyList(); // no leading fields necessary since query isn't wrapped
-			
 			String parent_rowel_query = getRowElementsQuery(parent_ospec,
-			                                                no_leading_fields,
 			                                                parent_table_alias,
 			                                                parent_rows_cond);
 			
@@ -247,6 +225,10 @@ public class QueryGenerator {
 		return dbmd;
 	}
 	
+	public TableOutputSpec table(String pq_rel_name)
+	{
+		return new TableOutputSpec(pq_rel_name, dbmd);
+	}
 	
 	
 	public static<E> List<E> concat(List<E> l1, List<E> l2)
@@ -259,47 +241,9 @@ public class QueryGenerator {
 		return l;
 	}
 	
-	////////////////////////////////////////////////////////////////////////////////////////
-	// Inner Classes
-	
-	public static class RowElementsQueryFilter {
-    	
-    	String rowElementsQueryCondition; // WHERE clause condition on a rows query (without the "where" keyword).
-    	List<String> unqualfiedTableFieldNamesSupportingCondition;
-    	String rowElementsQueryAlias;
-		
-		public RowElementsQueryFilter(String rowElementsQueryCondition, // Optional.
-		                              List<String> unqualfiedTableFieldNamesSupportingCondition,  // Optional, but must contain any fields referenced in the condition, if any.
-		                              String rowElementsQueryAlias) // Optional, if null no alias will be used.
-		{
-			super();
-			this.rowElementsQueryCondition = rowElementsQueryCondition;
-			this.unqualfiedTableFieldNamesSupportingCondition = unqualfiedTableFieldNamesSupportingCondition;
-			this.rowElementsQueryAlias = rowElementsQueryAlias;
-		}
-    	
-		public String getRowElementsQueryCondition()
-		{
-			return rowElementsQueryCondition;
-		}
-		
-		public List<String> getUnqualfiedTableFieldNamesSupportingCondition()
-		{
-			return unqualfiedTableFieldNamesSupportingCondition;
-		}
-		
-		public String getRowElementsQueryAlias()
-		{
-			return rowElementsQueryAlias;
-		}
-    }
 
 	
-	// Inner Classes
-	////////////////////////////////////////////////////////////////////////////////////////
-
-
-    public static void main(String[] args) throws Exception
+	public static void main(String[] args) throws Exception
     {
         int arg_ix = 0;
         String dbmd_xml_path = null;
@@ -320,7 +264,7 @@ public class QueryGenerator {
         QueryGenerator g = new QueryGenerator(dbmd);
             
         TableOutputSpec ospec =
-        	table("drug",dbmd)
+        	g.table("drug")
         		.addChild("drug_link")
         		.addParent("compound");
         

@@ -37,8 +37,8 @@
 
 	<!-- jar -->
 	<target name="jar"
-		  depends="clean, compile"
-		  description="generate module jar file">
+		    depends="clean, compile"
+		    description="generate module jar file">
 
 		<jar jarfile="${jarbasename}.jar" basedir="${build.dir}" includes="**/*" excludes="${jarbasename}.jar" />
 
