@@ -28,10 +28,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 public class QueryGenerator {
@@ -48,6 +46,11 @@ public class QueryGenerator {
 	private static final String ROWELEMENTSSQUERY_TEMPLATE_NAME = "RowElementsQuery.ftl";
 	private static final String ROWCOLLECTIONELEMENT_QUERY_TEMPLATE = "RowCollectionElementQuery.ftl";
 
+
+	public enum RowOutputType { XMLTYPE_ROW_XML_ONLY,
+								CLOB_ROW_XML_ONLY,
+		                        ALL_FIELDS_THEN_XMLTYPE_ROW_XML,
+		                        ALL_FIELDS_THEN_CLOB_ROW_XML }
 	
 	// Primary constructor.
 	public QueryGenerator(DBMD dbmd) throws IOException
@@ -75,7 +78,8 @@ public class QueryGenerator {
 	{
 		return getRowElementsQuery(ospec, 
 		                           lowercaseInitials(ospec.getRelationId().getName(),"_"),
-		                           null);
+		                           null,  // no WHERE clause condition
+		                           RowOutputType.CLOB_ROW_XML_ONLY);
 		
 	}
 	
@@ -84,7 +88,19 @@ public class QueryGenerator {
 	{
 		return getRowElementsQuery(ospec,
 		                           table_alias,
-		                           null); // no WHERE clause condition
+		                           null,  // no WHERE clause condition
+		                           RowOutputType.CLOB_ROW_XML_ONLY);
+	}
+	
+
+	public String getRowElementsQuery(TableOutputSpec ospec,
+	                                  String table_alias, // Required
+	                                  String filter_condition) // Optional.  Any fields referenced should be qualified with table_alias.
+	{
+		return getRowElementsQuery(ospec,
+		                           table_alias,
+		                           filter_condition,
+		                           RowOutputType.CLOB_ROW_XML_ONLY);
 	}
 	
 	/** Returns a query for rows of the indicated table, with optional leading fields followed by an XMLType column row_xml containing
@@ -92,7 +108,8 @@ public class QueryGenerator {
 	 */
 	public String getRowElementsQuery(TableOutputSpec ospec,
 	                                  String table_alias, // Required
-	                                  String filter_condition) // Optional.  Any fields referenced should be qualified with table_alias.
+	                                  String filter_condition, // Optional.  Any fields referenced should be qualified with table_alias.
+	                                  RowOutputType row_output_type)
 	{
 		if ( table_alias == null || table_alias.trim().length() == 0 )
 			throw new IllegalArgumentException("Table alias is required.");
@@ -100,9 +117,17 @@ public class QueryGenerator {
 		final RelId relid = ospec.getRelationId();
 		
 		final RelMetaData relmd = dbmd.getRelationMetaData(relid);
-
+		
+		boolean convert_to_clob = row_output_type == RowOutputType.CLOB_ROW_XML_ONLY ||
+		                          row_output_type == RowOutputType.ALL_FIELDS_THEN_CLOB_ROW_XML;
+		
+		boolean include_leading_table_fields = row_output_type == RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML ||
+                                    	       row_output_type == RowOutputType.ALL_FIELDS_THEN_CLOB_ROW_XML;
+		
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		template_model.put("relid", relid);
+		template_model.put("include_table_field_columns", include_leading_table_fields);
+		template_model.put("convert_to_clob", convert_to_clob);
 		template_model.put("all_fields", relmd.getFields());
 		template_model.put("row_element_name", ospec.getRowElementName());
 		template_model.put("child_subqueries", getChildTableSubqueries(ospec, table_alias, "     "));
@@ -130,7 +155,10 @@ public class QueryGenerator {
 	                                           String rows_query_alias, // Optional.
 	                                           String filter_cond_over_rows_query) // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
 	{
-		String rows_query = getRowElementsQuery(ospec);
+		String rows_query = getRowElementsQuery(ospec, 
+		                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
+		                                        null,  // no WHERE clause condition
+		                                        RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML);
 		
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		template_model.put("row_collection_element_name", ospec.getRowCollectionElementName());
@@ -173,8 +201,8 @@ public class QueryGenerator {
 			                                                EquationStyle.SOURCE_ON_LEFTHAND_SIDE);
 			
 			String child_coll_subqry = getRowCollectionElementQuery(child_ospec,
-			                                                        child_rowelemsquery_cond,
-			                                                        child_rowelemsquery_alias);
+			                                                        child_rowelemsquery_alias,
+			                                                        child_rowelemsquery_cond);
 			
 			if ( trailing_lines_prefix != null )
 				child_coll_subqry = indent(child_coll_subqry, trailing_lines_prefix, false);
@@ -207,7 +235,8 @@ public class QueryGenerator {
 			
 			String parent_rowel_query = getRowElementsQuery(parent_ospec,
 			                                                parent_table_alias,
-			                                                parent_rows_cond);
+			                                                parent_rows_cond,
+			                                                RowOutputType.XMLTYPE_ROW_XML_ONLY);
 			
 			if ( trailing_lines_prefix != null )
 				parent_rowel_query = indent(parent_rowel_query, trailing_lines_prefix, false);
@@ -273,11 +302,6 @@ public class QueryGenerator {
         OutputStream os = new FileOutputStream(query_outfile_path);
         os.write(sqlxml_qry.getBytes());
         os.close();
-        
-        
-        Set<RelId> rels_getting_toplevel_els = new HashSet<RelId>();
-        rels_getting_toplevel_els.add(dbmd.toRelId("ltkb.drug"));
-        rels_getting_toplevel_els.add(dbmd.toRelId("ltkb.compound"));
         
         System.exit(0);
     }

@@ -1,8 +1,8 @@
 <#assign field_prefix = table_alias + ".">
 select -- rows of ${relid}
-  ${table_alias}.*,
+  <#if include_table_field_columns>${table_alias}.*,</#if><#t>
   -- row_xml
-  xmlelement("${row_element_name}"
+  <#if convert_to_clob>xmlserialize(content </#if>xmlelement("${row_element_name}"
    <#list all_fields as f>
    ,xmlelement("${f.name?lower_case}", ${field_prefix}${f.name})
    </#list>
@@ -16,7 +16,7 @@ select -- rows of ${relid}
    ,(${parent_subquery}
     ) -- parent subquery
    </#list>
-  ) row_xml
+  )<#if convert_to_clob> as clob)</#if> row_xml
 from ${relid.idString} ${table_alias}<#if ((filter_condition!"")?length > 0)>
 where
   ${filter_condition}</#if>

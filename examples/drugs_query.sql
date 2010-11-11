@@ -1,7 +1,6 @@
 select -- rows of ltkb.drug
-  d.ID,
   -- row_xml
-  xmlelement("drug"
+  xmlserialize(content xmlelement("drug"
    ,xmlelement("id", d.ID)
    ,xmlelement("name", d.NAME)
    ,xmlelement("compound_id", d.COMPOUND_ID)
@@ -13,8 +12,7 @@ select -- rows of ltkb.drug
    ,(select xmlelement("drug_link-list", xmlagg(row_els_q.row_xml)) as "rowcoll_xml"
      from
       ( select -- rows of ltkb.drug_link
-          dl.DRUG_ID,
-          -- row_xml
+        dl.*,  -- row_xml
           xmlelement("drug_link"
            ,xmlelement("drug_id", dl.DRUG_ID)
            ,xmlelement("name", dl.NAME)
@@ -51,5 +49,5 @@ select -- rows of ltkb.drug
      where
        c.ID = d.COMPOUND_ID
     ) -- parent subquery
-  ) row_xml
+  ) as clob) row_xml
 from ltkb.drug d
