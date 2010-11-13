@@ -31,6 +31,8 @@ public class DatabaseXmlSchemaGenerator {
 
 	DBMD dbmd;
 	
+	String targetXmlNamespace;
+	
 	Configuration templateConfig;
 	
 	Template tableXSDTemplate;
@@ -40,9 +42,11 @@ public class DatabaseXmlSchemaGenerator {
 
 	
 	// Primary constructor.
-	public DatabaseXmlSchemaGenerator(DBMD dbmd) throws IOException
+	public DatabaseXmlSchemaGenerator(DBMD dbmd,
+	                                  String target_xml_namespace) throws IOException
 	{
 		this.dbmd = dbmd;
+		this.targetXmlNamespace = target_xml_namespace;
 		
 		// Configure template engine.
 		templateConfig = new Configuration();
@@ -53,10 +57,8 @@ public class DatabaseXmlSchemaGenerator {
 		tableXSDTemplate = templateConfig.getTemplate(TABLE_XMLSCHEMA_TEMPLATE);
 	}
 
-	
 	public String getStandardXMLSchema(Set<RelId> rels_getting_toplevel_el,      // define top level elements for these
-	                                   Set<RelId> rels_getting_toplevel_list_el,
-	                                   String target_xml_namespace)
+	                                   Set<RelId> rels_getting_toplevel_list_el)
 	{
 		List<TableOutputSpec> ospecs = new ArrayList<TableOutputSpec>();
 		
@@ -73,7 +75,6 @@ public class DatabaseXmlSchemaGenerator {
 		return getXMLSchema(ospecs,
 		                    rels_getting_toplevel_el,
 		                    rels_getting_toplevel_list_el,
-		                    target_xml_namespace,
 		                    true,  // Part of being the "standard" XMLSchema for this relation is that each parent and child element is optional in the XMLSchema, 
 		                    true); // so the schema will match regardless of which parents/children are included in a particular query.
 	}
@@ -81,15 +82,14 @@ public class DatabaseXmlSchemaGenerator {
 	
 
 	public String getXMLSchema(List<TableOutputSpec> ospecs,
-	                           Set<RelId> toplevel_el_rels,      // define top level elements for these
-	                           Set<RelId> toplevel_list_el_rels, // define top level list elements for these
-	                           String target_xml_namespace,
+	                           Set<RelId> toplevel_el_rels,      // define top level elements for these, or for all if null.
+	                           Set<RelId> toplevel_list_el_rels, // define top level list elements for these, or for all if null.
 	                           boolean child_list_els_optional,  // whether child list elements should be optional (for schema reusability)
 	                           boolean parent_els_optional)      // whether parent elements     "
 	{
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		template_model.put("qgen", this);
-		template_model.put("target_namespace", target_xml_namespace);
+		template_model.put("target_namespace", targetXmlNamespace);
 		template_model.put("ospecs", ospecs);
 		template_model.put("toplevel_el_rels", toplevel_el_rels);
 		template_model.put("toplevel_list_el_rels", toplevel_list_el_rels);
@@ -213,23 +213,32 @@ public class DatabaseXmlSchemaGenerator {
         	toplevel_el_relids_strlist = args[arg_ix++];
         	toplevel_el_list_relids_strlist = args[arg_ix++];
         	xmlschema_outfile_path = args[arg_ix++];;
+        	
+        	if ( toplevel_el_relids_strlist.equals("*all*") )
+        		toplevel_el_relids_strlist = null; // let it default
+        	else if ( toplevel_el_relids_strlist.equals("*none*") )
+        		toplevel_el_relids_strlist = "";
+        	
+        	if ( toplevel_el_list_relids_strlist.equals("*all*") )
+        		toplevel_el_list_relids_strlist = null; // let it default
+        	else if ( toplevel_el_list_relids_strlist.equals("*none*") )
+        			toplevel_el_list_relids_strlist = "";
         }
         else
-        	throw new IllegalArgumentException("Expected arguments: <db-metadata-file> <target-namespace> <toplevel-el-relids> <toplevel-el-list-relids> <xmlschema-output-file>");
+        	throw new IllegalArgumentException("Expected arguments: <db-metadata-file> <target-namespace> <toplevel-el-relids|*all*|*none*> <toplevel-el-list-relids|*all*|*none*> <xmlschema-output-file>");
 
         InputStream dbmd_is = new FileInputStream(dbmd_xml_infile_path);
         
         DBMD dbmd = DBMD.readXML(dbmd_is);
         dbmd_is.close();
         
-        DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd);
+        DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd, target_namespace);
         
-        toplevel_el_relids = new HashSet<RelId>(g.parseRelIds(toplevel_el_relids_strlist));
-        toplevel_el_list_relids = new HashSet<RelId>(g.parseRelIds(toplevel_el_list_relids_strlist));
+        toplevel_el_relids = toplevel_el_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_relids_strlist)) : null;
+        toplevel_el_list_relids = toplevel_el_list_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_list_relids_strlist)) : null;
         
         String xsd = g.getStandardXMLSchema(toplevel_el_relids,
-                                            toplevel_el_list_relids,
-                                            target_namespace);
+                                            toplevel_el_list_relids);
         
         OutputStream os = new FileOutputStream(xmlschema_outfile_path);
         os.write(xsd.getBytes());

@@ -14,7 +14,7 @@
   <#assign el_type_name = el_type(ospec.relationId)/><#t>
   <#assign list_el_type_name = list_el_type(ospec.relationId)/><#t>
   
-  <#if toplevel_el_rels?seq_contains(ospec.relationId)>
+  <#if !(toplevel_el_rels??) || toplevel_el_rels?seq_contains(ospec.relationId)>
   <element name="${el_name}" type="tns:${el_type_name}"/>
   </#if>
 
@@ -35,7 +35,7 @@
     </sequence>
   </complexType>
 
-  <#if toplevel_list_el_rels?seq_contains(ospec.relationId)>
+  <#if !toplevel_list_el_rels?? || toplevel_list_el_rels?seq_contains(ospec.relationId)>
   <element name="${list_el_name}" type="tns:${list_el_type_name}"/>
   </#if>
 

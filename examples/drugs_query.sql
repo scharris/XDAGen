@@ -1,6 +1,6 @@
 select -- rows of ltkb.drug
   -- row_xml
-  xmlserialize(content xmlelement("drug"
+  xmlserialize(content xmlelement("drug", xmlattributes('http://example/namespace' as "xmlns")
    ,xmlelement("id", d.ID)
    ,xmlelement("name", d.NAME)
    ,xmlelement("compound_id", d.COMPOUND_ID)
@@ -9,10 +9,12 @@ select -- rows of ltkb.drug
    ,xmlelement("cid", d.CID)
    ,xmlelement("therapeutic_indications", d.THERAPEUTIC_INDICATIONS)
    --  child tables for ltkb.drug
-   ,(select xmlelement("drug_link-list", xmlagg(row_els_q.row_xml)) as "rowcoll_xml"
+   ,(select xmlelement("drug_link-list", 
+              xmlagg(row_els_q.row_xml)) as "rowcoll_xml"
      from
       ( select -- rows of ltkb.drug_link
-        dl.*,  -- row_xml
+          dl.*,
+          -- row_xml
           xmlelement("drug_link"
            ,xmlelement("drug_id", dl.DRUG_ID)
            ,xmlelement("name", dl.NAME)

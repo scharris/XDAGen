@@ -1,8 +1,7 @@
-<#assign field_prefix = table_alias + ".">
+<#assign field_prefix = table_alias + "." />
 select -- rows of ${relid}
-  <#if include_table_field_columns>${table_alias}.*,</#if><#t>
-  -- row_xml
-  <#if convert_to_clob>xmlserialize(content </#if>xmlelement("${row_element_name}"
+<#if include_table_field_columns>  ${table_alias}.*,${"\n"}</#if>  -- row_xml
+  <#if convert_to_clob>xmlserialize(content </#if>xmlelement("${row_element_name}"<#if xmlns??>, xmlattributes('${xmlns}' as "xmlns")</#if>
    <#list all_fields as f>
    ,xmlelement("${f.name?lower_case}", ${field_prefix}${f.name})
    </#list>

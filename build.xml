@@ -51,14 +51,28 @@
 		    description="generate example query and xml schema">
 
 	  <java classname="gov.fda.nctr.xdagen.QueryGenerator" fork="true">
+	  	
 		  <classpath path="${build.dir}">
 		  	<fileset dir="${lib.dir}" includes="**/*.jar"/>
 		  </classpath>
+	  	
 		  <arg value="examples/dbmd.xml"/>
 		  <arg value="examples/drugs_query.sql"/>
-		  <arg value="examples/generated_xmlschema.xsd"/>
 	  </java>
-		
+
+	  <java classname="gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator" fork="true">
+	  	
+		<classpath path="${build.dir}">
+			<fileset dir="${lib.dir}" includes="**/*.jar"/>
+		</classpath>
+	  	
+		<arg value="examples/dbmd.xml"/>
+		<arg value="http://example/namespace"/>
+	  	<arg value="*all*"/>
+	  	<arg value="*all*"/>
+	  	<arg value="examples/generated_xmlschema.xsd"/>
+	  </java>
+
 	</target>
 	
 	
