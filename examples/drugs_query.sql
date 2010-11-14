@@ -10,7 +10,7 @@ select -- rows of ltkb.drug
    ,xmlelement("therapeutic_indications", d.THERAPEUTIC_INDICATIONS)
    --  child tables for ltkb.drug
    ,(select xmlelement("drug_link-list", 
-              xmlagg(row_els_q.row_xml)) as "rowcoll_xml"
+              xmlagg(row_els_q.row_xml)) "rowcoll_xml"
      from
       ( select -- rows of ltkb.drug_link
           dl.*,

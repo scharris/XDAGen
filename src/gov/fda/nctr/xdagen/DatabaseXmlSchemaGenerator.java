@@ -214,12 +214,12 @@ public class DatabaseXmlSchemaGenerator {
         	toplevel_el_list_relids_strlist = args[arg_ix++];
         	xmlschema_outfile_path = args[arg_ix++];;
         	
-        	if ( toplevel_el_relids_strlist.equals("*all*") )
+        	if ( toplevel_el_relids_strlist.trim().equals("*all*") )
         		toplevel_el_relids_strlist = null; // let it default
         	else if ( toplevel_el_relids_strlist.equals("*none*") )
         		toplevel_el_relids_strlist = "";
         	
-        	if ( toplevel_el_list_relids_strlist.equals("*all*") )
+        	if ( toplevel_el_list_relids_strlist.trim().equals("*all*") )
         		toplevel_el_list_relids_strlist = null; // let it default
         	else if ( toplevel_el_list_relids_strlist.equals("*none*") )
         			toplevel_el_list_relids_strlist = "";

@@ -39,16 +39,17 @@ public class QueryGenerator {
 	Configuration templateConfig;
 	
 	Template rowElementsQueryTemplate;
+	
 	Template rowCollectionElementQueryTemplate;
-	Template tableXSDTemplate;
 
-	String xmlNamespace;
+	String outputXmlNamespace;
 	
 	
 	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "templates";
 	private static final String ROWELEMENTSSQUERY_TEMPLATE_NAME = "RowElementsQuery.ftl";
 	private static final String ROWCOLLECTIONELEMENT_QUERY_TEMPLATE = "RowCollectionElementQuery.ftl";
 
+	public enum XmlOutputType { XMLTYPE, CLOB }
 
 	public enum RowOutputType { XMLTYPE_ROW_XML_ONLY,
 								CLOB_ROW_XML_ONLY,
@@ -65,7 +66,7 @@ public class QueryGenerator {
 	  throws IOException
 	{
 		this.dbmd = dbmd;
-		this.xmlNamespace = output_xml_namespace;
+		this.outputXmlNamespace = output_xml_namespace;
 		
 		// Configure template engine.
 		templateConfig = new Configuration();
@@ -136,7 +137,7 @@ public class QueryGenerator {
 		if ( table_alias == null || table_alias.trim().length() == 0 )
 			throw new IllegalArgumentException("Table alias is required.");
 		
-		String xml_namespace = xmlns_opt == XmlNamespaceOption.INCLUDE_IF_SET ? xmlNamespace : null;
+		String xml_namespace = xmlns_opt == XmlNamespaceOption.INCLUDE_IF_SET ? outputXmlNamespace : null;
 		
 		final RelId relid = ospec.getRelationId();
 		
@@ -175,22 +176,37 @@ public class QueryGenerator {
 		}
 	}
 	
+	public String getRowCollectionElementQuery(TableOutputSpec ospec,
+	                                           String rows_query_alias, // Optional.
+	                                           String filter_cond_over_rows_query) // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
+	{
+		return getRowCollectionElementQuery(ospec,
+		                                    rows_query_alias,
+		                                    filter_cond_over_rows_query,
+		                                    XmlOutputType.CLOB,
+		                                    XmlNamespaceOption.INCLUDE_IF_SET);
+	}
 	
 	public String getRowCollectionElementQuery(TableOutputSpec ospec,
 	                                           String rows_query_alias, // Optional.
 	                                           String filter_cond_over_rows_query, // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
+	                                           XmlOutputType xml_output_type,
 	                                           XmlNamespaceOption xmlns_opt)
 	{
 		String rows_query = getRowElementsQuery(ospec, 
 		                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
 		                                        null,  // no WHERE clause condition
-		                                        RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML,
+		                                        RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML, // Export all fields for possible use in WHERE condition over the rows query.
 		                                        XmlNamespaceOption.SUPPRESS); // Collection element above these will determine the namespace.
 		
-		String xml_namespace = xmlns_opt == XmlNamespaceOption.INCLUDE_IF_SET ? xmlNamespace : null;
+		boolean convert_to_clob = xml_output_type == XmlOutputType.CLOB;
+		
+		String xml_namespace = xmlns_opt == XmlNamespaceOption.INCLUDE_IF_SET ? outputXmlNamespace : null;
+		
 		
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		template_model.put("xmlns", xml_namespace);
+		template_model.put("convert_to_clob", convert_to_clob);
 		template_model.put("row_collection_element_name", ospec.getRowCollectionElementName());
 		template_model.put("rows_query", indent(rows_query, "   ", false));
 		template_model.put("rows_query_alias", rows_query_alias);
@@ -233,6 +249,7 @@ public class QueryGenerator {
 			String child_coll_subqry = getRowCollectionElementQuery(child_ospec,
 			                                                        child_rowelemsquery_alias,
 			                                                        child_rowelemsquery_cond,
+			                                                        XmlOutputType.XMLTYPE,
 			                                                        XmlNamespaceOption.SUPPRESS); // Ancestor element will determine namespace.
 			
 			if ( trailing_lines_prefix != null )
@@ -287,13 +304,13 @@ public class QueryGenerator {
 	
 	public String getDefaultOutputXmlNamespace()
 	{
-		return xmlNamespace;
+		return outputXmlNamespace;
 	}
 
 	
 	public void setDefaultOutputXmlNamespace(String defaultOutputXmlNamespace)
 	{
-		this.xmlNamespace = defaultOutputXmlNamespace;
+		this.outputXmlNamespace = defaultOutputXmlNamespace;
 	}
 
 
