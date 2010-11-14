@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ns2:database-metadata xmlns:ns2="http://nctr.fda.gov/dbmd" case-sensitivity="INSENSITIVE_STORED_UPPER" requested-owning-schema-name="LTKB">
+<database-metadata xmlns="http://nctr.fda.gov/dbmd" case-sensitivity="INSENSITIVE_STORED_UPPER" requested-owning-schema-name="LTKB">
     <relation-metadatas>
         <rel-md rel-type="Table">
             <rel-id name="ADVISORY" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="ADVISORY" schema="LTKB"/>
                 </field>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
                     <rel-id name="ADVISORY" schema="LTKB"/>
                 </field>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ADVISORY_TYPE_ID">
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ADVISORY_TYPE_ID">
                     <rel-id name="ADVISORY" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="TEXT">
@@ -21,13 +21,13 @@
         <rel-md rel-type="Table">
             <rel-id name="ADVISORY_TYPE" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="ADVISORY_TYPE" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
                     <rel-id name="ADVISORY_TYPE" schema="LTKB"/>
                 </field>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID">
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID">
                     <rel-id name="ADVISORY_TYPE" schema="LTKB"/>
                 </field>
             </fields>
@@ -35,7 +35,7 @@
         <rel-md rel-type="Table">
             <rel-id name="ATC_CLASSIFICATION" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
                     <rel-id name="ATC_CLASSIFICATION" schema="LTKB"/>
                 </field>
                 <field pk-part-num="2" nullable="false" length="7" db-type-name="VARCHAR2" jdbc-type-code="12" name="CODE">
@@ -46,7 +46,7 @@
         <rel-md rel-type="Table">
             <rel-id name="AUTHORITY" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="AUTHORITY" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
@@ -63,7 +63,7 @@
         <rel-md rel-type="Table">
             <rel-id name="BRAND" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
                     <rel-id name="BRAND" schema="LTKB"/>
                 </field>
                 <field pk-part-num="2" nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="BRAND_NAME">
@@ -72,7 +72,7 @@
                 <field nullable="true" length="10" db-type-name="VARCHAR2" jdbc-type-code="12" name="LANGUAGE_CODE">
                     <rel-id name="BRAND" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="MANUFACTURER_ID">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="MANUFACTURER_ID">
                     <rel-id name="BRAND" schema="LTKB"/>
                 </field>
             </fields>
@@ -80,7 +80,7 @@
         <rel-md rel-type="Table">
             <rel-id name="COMPOUND" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="COMPOUND" schema="LTKB"/>
                 </field>
                 <field nullable="true" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="DISPLAY_NAME">
@@ -101,7 +101,7 @@
                 <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="MOL_FORMULA">
                     <rel-id name="COMPOUND" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" precision="22" db-type-name="NUMBER" jdbc-type-code="3" name="MOL_WEIGHT">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="MOL_WEIGHT">
                     <rel-id name="COMPOUND" schema="LTKB"/>
                 </field>
                 <field nullable="true" db-type-name="CLOB" jdbc-type-code="2005" name="MOL_FILE">
@@ -124,13 +124,13 @@
         <rel-md rel-type="Table">
             <rel-id name="DLISCORE_ADVISORY" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_LIVER_INJURY_SCORE_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_LIVER_INJURY_SCORE_ID">
                     <rel-id name="DLISCORE_ADVISORY" schema="LTKB"/>
                 </field>
-                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ADVISORY_ID">
+                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ADVISORY_ID">
                     <rel-id name="DLISCORE_ADVISORY" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="SEQ">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="SEQ">
                     <rel-id name="DLISCORE_ADVISORY" schema="LTKB"/>
                 </field>
             </fields>
@@ -138,13 +138,13 @@
         <rel-md rel-type="Table">
             <rel-id name="DLISCORE_REFERENCE" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_LIVER_INJURY_SCORE_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_LIVER_INJURY_SCORE_ID">
                     <rel-id name="DLISCORE_REFERENCE" schema="LTKB"/>
                 </field>
-                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="REFERENCE_ID">
+                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="REFERENCE_ID">
                     <rel-id name="DLISCORE_REFERENCE" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="SEQ">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="SEQ">
                     <rel-id name="DLISCORE_REFERENCE" schema="LTKB"/>
                 </field>
             </fields>
@@ -152,13 +152,13 @@
         <rel-md rel-type="Table">
             <rel-id name="DRUG" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="DRUG" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
                     <rel-id name="DRUG" schema="LTKB"/>
                 </field>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="COMPOUND_ID">
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="COMPOUND_ID">
                     <rel-id name="DRUG" schema="LTKB"/>
                 </field>
                 <field nullable="true" length="7" db-type-name="VARCHAR2" jdbc-type-code="12" name="MESH_ID">
@@ -167,7 +167,7 @@
                 <field nullable="true" length="7" db-type-name="VARCHAR2" jdbc-type-code="12" name="DRUGBANK_ID">
                     <rel-id name="DRUG" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="CID">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="CID">
                     <rel-id name="DRUG" schema="LTKB"/>
                 </field>
                 <field nullable="true" length="4000" db-type-name="VARCHAR2" jdbc-type-code="12" name="THERAPEUTIC_INDICATIONS">
@@ -178,16 +178,16 @@
         <rel-md rel-type="Table">
             <rel-id name="DRUG_FUNCTIONAL_CATEGORY" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
                     <rel-id name="DRUG_FUNCTIONAL_CATEGORY" schema="LTKB"/>
                 </field>
-                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="FUNCTIONAL_CATEGORY_ID">
+                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="FUNCTIONAL_CATEGORY_ID">
                     <rel-id name="DRUG_FUNCTIONAL_CATEGORY" schema="LTKB"/>
                 </field>
-                <field pk-part-num="3" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID">
+                <field pk-part-num="3" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID">
                     <rel-id name="DRUG_FUNCTIONAL_CATEGORY" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="SEQ">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="SEQ">
                     <rel-id name="DRUG_FUNCTIONAL_CATEGORY" schema="LTKB"/>
                 </field>
             </fields>
@@ -195,10 +195,10 @@
         <rel-md rel-type="Table">
             <rel-id name="DRUG_HISTOPATH_CLASS" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
                     <rel-id name="DRUG_HISTOPATH_CLASS" schema="LTKB"/>
                 </field>
-                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="HISTOPATH_CASS_ID">
+                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="HISTOPATH_CASS_ID">
                     <rel-id name="DRUG_HISTOPATH_CLASS" schema="LTKB"/>
                 </field>
             </fields>
@@ -206,13 +206,13 @@
         <rel-md rel-type="Table">
             <rel-id name="DRUG_LINK" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
                     <rel-id name="DRUG_LINK" schema="LTKB"/>
                 </field>
                 <field pk-part-num="2" nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
                     <rel-id name="DRUG_LINK" schema="LTKB"/>
                 </field>
-                <field nullable="true" db-type-name="HTTPURITYPE" jdbc-type-code="1111" name="HREF">
+                <field nullable="true" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="HREF">
                     <rel-id name="DRUG_LINK" schema="LTKB"/>
                 </field>
             </fields>
@@ -220,19 +220,19 @@
         <rel-md rel-type="Table">
             <rel-id name="DRUG_LIVER_INJURY_SCORE" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="DRUG_LIVER_INJURY_SCORE" schema="LTKB"/>
                 </field>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
                     <rel-id name="DRUG_LIVER_INJURY_SCORE" schema="LTKB"/>
                 </field>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ROUTE_ID">
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ROUTE_ID">
                     <rel-id name="DRUG_LIVER_INJURY_SCORE" schema="LTKB"/>
                 </field>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID">
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID">
                     <rel-id name="DRUG_LIVER_INJURY_SCORE" schema="LTKB"/>
                 </field>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="PROTOCOL_ID">
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="PROTOCOL_ID">
                     <rel-id name="DRUG_LIVER_INJURY_SCORE" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="SCORE_CODE">
@@ -243,16 +243,16 @@
         <rel-md rel-type="Table">
             <rel-id name="DRUG_MARKET_STATUS" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
                     <rel-id name="DRUG_MARKET_STATUS" schema="LTKB"/>
                 </field>
-                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ROUTE_ID">
+                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ROUTE_ID">
                     <rel-id name="DRUG_MARKET_STATUS" schema="LTKB"/>
                 </field>
                 <field pk-part-num="3" nullable="false" length="2" db-type-name="VARCHAR2" jdbc-type-code="12" name="COUNTRY_CODE">
                     <rel-id name="DRUG_MARKET_STATUS" schema="LTKB"/>
                 </field>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="MARKET_STATUS_ID">
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="MARKET_STATUS_ID">
                     <rel-id name="DRUG_MARKET_STATUS" schema="LTKB"/>
                 </field>
                 <field nullable="true" db-type-name="DATE" jdbc-type-code="93" name="date">
@@ -263,13 +263,13 @@
         <rel-md rel-type="Table">
             <rel-id name="DRUG_REFERENCE" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
                     <rel-id name="DRUG_REFERENCE" schema="LTKB"/>
                 </field>
-                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="REFERENCE_ID">
+                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="REFERENCE_ID">
                     <rel-id name="DRUG_REFERENCE" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="PRIORITY">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="PRIORITY">
                     <rel-id name="DRUG_REFERENCE" schema="LTKB"/>
                 </field>
             </fields>
@@ -277,7 +277,7 @@
         <rel-md rel-type="Table">
             <rel-id name="DRUG_SYNONYM" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
                     <rel-id name="DRUG_SYNONYM" schema="LTKB"/>
                 </field>
                 <field pk-part-num="2" nullable="false" length="300" db-type-name="VARCHAR2" jdbc-type-code="12" name="DRUG_SYNONYM">
@@ -291,19 +291,19 @@
         <rel-md rel-type="Table">
             <rel-id name="FDA_APPLICATION" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="FDA_APPLICATION_NUM">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="FDA_APPLICATION_NUM">
                     <rel-id name="FDA_APPLICATION" schema="LTKB"/>
                 </field>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
                     <rel-id name="FDA_APPLICATION" schema="LTKB"/>
                 </field>
                 <field nullable="true" length="3" db-type-name="VARCHAR2" jdbc-type-code="12" name="FDA_DOC_TYPE">
                     <rel-id name="FDA_APPLICATION" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="MANUFACTURER_ID">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="MANUFACTURER_ID">
                     <rel-id name="FDA_APPLICATION" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="FDA_CHEMICAL_TYPE_NUM">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="FDA_CHEMICAL_TYPE_NUM">
                     <rel-id name="FDA_APPLICATION" schema="LTKB"/>
                 </field>
                 <field nullable="true" length="3" db-type-name="VARCHAR2" jdbc-type-code="12" name="FDA_DOCUMENT_TYPE_CODE">
@@ -314,7 +314,7 @@
         <rel-md rel-type="Table">
             <rel-id name="FDA_CHEMICAL_TYPE" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="CHEMICAL_TYPE_NUM">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="CHEMICAL_TYPE_NUM">
                     <rel-id name="FDA_CHEMICAL_TYPE" schema="LTKB"/>
                 </field>
                 <field nullable="true" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
@@ -342,7 +342,7 @@
         <rel-md rel-type="Table">
             <rel-id name="FUNCTIONAL_CATEGORY" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="FUNCTIONAL_CATEGORY" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
@@ -351,7 +351,7 @@
                 <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="DESCRIPTION">
                     <rel-id name="FUNCTIONAL_CATEGORY" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="PARENT_FUNCTIONAL_CATEGORY_ID">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="PARENT_FUNCTIONAL_CATEGORY_ID">
                     <rel-id name="FUNCTIONAL_CATEGORY" schema="LTKB"/>
                 </field>
             </fields>
@@ -359,7 +359,7 @@
         <rel-md rel-type="Table">
             <rel-id name="HISTOPATH_CLASS" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="HISTOPATH_CLASS" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
@@ -368,7 +368,7 @@
                 <field nullable="true" length="4000" db-type-name="VARCHAR2" jdbc-type-code="12" name="DESCRIPTION">
                     <rel-id name="HISTOPATH_CLASS" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="PARENT_CLASS_ID">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="PARENT_CLASS_ID">
                     <rel-id name="HISTOPATH_CLASS" schema="LTKB"/>
                 </field>
             </fields>
@@ -376,61 +376,18 @@
         <rel-md rel-type="Table">
             <rel-id name="HISTOPATH_CLASS_CONCEPT" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="HISTOPATH_CLASS_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="HISTOPATH_CLASS_ID">
                     <rel-id name="HISTOPATH_CLASS_CONCEPT" schema="LTKB"/>
                 </field>
-                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="SNOMEDCT_CONCEPT_ID">
+                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="SNOMEDCT_CONCEPT_ID">
                     <rel-id name="HISTOPATH_CLASS_CONCEPT" schema="LTKB"/>
-                </field>
-            </fields>
-        </rel-md>
-        <rel-md rel-type="View">
-            <rel-id name="HISTOPATH_CLASS_CONCEPT_V" schema="LTKB"/>
-            <fields>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="HISTOPATH_CLASS_ID">
-                    <rel-id name="HISTOPATH_CLASS_CONCEPT_V" schema="LTKB"/>
-                </field>
-                <field nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="HISTOPATH_CLASS_NAME">
-                    <rel-id name="HISTOPATH_CLASS_CONCEPT_V" schema="LTKB"/>
-                </field>
-                <field nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="SNOMEDCT_CONCEPT_ID">
-                    <rel-id name="HISTOPATH_CLASS_CONCEPT_V" schema="LTKB"/>
-                </field>
-                <field nullable="false" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="SNOMEDCT_FULLYSPECIFIEDNAME">
-                    <rel-id name="HISTOPATH_CLASS_CONCEPT_V" schema="LTKB"/>
-                </field>
-            </fields>
-        </rel-md>
-        <rel-md rel-type="View">
-            <rel-id name="HISTOPATH_CLASS_SNOMED_TREE_V" schema="LTKB"/>
-            <fields>
-                <field nullable="true" radix="10" precision="22" db-type-name="NUMBER" jdbc-type-code="3" name="TREEORDER_ROWNUM">
-                    <rel-id name="HISTOPATH_CLASS_SNOMED_TREE_V" schema="LTKB"/>
-                </field>
-                <field nullable="false" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="FULLYSPECIFIEDNAME">
-                    <rel-id name="HISTOPATH_CLASS_SNOMED_TREE_V" schema="LTKB"/>
-                </field>
-                <field nullable="true" length="4000" db-type-name="VARCHAR2" jdbc-type-code="12" name="INDENTED_FULLYSPECIFIEDNAME">
-                    <rel-id name="HISTOPATH_CLASS_SNOMED_TREE_V" schema="LTKB"/>
-                </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="CONCEPTID">
-                    <rel-id name="HISTOPATH_CLASS_SNOMED_TREE_V" schema="LTKB"/>
-                </field>
-                <field nullable="true" radix="10" precision="22" db-type-name="NUMBER" jdbc-type-code="3" name="LVL">
-                    <rel-id name="HISTOPATH_CLASS_SNOMED_TREE_V" schema="LTKB"/>
-                </field>
-                <field nullable="true" length="4000" db-type-name="VARCHAR2" jdbc-type-code="12" name="PARENT_PATH">
-                    <rel-id name="HISTOPATH_CLASS_SNOMED_TREE_V" schema="LTKB"/>
-                </field>
-                <field nullable="true" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NCTR_HISTOPATH_CLASS">
-                    <rel-id name="HISTOPATH_CLASS_SNOMED_TREE_V" schema="LTKB"/>
                 </field>
             </fields>
         </rel-md>
         <rel-md rel-type="Table">
             <rel-id name="MANUFACTURER" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="MANUFACTURER" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
@@ -441,7 +398,7 @@
         <rel-md rel-type="Table">
             <rel-id name="MARKET_STATUS" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="MARKET_STATUS" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
@@ -455,7 +412,7 @@
         <rel-md rel-type="Table">
             <rel-id name="PROTOCOL" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="PROTOCOL" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
@@ -472,7 +429,7 @@
         <rel-md rel-type="Table">
             <rel-id name="PROTOCOL_PARAM" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="PROTOCOL_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="PROTOCOL_ID">
                     <rel-id name="PROTOCOL_PARAM" schema="LTKB"/>
                 </field>
                 <field pk-part-num="2" nullable="false" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
@@ -481,7 +438,7 @@
                 <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="STRING_VALUE">
                     <rel-id name="PROTOCOL_PARAM" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" precision="22" db-type-name="NUMBER" jdbc-type-code="3" name="NUMERIC_VALUE">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="NUMERIC_VALUE">
                     <rel-id name="PROTOCOL_PARAM" schema="LTKB"/>
                 </field>
             </fields>
@@ -489,7 +446,7 @@
         <rel-md rel-type="Table">
             <rel-id name="REFERENCE" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="REFERENCE" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="PUBLICATION">
@@ -500,7 +457,7 @@
         <rel-md rel-type="Table">
             <rel-id name="ROUTE" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
                     <rel-id name="ROUTE" schema="LTKB"/>
                 </field>
                 <field nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
@@ -514,7 +471,7 @@
         <rel-md rel-type="Table">
             <rel-id name="SCORE" schema="LTKB"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID">
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID">
                     <rel-id name="SCORE" schema="LTKB"/>
                 </field>
                 <field pk-part-num="2" nullable="false" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="SCORE_CODE">
@@ -523,7 +480,7 @@
                 <field nullable="true" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="DESCRIPTION">
                     <rel-id name="SCORE" schema="LTKB"/>
                 </field>
-                <field nullable="true" radix="10" fractional-digits="0" precision="38" db-type-name="NUMBER" jdbc-type-code="3" name="SEVERITY_SEQ">
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="SEVERITY_SEQ">
                     <rel-id name="SCORE" schema="LTKB"/>
                 </field>
             </fields>
@@ -541,6 +498,11 @@
             <component pk-field="ID" fk-field="ADVISORY_TYPE_ID"/>
         </foreign-key>
         <foreign-key>
+            <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="LTKB"/>
+            <tgt-rel name="AUTHORITY" schema="LTKB"/>
+            <component pk-field="ID" fk-field="AUTHORITY_ID"/>
+        </foreign-key>
+        <foreign-key>
             <src-rel name="DRUG_LIVER_INJURY_SCORE" schema="LTKB"/>
             <tgt-rel name="AUTHORITY" schema="LTKB"/>
             <component pk-field="ID" fk-field="AUTHORITY_ID"/>
@@ -556,14 +518,14 @@
             <component pk-field="ID" fk-field="AUTHORITY_ID"/>
         </foreign-key>
         <foreign-key>
-            <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="LTKB"/>
-            <tgt-rel name="AUTHORITY" schema="LTKB"/>
-            <component pk-field="ID" fk-field="AUTHORITY_ID"/>
-        </foreign-key>
-        <foreign-key>
             <src-rel name="DRUG" schema="LTKB"/>
             <tgt-rel name="COMPOUND" schema="LTKB"/>
             <component pk-field="ID" fk-field="COMPOUND_ID"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="DRUG_HISTOPATH_CLASS" schema="LTKB"/>
+            <tgt-rel name="DRUG" schema="LTKB"/>
+            <component pk-field="ID" fk-field="DRUG_ID"/>
         </foreign-key>
         <foreign-key>
             <src-rel name="BRAND" schema="LTKB"/>
@@ -571,7 +533,22 @@
             <component pk-field="ID" fk-field="DRUG_ID"/>
         </foreign-key>
         <foreign-key>
+            <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="LTKB"/>
+            <tgt-rel name="DRUG" schema="LTKB"/>
+            <component pk-field="ID" fk-field="DRUG_ID"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="DRUG_LINK" schema="LTKB"/>
+            <tgt-rel name="DRUG" schema="LTKB"/>
+            <component pk-field="ID" fk-field="DRUG_ID"/>
+        </foreign-key>
+        <foreign-key>
             <src-rel name="ADVISORY" schema="LTKB"/>
+            <tgt-rel name="DRUG" schema="LTKB"/>
+            <component pk-field="ID" fk-field="DRUG_ID"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="DRUG_MARKET_STATUS" schema="LTKB"/>
             <tgt-rel name="DRUG" schema="LTKB"/>
             <component pk-field="ID" fk-field="DRUG_ID"/>
         </foreign-key>
@@ -586,37 +563,17 @@
             <component pk-field="ID" fk-field="DRUG_ID"/>
         </foreign-key>
         <foreign-key>
-            <src-rel name="DRUG_MARKET_STATUS" schema="LTKB"/>
-            <tgt-rel name="DRUG" schema="LTKB"/>
-            <component pk-field="ID" fk-field="DRUG_ID"/>
-        </foreign-key>
-        <foreign-key>
             <src-rel name="FDA_APPLICATION" schema="LTKB"/>
             <tgt-rel name="DRUG" schema="LTKB"/>
             <component pk-field="ID" fk-field="DRUG_ID"/>
         </foreign-key>
         <foreign-key>
-            <src-rel name="DRUG_REFERENCE" schema="LTKB"/>
-            <tgt-rel name="DRUG" schema="LTKB"/>
-            <component pk-field="ID" fk-field="DRUG_ID"/>
-        </foreign-key>
-        <foreign-key>
-            <src-rel name="DRUG_LINK" schema="LTKB"/>
-            <tgt-rel name="DRUG" schema="LTKB"/>
-            <component pk-field="ID" fk-field="DRUG_ID"/>
-        </foreign-key>
-        <foreign-key>
-            <src-rel name="DRUG_HISTOPATH_CLASS" schema="LTKB"/>
-            <tgt-rel name="DRUG" schema="LTKB"/>
-            <component pk-field="ID" fk-field="DRUG_ID"/>
-        </foreign-key>
-        <foreign-key>
-            <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="LTKB"/>
-            <tgt-rel name="DRUG" schema="LTKB"/>
-            <component pk-field="ID" fk-field="DRUG_ID"/>
-        </foreign-key>
-        <foreign-key>
             <src-rel name="DRUG_LIVER_INJURY_SCORE" schema="LTKB"/>
+            <tgt-rel name="DRUG" schema="LTKB"/>
+            <component pk-field="ID" fk-field="DRUG_ID"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="DRUG_REFERENCE" schema="LTKB"/>
             <tgt-rel name="DRUG" schema="LTKB"/>
             <component pk-field="ID" fk-field="DRUG_ID"/>
         </foreign-key>
@@ -641,14 +598,14 @@
             <component pk-field="DOCUMENT_TYPE_CODE" fk-field="FDA_DOCUMENT_TYPE_CODE"/>
         </foreign-key>
         <foreign-key>
-            <src-rel name="FUNCTIONAL_CATEGORY" schema="LTKB"/>
-            <tgt-rel name="FUNCTIONAL_CATEGORY" schema="LTKB"/>
-            <component pk-field="ID" fk-field="PARENT_FUNCTIONAL_CATEGORY_ID"/>
-        </foreign-key>
-        <foreign-key>
             <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="LTKB"/>
             <tgt-rel name="FUNCTIONAL_CATEGORY" schema="LTKB"/>
             <component pk-field="ID" fk-field="FUNCTIONAL_CATEGORY_ID"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="FUNCTIONAL_CATEGORY" schema="LTKB"/>
+            <tgt-rel name="FUNCTIONAL_CATEGORY" schema="LTKB"/>
+            <component pk-field="ID" fk-field="PARENT_FUNCTIONAL_CATEGORY_ID"/>
         </foreign-key>
         <foreign-key>
             <src-rel name="DRUG_HISTOPATH_CLASS" schema="LTKB"/>
@@ -691,12 +648,12 @@
             <component pk-field="ID" fk-field="PROTOCOL_ID"/>
         </foreign-key>
         <foreign-key>
-            <src-rel name="DLISCORE_REFERENCE" schema="LTKB"/>
+            <src-rel name="DRUG_REFERENCE" schema="LTKB"/>
             <tgt-rel name="REFERENCE" schema="LTKB"/>
             <component pk-field="ID" fk-field="REFERENCE_ID"/>
         </foreign-key>
         <foreign-key>
-            <src-rel name="DRUG_REFERENCE" schema="LTKB"/>
+            <src-rel name="DLISCORE_REFERENCE" schema="LTKB"/>
             <tgt-rel name="REFERENCE" schema="LTKB"/>
             <component pk-field="ID" fk-field="REFERENCE_ID"/>
         </foreign-key>
@@ -716,10 +673,5 @@
             <component pk-field="AUTHORITY_ID" fk-field="AUTHORITY_ID"/>
             <component pk-field="SCORE_CODE" fk-field="SCORE_CODE"/>
         </foreign-key>
-        <foreign-key>
-            <src-rel name="HISTOPATH_CLASS_CONCEPT" schema="LTKB"/>
-            <tgt-rel name="CONCEPT" schema="SNOMEDCT"/>
-            <component pk-field="CONCEPTID" fk-field="SNOMEDCT_CONCEPT_ID"/>
-        </foreign-key>
     </foreign-keys>
-</ns2:database-metadata>
+</database-metadata>

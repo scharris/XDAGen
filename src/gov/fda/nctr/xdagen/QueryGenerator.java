@@ -36,18 +36,25 @@ public class QueryGenerator {
 
 	DBMD dbmd;
 	
+	ElementNamer elNamer;
+	
+	XmlElementCollectionStyle xmlElementCollectionStyle;
+	
+
+	
 	Configuration templateConfig;
-	
 	Template rowElementsQueryTemplate;
-	
 	Template rowCollectionElementQueryTemplate;
+	Template rowForestQueryTemplate;
 
 	String outputXmlNamespace;
+
 	
 	
 	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "templates";
 	private static final String ROWELEMENTSSQUERY_TEMPLATE_NAME = "RowElementsQuery.ftl";
 	private static final String ROWCOLLECTIONELEMENT_QUERY_TEMPLATE = "RowCollectionElementQuery.ftl";
+	private static final String ROWFOREST_QUERY_TEMPLATE = "RowForestQuery.ftl";
 
 	public enum XmlOutputType { XMLTYPE, CLOB }
 
@@ -62,11 +69,15 @@ public class QueryGenerator {
 	
 	// Primary constructor.
 	public QueryGenerator(DBMD dbmd,
-	                      String output_xml_namespace)  // optional, xml namespace for generated xml elements
+	                      String output_xml_namespace, // optional, xml namespace for generated xml elements
+	                      ElementNamer el_namer,
+	                      XmlElementCollectionStyle xml_collection_style) 
 	  throws IOException
 	{
 		this.dbmd = dbmd;
 		this.outputXmlNamespace = output_xml_namespace;
+		this.xmlElementCollectionStyle = xml_collection_style;
+		this.elNamer = el_namer != null ? el_namer : new DefaultElementNamer(dbmd, XmlElementCollectionStyle.INLINE);
 		
 		// Configure template engine.
 		templateConfig = new Configuration();
@@ -76,11 +87,15 @@ public class QueryGenerator {
 		// Load templates.
 		rowElementsQueryTemplate = templateConfig.getTemplate(ROWELEMENTSSQUERY_TEMPLATE_NAME);
 		rowCollectionElementQueryTemplate = templateConfig.getTemplate(ROWCOLLECTIONELEMENT_QUERY_TEMPLATE);
+		rowForestQueryTemplate = templateConfig.getTemplate(ROWFOREST_QUERY_TEMPLATE);
 	}
 	
 	public QueryGenerator(DBMD dbmd) throws IOException
 	{
-		this(dbmd, null);
+		this(dbmd, 
+		     null, // no output namespace
+		     null, // standard element namer
+		     XmlElementCollectionStyle.INLINE);
 	}
 	
 	public QueryGenerator(String schema,
@@ -88,7 +103,9 @@ public class QueryGenerator {
 	                      String output_xml_namespace) throws SQLException, IOException
 	{
 		this(new DatabaseMetaDataFetcher().fetchMetaData(conn, schema, true, true, true, true),
-		     output_xml_namespace);
+		     output_xml_namespace,
+		     null, // standard element namer
+		     XmlElementCollectionStyle.INLINE);
 	}
 	
 
@@ -116,7 +133,7 @@ public class QueryGenerator {
 
 	public String getRowElementsQuery(TableOutputSpec ospec,
 	                                  String table_alias, // Required
-	                                  String filter_condition) // Optional.  Any fields referenced should be qualified with table_alias.
+	                                  String filter_condition) // Optional.  Any includedFields referenced should be qualified with table_alias.
 	{
 		return getRowElementsQuery(ospec,
 		                           table_alias,
@@ -125,12 +142,12 @@ public class QueryGenerator {
 		                           XmlNamespaceOption.INCLUDE_IF_SET);
 	}
 	
-	/** Returns a query for rows of the indicated table, with optional leading fields followed by an XMLType column row_xml containing
+	/** Returns a query for rows of the indicated table, with optional leading includedFields followed by an XMLType column row_xml containing
 	 *  the xml representation of the row.  
 	 */
 	public String getRowElementsQuery(TableOutputSpec ospec,
 	                                  String table_alias, // Required
-	                                  String filter_condition, // Optional.  Any fields referenced should be qualified with table_alias.
+	                                  String filter_condition, // Optional.  Any includedFields referenced should be qualified with table_alias.
 	                                  RowOutputType row_output_type,
 	                                  XmlNamespaceOption xmlns_opt)
 	{
@@ -196,7 +213,7 @@ public class QueryGenerator {
 		String rows_query = getRowElementsQuery(ospec, 
 		                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
 		                                        null,  // no WHERE clause condition
-		                                        RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML, // Export all fields for possible use in WHERE condition over the rows query.
+		                                        RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML, // Export all includedFields for possible use in WHERE condition over the rows query.
 		                                        XmlNamespaceOption.SUPPRESS); // Collection element above these will determine the namespace.
 		
 		boolean convert_to_clob = xml_output_type == XmlOutputType.CLOB;
@@ -205,9 +222,9 @@ public class QueryGenerator {
 		
 		
 		Map<String,Object> template_model = new HashMap<String,Object>();
+		template_model.put("row_collection_element_name", ospec.getRowCollectionElementName());
 		template_model.put("xmlns", xml_namespace);
 		template_model.put("convert_to_clob", convert_to_clob);
-		template_model.put("row_collection_element_name", ospec.getRowCollectionElementName());
 		template_model.put("rows_query", indent(rows_query, "   ", false));
 		template_model.put("rows_query_alias", rows_query_alias);
 		template_model.put("where_cond", filter_cond_over_rows_query != null ? "where\n" + indent(filter_cond_over_rows_query, "  ")
@@ -227,6 +244,38 @@ public class QueryGenerator {
 		}	
 	}
 
+	/** Return a single row whose rowcoll_xml column contains a forest of xml elements representing the rows of the indicated table for
+	 * which ospec is the output specification.
+	 */
+	public String getRowForestQuery(TableOutputSpec ospec,
+	                                String rows_query_alias, // Optional.
+	                                String filter_cond_over_rows_query) // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
+	{
+		String rows_query = getRowElementsQuery(ospec, 
+		                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
+		                                        null,  // no WHERE clause condition
+		                                        RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML, // Export all includedFields for possible use in WHERE condition over the rows query.
+		                                        XmlNamespaceOption.SUPPRESS); // Collection element above these will determine the namespace.
+		
+		Map<String,Object> template_model = new HashMap<String,Object>();
+		template_model.put("rows_query", indent(rows_query, "   ", false));
+		template_model.put("rows_query_alias", rows_query_alias);
+		template_model.put("where_cond", filter_cond_over_rows_query != null ? "where\n" + indent(filter_cond_over_rows_query, "  ")
+				                                                             : "");
+		try
+		{
+			Writer sw = new StringWriter();
+			
+			rowForestQueryTemplate.process(template_model, sw);
+		
+			return sw.toString();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			throw new RuntimeException("Failed to produce row collection query from template: " + e.getMessage());
+		}	
+	}
 
 	
 	private List<String> getChildTableSubqueries(TableOutputSpec parent_ospec,
@@ -246,11 +295,22 @@ public class QueryGenerator {
 			                                                parent_table_alias,
 			                                                EquationStyle.SOURCE_ON_LEFTHAND_SIDE);
 			
-			String child_coll_subqry = getRowCollectionElementQuery(child_ospec,
-			                                                        child_rowelemsquery_alias,
-			                                                        child_rowelemsquery_cond,
-			                                                        XmlOutputType.XMLTYPE,
-			                                                        XmlNamespaceOption.SUPPRESS); // Ancestor element will determine namespace.
+			String child_coll_subqry;
+			
+			if ( xmlElementCollectionStyle == XmlElementCollectionStyle.INLINE )
+			{
+				child_coll_subqry = getRowForestQuery(child_ospec,
+				                                      child_rowelemsquery_alias,
+				                                      child_rowelemsquery_cond); // Ancestor element will determine namespace.
+			}
+			else // wrap element collections
+			{
+				child_coll_subqry = getRowCollectionElementQuery(child_ospec,
+				                                                 child_rowelemsquery_alias,
+				                                                 child_rowelemsquery_cond,
+				                                                 XmlOutputType.XMLTYPE,
+				                                                 XmlNamespaceOption.SUPPRESS); // Ancestor element will determine namespace.
+			}
 			
 			if ( trailing_lines_prefix != null )
 				child_coll_subqry = indent(child_coll_subqry, trailing_lines_prefix, false);
@@ -317,7 +377,7 @@ public class QueryGenerator {
 	
 	public TableOutputSpec table(String pq_rel_name)
 	{
-		return new TableOutputSpec(pq_rel_name, dbmd);
+		return new TableOutputSpec(pq_rel_name, dbmd, elNamer);
 	}
 	
 	
@@ -336,27 +396,39 @@ public class QueryGenerator {
 	public static void main(String[] args) throws Exception
     {
         int arg_ix = 0;
+        String table_name;
         String dbmd_xml_path = null;
+        XmlElementCollectionStyle xml_collection_style;
         String query_outfile_path = null;
     	
-        if ( args.length == 2 )
+        if ( args.length == 4 )
         {
+        	table_name = args[arg_ix++];
         	dbmd_xml_path = args[arg_ix++];
+        	xml_collection_style = XmlElementCollectionStyle.valueOf(args[arg_ix++].toUpperCase());
         	query_outfile_path = args[arg_ix++];
         }
         else
-        	throw new IllegalArgumentException("Expected arguments: <db-metadata-file> <query-output-file>");
+        	throw new IllegalArgumentException("Expected arguments: <table> <db-metadata-file> <el-collection-style:INLINE|WRAPPED> <query-output-file>");
 
         InputStream dbmd_is = new FileInputStream(dbmd_xml_path);
         
         DBMD dbmd = DBMD.readXML(dbmd_is);
         
-        QueryGenerator g = new QueryGenerator(dbmd, "http://example/namespace");
+        if ( dbmd == null )
+        	throw new IllegalArgumentException("Could not load metadata from file " + dbmd_xml_path + ", DBMD.readXML() returned null.");
+
+        System.out.println("Database metadata for " + dbmd.getRelationMetaDatas().size() + " relations read from file.");
+        
+        QueryGenerator g = new QueryGenerator(dbmd,
+                                              "http://example/namespace",
+                                              new DefaultElementNamer(dbmd, XmlElementCollectionStyle.INLINE),
+                                              xml_collection_style);
             
         TableOutputSpec ospec =
-        	g.table("drug")
-        		.addChild("drug_link")
-        		.addParent("compound");
+        	g.table(table_name)
+        	    .addAllChildTables()
+        		.addAllParentTables();
         
         String sqlxml_qry = g.getRowElementsQuery(ospec);
         

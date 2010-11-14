@@ -35,8 +35,9 @@ public class Pair<C1,C2> implements Serializable {
         if ( other == null )
             return false;
 
-        @SuppressWarnings("rawtypes")
+        @SuppressWarnings("unchecked")
 		Pair p = (Pair)other;
+        
         return (fst == null && p.fst == null || fst != null && p.fst != null && fst.equals(p.fst)) &&
                (snd == null && p.snd == null || snd != null && p.snd != null && snd.equals(p.snd));
     }

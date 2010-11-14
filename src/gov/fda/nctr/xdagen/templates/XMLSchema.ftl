@@ -10,9 +10,9 @@
 <#list ospecs as ospec>
   <#assign relmd = qgen.databaseMetaData.getRelationMetaData(ospec.relationId)/><#t>
   <#assign el_name = ospec.rowElementName><#t>
+  <#assign el_type_name = typeNamer.getRowElementTypeName(ospec.relationId)/><#t>
   <#assign list_el_name = ospec.rowCollectionElementName/><#t>
-  <#assign el_type_name = el_type(ospec.relationId)/><#t>
-  <#assign list_el_type_name = list_el_type(ospec.relationId)/><#t>
+  <#assign list_el_type_name = typeNamer.getRowCollectionElementTypeName(ospec.relationId)/><#t>
   
   <#if !(toplevel_el_rels??) || toplevel_el_rels?seq_contains(ospec.relationId)>
   <element name="${el_name}" type="tns:${el_type_name}"/>
@@ -20,17 +20,24 @@
 
   <complexType name="${el_type_name}">
     <sequence>
+      <!-- fields -->
       <#list relmd.fields as f>
-      <#assign xmlschema_type = qgen.getXmlSchemaTypeForJdbcTypeCode(f.jdbcTypeCode)>
-      <element name="${f.name?lower_case}" type="${xmlschema_type}" minOccurs="<#if f.nullable>0<#else>1</#if>"/>
+      <#assign field_xs_type = qgen.getXmlSchemaTypeForJdbcTypeCode(f.jdbcTypeCode)>
+      <element name="${f.name?lower_case}" type="${field_xs_type}" minOccurs="<#if f.nullable>0<#else>1</#if>"/>
       </#list>
-      <!-- child list elements -->
+      
+      <!-- child elements -->
       <#list ospec.childOutputSpecs as c_ospec>
-      <element name="${c_ospec.rowCollectionElementName}" type="tns:${list_el_type(c_ospec.relationId)}" minOccurs="${child_els_opt?string('0','1')}"/>
+        <#if inline_el_collections><#t>
+      <element name="${c_ospec.rowElementName}" type="tns:${typeNamer.getRowElementTypeName(c_ospec.relationId)}" minOccurs="0" maxOccurs="unbounded"/>
+        <#else><#t>
+      <element name="${c_ospec.rowCollectionElementName}" type="tns:${typeNamer.getRowCollectionElementTypeName(c_ospec.relationId)}" minOccurs="${child_els_opt?string('0','1')}"/>
+        </#if><#t>
       </#list>
+      
       <!-- parent elements -->
       <#list ospec.parentOutputSpecs as p_ospec>
-      <element name="${p_ospec.rowElementName}" type="tns:${el_type(p_ospec.relationId)}" minOccurs="${parent_els_opt?string('0','1')}"/>
+      <element name="${p_ospec.rowElementName}" type="tns:${typeNamer.getRowElementTypeName(p_ospec.relationId)}" minOccurs="${parent_els_opt?string('0','1')}"/>
       </#list>
     </sequence>
   </complexType>
@@ -47,11 +54,3 @@
   
 </#list>
 </schema>
-
-<#function el_type rel_id> 
-  <#return rel_id>
-</#function>
-
-<#function list_el_type rel_id> 
-  <#return rel_id + "-list">
-</#function>
