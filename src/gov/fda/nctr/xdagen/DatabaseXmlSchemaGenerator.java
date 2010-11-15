@@ -297,9 +297,9 @@ public class DatabaseXmlSchemaGenerator {
 			}
 			
 			if ( found_dup_relname )
-				return rel_id.getIdString();
+				return rel_id.getIdString().toLowerCase();
 			else
-				return rel_id.getName();
+				return rel_id.getName().toLowerCase();
 		}
 
 		@Override

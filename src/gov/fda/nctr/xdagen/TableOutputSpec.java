@@ -294,8 +294,8 @@ public class TableOutputSpec {
 			child_output_spec = new TableOutputSpec(child_rel_id,
 			                                        dbmd,
 			                                        elementNamer,
-			                                        elementNamer.getChildRowElementName(child_rel_id, relId, reqd_fk_field_names),
-			                                        elementNamer.getChildRowCollectionElementName(child_rel_id, relId, reqd_fk_field_names));
+			                                        elementNamer.getChildRowElementNameWithinParent(child_rel_id, relId, reqd_fk_field_names),
+			                                        elementNamer.getChildRowCollectionElementNameWithinParent(child_rel_id, relId, reqd_fk_field_names));
 
 		final Set<String> normd_reqd_fk_field_names = dbmd.normalizeNames(reqd_fk_field_names);
 
@@ -412,7 +412,7 @@ public class TableOutputSpec {
 			parent_output_spec = new TableOutputSpec(parent_rel_id,
 			                                         dbmd,
 			                                         elementNamer,
-			                                         elementNamer.getParentRowElementName(relId, parent_rel_id, reqd_fk_field_names),
+			                                         elementNamer.getParentRowElementNameWithinChild(relId, parent_rel_id, reqd_fk_field_names),
 			                                         null); // no collection element name necessary for parent spec
 
 		final Set<String> normd_reqd_fk_field_names = dbmd.normalizeNames(reqd_fk_field_names);
