@@ -138,6 +138,16 @@ public class StringFunctions {
         
         return buf.toString();
     }
+    
+    public static List<String> lc(List<String> ss)
+    {
+    	ArrayList<String> l = new ArrayList<String>();
+    	
+    	for(String s: ss)
+    		l.add(s.toLowerCase());
+    	
+    	return l;
+    }
 
 	
 }

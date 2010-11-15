@@ -7,6 +7,7 @@ import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.RelId;
 
+import static gov.fda.nctr.util.StringFunctions.lc;
 import static gov.fda.nctr.util.StringFunctions.stringFrom;
 import static gov.fda.nctr.xdagen.XmlElementCollectionStyle.INLINE;
 
@@ -103,8 +104,11 @@ public class DefaultElementNamer implements ElementNamer {
 				if ( fk == null )
 					throw new IllegalArgumentException("Foreign key with field set " + fk_field_names + " not found from " + 
 					                                   child_rel_id + " to " + parent_rel_id + ".");
-			
-				return getFullyQualifiedChildRowElementNameWithinParent(fk);
+				
+				if ( child_fks_to_parent.size() == 1 ) // This is the only fk from this child to the parent, so we only need to distinguish this link from the parent links.
+					return "child-" + getDefaultRowElementName(fk.getSourceRelationId());
+				else
+					return getFullyQualifiedChildRowElementNameWithinParent(fk);
 			}
 			else // Just make a simple unqualified name
 			{
@@ -136,8 +140,11 @@ public class DefaultElementNamer implements ElementNamer {
 			if ( fk == null )
 				throw new IllegalArgumentException("Foreign key with field set " + fk_field_names + " not found from " + 
 				                                   child_rel_id + " to " + parent_rel_id + ".");
-			
-			return getFullyQualifiedParentRowElementNameWithinChild(fk);
+
+			if ( child_fks_to_parent.size() == 1 ) // There aren't multiple fks to this parent from the child, so just distinguish it from the children.
+				return "parent-" + getDefaultRowElementName(fk.getTargetRelationId());
+			else
+				return getFullyQualifiedParentRowElementNameWithinChild(fk);
 		}
 		else // Just make a simple unqualified name.
 		{
@@ -149,17 +156,17 @@ public class DefaultElementNamer implements ElementNamer {
 	
 	public String getFullyQualifiedChildRowCollectionElementNameWithinParent(ForeignKey fk)
 	{
-		return getDefaultRowCollectionElementName(fk.getSourceRelationId()) + "-from-" + stringFrom(fk.getSourceFieldNames(),"-");
+		return getDefaultRowCollectionElementName(fk.getSourceRelationId()) + "-from-" + stringFrom(lc(fk.getSourceFieldNames()),"-");
 	}
 	
 	public String getFullyQualifiedChildRowElementNameWithinParent(ForeignKey fk)
 	{
-		return getDefaultRowElementName(fk.getSourceRelationId()) + "-child-referencing-via-" + stringFrom(fk.getSourceFieldNames(),"-");
+		return getDefaultRowElementName(fk.getSourceRelationId()) + "-child-referencing-via-" + stringFrom(lc(fk.getSourceFieldNames()),"-");
 	}
 
 	public String getFullyQualifiedParentRowElementNameWithinChild(ForeignKey fk)
 	{
-		return getDefaultRowElementName(fk.getTargetRelationId()) + "-parent-referenced-via-" + stringFrom(fk.getSourceFieldNames(),"-");
+		return getDefaultRowElementName(fk.getTargetRelationId()) + "-parent-referenced-via-" + stringFrom(lc(fk.getSourceFieldNames()),"-");
 	}
 	
 }
