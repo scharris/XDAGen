@@ -9,23 +9,6 @@ select -- rows of ltkb.drug
    ,xmlelement("cid", d.CID)
    ,xmlelement("therapeutic_indications", d.THERAPEUTIC_INDICATIONS)
    --  child tables for ltkb.drug
-   ,(select xmlelement("drug_histopath_class-listing", 
-              xmlagg(row_els_q.row_xml)) "rowcoll_xml"
-     from
-      ( select -- rows of ltkb.drug_histopath_class
-          dhc.*,
-          -- row_xml
-          xmlelement("drug_histopath_class"
-           ,xmlelement("drug_id", dhc.DRUG_ID)
-           ,xmlelement("histopath_cass_id", dhc.HISTOPATH_CASS_ID)
-           -- No child tables for ltkb.drug_histopath_class
-           -- No parent tables for ltkb.drug_histopath_class
-          ) row_xml
-        from ltkb.drug_histopath_class dhc
-      ) row_els_q
-     where
-       row_els_q.DRUG_ID = d.ID
-    ) -- child subquery
    ,(select xmlelement("brand-listing", 
               xmlagg(row_els_q.row_xml)) "rowcoll_xml"
      from
@@ -45,43 +28,6 @@ select -- rows of ltkb.drug
      where
        row_els_q.DRUG_ID = d.ID
     ) -- child subquery
-   ,(select xmlelement("drug_functional_category-listing", 
-              xmlagg(row_els_q.row_xml)) "rowcoll_xml"
-     from
-      ( select -- rows of ltkb.drug_functional_category
-          dfc.*,
-          -- row_xml
-          xmlelement("drug_functional_category"
-           ,xmlelement("drug_id", dfc.DRUG_ID)
-           ,xmlelement("functional_category_id", dfc.FUNCTIONAL_CATEGORY_ID)
-           ,xmlelement("authority_id", dfc.AUTHORITY_ID)
-           ,xmlelement("seq", dfc.SEQ)
-           -- No child tables for ltkb.drug_functional_category
-           -- No parent tables for ltkb.drug_functional_category
-          ) row_xml
-        from ltkb.drug_functional_category dfc
-      ) row_els_q
-     where
-       row_els_q.DRUG_ID = d.ID
-    ) -- child subquery
-   ,(select xmlelement("drug_link-listing", 
-              xmlagg(row_els_q.row_xml)) "rowcoll_xml"
-     from
-      ( select -- rows of ltkb.drug_link
-          dl.*,
-          -- row_xml
-          xmlelement("drug_link"
-           ,xmlelement("drug_id", dl.DRUG_ID)
-           ,xmlelement("name", dl.NAME)
-           ,xmlelement("href", dl.HREF)
-           -- No child tables for ltkb.drug_link
-           -- No parent tables for ltkb.drug_link
-          ) row_xml
-        from ltkb.drug_link dl
-      ) row_els_q
-     where
-       row_els_q.DRUG_ID = d.ID
-    ) -- child subquery
    ,(select xmlelement("advisory-listing", 
               xmlagg(row_els_q.row_xml)) "rowcoll_xml"
      from
@@ -97,26 +43,6 @@ select -- rows of ltkb.drug
            -- No parent tables for ltkb.advisory
           ) row_xml
         from ltkb.advisory a
-      ) row_els_q
-     where
-       row_els_q.DRUG_ID = d.ID
-    ) -- child subquery
-   ,(select xmlelement("drug_market_status-listing", 
-              xmlagg(row_els_q.row_xml)) "rowcoll_xml"
-     from
-      ( select -- rows of ltkb.drug_market_status
-          dms.*,
-          -- row_xml
-          xmlelement("drug_market_status"
-           ,xmlelement("drug_id", dms.DRUG_ID)
-           ,xmlelement("route_id", dms.ROUTE_ID)
-           ,xmlelement("country_code", dms.COUNTRY_CODE)
-           ,xmlelement("market_status_id", dms.MARKET_STATUS_ID)
-           ,xmlelement("date", dms.date)
-           -- No child tables for ltkb.drug_market_status
-           -- No parent tables for ltkb.drug_market_status
-          ) row_xml
-        from ltkb.drug_market_status dms
       ) row_els_q
      where
        row_els_q.DRUG_ID = d.ID
@@ -156,6 +82,26 @@ select -- rows of ltkb.drug
      where
        row_els_q.DRUG_ID = d.ID
     ) -- child subquery
+   ,(select xmlelement("drug_market_status-listing", 
+              xmlagg(row_els_q.row_xml)) "rowcoll_xml"
+     from
+      ( select -- rows of ltkb.drug_market_status
+          dms.*,
+          -- row_xml
+          xmlelement("drug_market_status"
+           ,xmlelement("drug_id", dms.DRUG_ID)
+           ,xmlelement("route_id", dms.ROUTE_ID)
+           ,xmlelement("country_code", dms.COUNTRY_CODE)
+           ,xmlelement("market_status_id", dms.MARKET_STATUS_ID)
+           ,xmlelement("status_date", dms.STATUS_DATE)
+           -- No child tables for ltkb.drug_market_status
+           -- No parent tables for ltkb.drug_market_status
+          ) row_xml
+        from ltkb.drug_market_status dms
+      ) row_els_q
+     where
+       row_els_q.DRUG_ID = d.ID
+    ) -- child subquery
    ,(select xmlelement("fda_application-listing", 
               xmlagg(row_els_q.row_xml)) "rowcoll_xml"
      from
@@ -177,6 +123,78 @@ select -- rows of ltkb.drug
      where
        row_els_q.DRUG_ID = d.ID
     ) -- child subquery
+   ,(select xmlelement("drug_reference-listing", 
+              xmlagg(row_els_q.row_xml)) "rowcoll_xml"
+     from
+      ( select -- rows of ltkb.drug_reference
+          dr.*,
+          -- row_xml
+          xmlelement("drug_reference"
+           ,xmlelement("drug_id", dr.DRUG_ID)
+           ,xmlelement("reference_id", dr.REFERENCE_ID)
+           ,xmlelement("priority", dr.PRIORITY)
+           -- No child tables for ltkb.drug_reference
+           -- No parent tables for ltkb.drug_reference
+          ) row_xml
+        from ltkb.drug_reference dr
+      ) row_els_q
+     where
+       row_els_q.DRUG_ID = d.ID
+    ) -- child subquery
+   ,(select xmlelement("drug_link-listing", 
+              xmlagg(row_els_q.row_xml)) "rowcoll_xml"
+     from
+      ( select -- rows of ltkb.drug_link
+          dl.*,
+          -- row_xml
+          xmlelement("drug_link"
+           ,xmlelement("drug_id", dl.DRUG_ID)
+           ,xmlelement("name", dl.NAME)
+           ,xmlelement("href", dl.HREF)
+           -- No child tables for ltkb.drug_link
+           -- No parent tables for ltkb.drug_link
+          ) row_xml
+        from ltkb.drug_link dl
+      ) row_els_q
+     where
+       row_els_q.DRUG_ID = d.ID
+    ) -- child subquery
+   ,(select xmlelement("drug_histopath_class-listing", 
+              xmlagg(row_els_q.row_xml)) "rowcoll_xml"
+     from
+      ( select -- rows of ltkb.drug_histopath_class
+          dhc.*,
+          -- row_xml
+          xmlelement("drug_histopath_class"
+           ,xmlelement("drug_id", dhc.DRUG_ID)
+           ,xmlelement("histopath_cass_id", dhc.HISTOPATH_CASS_ID)
+           -- No child tables for ltkb.drug_histopath_class
+           -- No parent tables for ltkb.drug_histopath_class
+          ) row_xml
+        from ltkb.drug_histopath_class dhc
+      ) row_els_q
+     where
+       row_els_q.DRUG_ID = d.ID
+    ) -- child subquery
+   ,(select xmlelement("drug_functional_category-listing", 
+              xmlagg(row_els_q.row_xml)) "rowcoll_xml"
+     from
+      ( select -- rows of ltkb.drug_functional_category
+          dfc.*,
+          -- row_xml
+          xmlelement("drug_functional_category"
+           ,xmlelement("drug_id", dfc.DRUG_ID)
+           ,xmlelement("functional_category_id", dfc.FUNCTIONAL_CATEGORY_ID)
+           ,xmlelement("authority_id", dfc.AUTHORITY_ID)
+           ,xmlelement("seq", dfc.SEQ)
+           -- No child tables for ltkb.drug_functional_category
+           -- No parent tables for ltkb.drug_functional_category
+          ) row_xml
+        from ltkb.drug_functional_category dfc
+      ) row_els_q
+     where
+       row_els_q.DRUG_ID = d.ID
+    ) -- child subquery
    ,(select xmlelement("drug_liver_injury_score-listing", 
               xmlagg(row_els_q.row_xml)) "rowcoll_xml"
      from
@@ -194,24 +212,6 @@ select -- rows of ltkb.drug
            -- No parent tables for ltkb.drug_liver_injury_score
           ) row_xml
         from ltkb.drug_liver_injury_score dlis
-      ) row_els_q
-     where
-       row_els_q.DRUG_ID = d.ID
-    ) -- child subquery
-   ,(select xmlelement("drug_reference-listing", 
-              xmlagg(row_els_q.row_xml)) "rowcoll_xml"
-     from
-      ( select -- rows of ltkb.drug_reference
-          dr.*,
-          -- row_xml
-          xmlelement("drug_reference"
-           ,xmlelement("drug_id", dr.DRUG_ID)
-           ,xmlelement("reference_id", dr.REFERENCE_ID)
-           ,xmlelement("priority", dr.PRIORITY)
-           -- No child tables for ltkb.drug_reference
-           -- No parent tables for ltkb.drug_reference
-          ) row_xml
-        from ltkb.drug_reference dr
       ) row_els_q
      where
        row_els_q.DRUG_ID = d.ID
