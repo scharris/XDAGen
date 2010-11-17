@@ -78,6 +78,12 @@ public class StringFunctions {
 		
 		return sb.toString();
 	}
+	
+	public static String resourceAsString(String resource_path) throws IOException
+	{
+		return StringFunctions.readStreamAsString(StringFunctions.class.getClassLoader().getResourceAsStream(resource_path));
+	}
+	
 
 	public static String stringFrom(Collection<?> items,
 	                                String sep)

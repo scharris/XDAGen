@@ -1,45 +1,107 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>gov.fda.nctr</groupId>
-  <artifactId>xdagen</artifactId>
-  <version>0.80</version>
-  <name>Xml Data Access Generator</name>
-  <description>Generates hierarchical SQL/XML queries and matching XML Schemas from simple table output specifications.</description>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>gov.fda.nctr</groupId>
+	<artifactId>xdagen</artifactId>
+	<version>0.80</version>
+	<name>Xml Data Access Generator</name>
+	<description>Generates hierarchical SQL/XML queries and matching XML Schemas from simple table output specifications.</description>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.freemarker</groupId>
-      <artifactId>freemarker</artifactId>
-      <version>2.3.16</version>
-    </dependency>
-    <dependency>
-    	<groupId>gov.fda.nctr</groupId>
-    	<artifactId>dbmd</artifactId>
-    	<version>1.0</version>
-    </dependency>
-  </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>2.3.16</version>
+		</dependency>
+		<dependency>
+			<groupId>gov.fda.nctr</groupId>
+			<artifactId>dbmd</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.0.2</version>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration>
-      </plugin>
-    </plugins>
-		
-    <resources>
-      <resource>
-        <directory>${basedir}/src/main/resources</directory>
-      </resource>
-      <resource>
-        <directory>${basedir}/src/main/java</directory>
-      </resource>
-    </resources>
-  </build>
+	<build>
+
+		<plugins>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+
+
+      <!-- Test main method of DatabaseXmlSchemaGenerator by generating XML Schemas under examples. -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.1.1</version>
+				<executions>
+					<execution>
+						<phase>test</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator</mainClass>
+							<arguments>
+								<argument>${basedir}/src/test/resources/dbmd.xml</argument>
+								<argument>http://example/namespace</argument>
+								<argument>INLINE</argument>
+								<argument>*all*</argument>
+								<argument>*all*</argument>
+								<argument>${basedir}/examples/xmlschema_inline_el_colls.xsd</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.1.1</version>
+				<executions>
+					<execution>
+						<phase>test</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator</mainClass>
+							<arguments>
+								<argument>${basedir}/src/test/resources/dbmd.xml</argument>
+								<argument>http://example/namespace</argument>
+								<argument>WRAPPED</argument>
+								<argument>*all*</argument>
+								<argument>*all*</argument>
+								<argument>${basedir}/examples/xmlschema_wrapped_el_colls.xsd</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/java</directory>
+			</resource>
+		</resources>
+	</build>
 
 </project>

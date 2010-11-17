@@ -42,10 +42,10 @@ public class DatabaseXmlSchemaGenerator {
 	Template wrappedCollectionsXSDTemplate;
 	Template xsdTemplate;
 
-	
+	boolean suppressGenerationTimestamp;
 
 	
-	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "templates";
+	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
 	private static final String XMLSCHEMA_TEMPLATE =  "XMLSchema.ftl";
 
 	
@@ -68,6 +68,8 @@ public class DatabaseXmlSchemaGenerator {
 		
 		// Load templates.
 		this.xsdTemplate =  templateConfig.getTemplate(XMLSCHEMA_TEMPLATE);
+		
+		this.suppressGenerationTimestamp = false;
 	}
 	
 	
@@ -119,7 +121,18 @@ public class DatabaseXmlSchemaGenerator {
 		this.xmlElementCollectionStyle = coll_style;
 	}
 
+	public boolean getSuppressGenerationTimestamp()
+	{
+		return suppressGenerationTimestamp;
+	}
+
+
 	
+	public void setSuppressGenerationTimestamp(boolean suppressGenerationTimestamp)
+	{
+		this.suppressGenerationTimestamp = suppressGenerationTimestamp;
+	}
+
 	
 	public String getStandardXMLSchema(Set<RelId> rels_getting_toplevel_el,      // define top level elements for these
 	                                   Set<RelId> rels_getting_toplevel_list_el,
@@ -164,7 +177,7 @@ public class DatabaseXmlSchemaGenerator {
 		template_model.put("child_els_opt", child_list_els_optional);
 		template_model.put("parent_els_opt", parent_els_optional);
 		template_model.put("generating_program", getClass().getName());
-		template_model.put("generated_date", new java.util.Date());
+		template_model.put("generated_date", suppressGenerationTimestamp ? null : new java.util.Date());
 		
 		try
 		{
@@ -356,7 +369,7 @@ public class DatabaseXmlSchemaGenerator {
         DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd,
                                                                       target_namespace,
                                                                       xml_collection_style);
-        
+
         toplevel_el_relids = toplevel_el_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_relids_strlist)) : null;
         toplevel_el_list_relids = toplevel_el_list_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_list_relids_strlist)) : null;
         

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ns2:database-metadata xmlns:ns2="http://nctr.fda.gov/dbmd" case-sensitivity="INSENSITIVE_STORED_UPPER" requested-owning-schema-name="LTKB">
+<database-metadata xmlns="http://nctr.fda.gov/dbmd" case-sensitivity="INSENSITIVE_STORED_UPPER" requested-owning-schema-name="LTKB">
     <relation-metadatas>
         <rel-md rel-type="Table">
             <rel-id name="ADVISORY" schema="LTKB"/>
@@ -212,7 +212,7 @@
                 <field pk-part-num="2" nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
                     <rel-id name="DRUG_LINK" schema="LTKB"/>
                 </field>
-                <field nullable="true" db-type-name="HTTPURITYPE" jdbc-type-code="1111" name="HREF">
+                <field nullable="true" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="HREF">
                     <rel-id name="DRUG_LINK" schema="LTKB"/>
                 </field>
             </fields>
@@ -722,4 +722,4 @@
             <component pk-field="CONCEPTID" fk-field="SNOMEDCT_CONCEPT_ID"/>
         </foreign-key>
     </foreign-keys>
-</ns2:database-metadata>
+</database-metadata>

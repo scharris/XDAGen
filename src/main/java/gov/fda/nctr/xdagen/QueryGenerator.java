@@ -51,7 +51,7 @@ public class QueryGenerator {
 
 	
 	
-	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "templates";
+	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
 	private static final String ROWELEMENTSSQUERY_TEMPLATE_NAME = "RowElementsQuery.ftl";
 	private static final String ROWCOLLECTIONELEMENT_QUERY_TEMPLATE = "RowCollectionElementQuery.ftl";
 	private static final String ROWFOREST_QUERY_TEMPLATE = "RowForestQuery.ftl";
