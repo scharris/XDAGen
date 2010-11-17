@@ -30,7 +30,6 @@
 	<build>
 
 		<plugins>
-			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -39,57 +38,6 @@
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
-			</plugin>
-
-
-      <!-- Test main method of DatabaseXmlSchemaGenerator by generating XML Schemas under examples. -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.1.1</version>
-				<executions>
-					<execution>
-						<phase>test</phase>
-						<goals>
-							<goal>java</goal>
-						</goals>
-						<configuration>
-							<mainClass>gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator</mainClass>
-							<arguments>
-								<argument>${basedir}/src/test/resources/dbmd.xml</argument>
-								<argument>http://example/namespace</argument>
-								<argument>INLINE</argument>
-								<argument>*all*</argument>
-								<argument>*all*</argument>
-								<argument>${basedir}/examples/xmlschema_inline_el_colls.xsd</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.1.1</version>
-				<executions>
-					<execution>
-						<phase>test</phase>
-						<goals>
-							<goal>java</goal>
-						</goals>
-						<configuration>
-							<mainClass>gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator</mainClass>
-							<arguments>
-								<argument>${basedir}/src/test/resources/dbmd.xml</argument>
-								<argument>http://example/namespace</argument>
-								<argument>WRAPPED</argument>
-								<argument>*all*</argument>
-								<argument>*all*</argument>
-								<argument>${basedir}/examples/xmlschema_wrapped_el_colls.xsd</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 
