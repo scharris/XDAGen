@@ -1,5 +1,6 @@
 package gov.fda.nctr.util;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -69,6 +70,21 @@ public class StringFunctions {
 		
 		final char[] buffer = new char[4096];
 		Reader r = new InputStreamReader(is, "UTF-8");
+		
+		int n;
+		while( (n = r.read(buffer,0,buffer.length)) >= 0 )
+		{
+			sb.append(buffer, 0, n);
+		}
+		
+		return sb.toString();
+	}
+	
+	public static String readStreamAsString(Reader r) throws IOException
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		final char[] buffer = new char[4096];
 		
 		int n;
 		while( (n = r.read(buffer,0,buffer.length)) >= 0 )
@@ -154,6 +170,13 @@ public class StringFunctions {
     	
     	return l;
     }
+
+	public static void writeStringToFile(String s, String file_path) throws IOException
+	{
+		FileWriter fw = new FileWriter(file_path);
+		fw.write(s);
+		fw.close();
+	}
 
 	
 }

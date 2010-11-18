@@ -28,7 +28,7 @@ public class TableOutputSpec {
 	
 	ElementNamer elementNamer;
 	
-
+	
 	/** Create an output spec with all the includedFields for the passed table/view included but no parents or children.
      If the table name is not qualified by schema, then the DBMD should have an owning schema specified, else
      database metadata may not be found for databases supporting schemas. */

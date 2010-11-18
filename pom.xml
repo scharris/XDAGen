@@ -6,6 +6,9 @@
 	<version>0.80</version>
 	<name>Xml Data Access Generator</name>
 	<description>Generates hierarchical SQL/XML queries and matching XML Schemas from simple table output specifications.</description>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
 	<dependencies>
 		<dependency>
@@ -25,11 +28,19 @@
 			<type>jar</type>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>11.2.0.2.0</version>
+			<type>jar</type>
+			<scope>compile</scope> <!--  TODO: should be "test", but then it's not available to the generate-test-resources phase (?) -->
+		</dependency>
 	</dependencies>
 
 	<build>
 
 		<plugins>
+		
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -39,6 +50,66 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
+
+      <!-- Generate database metadata resources for testing. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <id>generate-db-metadata-test-resources</id>
+            <phase>generate-test-resources</phase>
+            <configuration>
+              <target>
+                <property name="classpath_from_maven" refid="maven.test.classpath"/>
+                <ant antfile="${basedir}/src/test/resources/build.xml">
+                  <target name="generate-all-metadata-resources"/>
+                </ant>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!--  Validate expected xml query results against the expected xml schemas.
+            Other tests will guarantee that actual query results are the same as these expected ones. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>xml-maven-plugin</artifactId>
+        <version>1.0-beta-3</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>validate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <validationSets>
+            <validationSet>
+              <dir>src/test/resources/expected_results</dir>
+              <includes>
+              	<include>drug_1_rowxml_inline_el_colls.xml</include>
+              	<include>drugs_listing_inline_el_colls.xml</include>
+              </includes>
+              <systemId>src/test/resources/expected_results/xmlschema_inline_el_colls.xsd</systemId>
+            </validationSet>
+            <validationSet>
+              <dir>src/test/resources/expected_results</dir>
+              <includes>
+              	<include>drug_1_rowxml_wrapped_el_colls.xml</include>
+              	<include>drugs_listing_wrapped_el_colls.xml</include>
+              </includes>
+              <systemId>src/test/resources/expected_results/xmlschema_wrapped_el_colls.xsd</systemId>
+            </validationSet>
+          </validationSets>
+        </configuration>
+      </plugin>
+      
 		</plugins>
 
 

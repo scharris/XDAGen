@@ -38,7 +38,7 @@ public class TestXmlSchemas extends TestCase {
 	{
 		String xsd = getXmlSchema(XmlElementCollectionStyle.INLINE);
 		
-		String expected_xsd = StringFunctions.resourceAsString("xmlschema_inline_el_colls.xsd");
+		String expected_xsd = StringFunctions.resourceAsString("expected_results/xmlschema_inline_el_colls.xsd");
 
 		assertEquals("Inline collections XML Schema not as expected.", expected_xsd, xsd);
 	}
@@ -47,7 +47,7 @@ public class TestXmlSchemas extends TestCase {
 	{
 		String xsd = getXmlSchema(XmlElementCollectionStyle.WRAPPED);
 		
-		String expected_xsd = StringFunctions.resourceAsString("xmlschema_wrapped_el_colls.xsd");
+		String expected_xsd = StringFunctions.resourceAsString("expected_results/xmlschema_wrapped_el_colls.xsd");
 
 		assertEquals("Wrapped collections XML Schema not as expected.", expected_xsd, xsd);
 	}
@@ -59,7 +59,7 @@ public class TestXmlSchemas extends TestCase {
                                                                       "http://example/namespace",
                                                                       el_coll_style);
         
-        g.setSuppressGenerationTimestamp(true);
+        g.setIncludeGenerationTimestamp(false);
         
         Set<RelId> toplevel_el_relids = null;
         Set<RelId> toplevel_el_list_relids = null;

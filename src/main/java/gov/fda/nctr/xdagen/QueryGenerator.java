@@ -9,7 +9,6 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import gov.fda.nctr.dbmd.DBMD;
-import gov.fda.nctr.dbmd.DatabaseMetaDataFetcher;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.ForeignKey.EquationStyle;
 import gov.fda.nctr.dbmd.RelId;
@@ -23,8 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,8 +32,6 @@ import java.util.Map;
 public class QueryGenerator {
 
 	DBMD dbmd;
-	
-	ElementNamer elNamer;
 	
 	XmlElementCollectionStyle xmlElementCollectionStyle;
 	
@@ -67,18 +62,25 @@ public class QueryGenerator {
 	public enum XmlNamespaceOption { INCLUDE_IF_SET, SUPPRESS }
 	
 	
+	
+	public QueryGenerator(DBMD dbmd, String output_xml_namespace) throws IOException
+	{
+		this(dbmd, 
+		     output_xml_namespace,
+		     XmlElementCollectionStyle.INLINE);
+	}
+	
+	
 	// Primary constructor.
 	public QueryGenerator(DBMD dbmd,
 	                      String output_xml_namespace, // optional, xml namespace for generated xml elements
-	                      ElementNamer el_namer,
 	                      XmlElementCollectionStyle xml_collection_style) 
 	  throws IOException
 	{
 		this.dbmd = dbmd;
 		this.outputXmlNamespace = output_xml_namespace;
 		this.xmlElementCollectionStyle = xml_collection_style;
-		this.elNamer = el_namer != null ? el_namer : new DefaultElementNamer(dbmd, XmlElementCollectionStyle.INLINE);
-		
+
 		// Configure template engine.
 		templateConfig = new Configuration();
 		templateConfig.setTemplateLoader(new ClassTemplateLoader(getClass(), CLASSPATH_TEMPLATES_DIR_PATH));
@@ -90,25 +92,7 @@ public class QueryGenerator {
 		rowForestQueryTemplate = templateConfig.getTemplate(ROWFOREST_QUERY_TEMPLATE);
 	}
 	
-	public QueryGenerator(DBMD dbmd) throws IOException
-	{
-		this(dbmd, 
-		     null, // no output namespace
-		     null, // standard element namer
-		     XmlElementCollectionStyle.INLINE);
-	}
 	
-	public QueryGenerator(String schema,
-	                      Connection conn,
-	                      String output_xml_namespace) throws SQLException, IOException
-	{
-		this(new DatabaseMetaDataFetcher().fetchMetaData(conn, schema, true, true, true, true),
-		     output_xml_namespace,
-		     null, // standard element namer
-		     XmlElementCollectionStyle.INLINE);
-	}
-	
-
 	
 	public String getRowElementsQuery(TableOutputSpec ospec)
 	{
@@ -374,10 +358,10 @@ public class QueryGenerator {
 	}
 
 
-	
+	// Convenience method for creating an initial TableOutputSpec with dbmd and an element namer consistent with the element collection style in use in this query generator.
 	public TableOutputSpec table(String pq_rel_name)
 	{
-		return new TableOutputSpec(pq_rel_name, dbmd, elNamer);
+		return new TableOutputSpec(pq_rel_name, dbmd, new DefaultElementNamer(dbmd, xmlElementCollectionStyle));
 	}
 	
 	
@@ -422,7 +406,6 @@ public class QueryGenerator {
         
         QueryGenerator g = new QueryGenerator(dbmd,
                                               "http://example/namespace",
-                                              new DefaultElementNamer(dbmd, XmlElementCollectionStyle.INLINE),
                                               xml_collection_style);
             
         TableOutputSpec ospec =

@@ -23,7 +23,7 @@
       <!-- fields -->
       <#list relmd.fields as f>
       <#assign field_xs_type = qgen.getXmlSchemaTypeForJdbcTypeCode(f.jdbcTypeCode)>
-      <element name="${f.name?lower_case}" type="${field_xs_type}" minOccurs="<#if f.nullable>0<#else>1</#if>"/>
+      <element name="${f.name?lower_case}" type="${field_xs_type}" minOccurs="<#if f.nullable>0<#else>1</#if>"<#if f.nullable> nillable="true"</#if>/>
       </#list>
       
       <!-- child elements -->

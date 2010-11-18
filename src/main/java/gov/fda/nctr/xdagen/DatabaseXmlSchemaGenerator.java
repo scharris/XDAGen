@@ -42,7 +42,7 @@ public class DatabaseXmlSchemaGenerator {
 	Template wrappedCollectionsXSDTemplate;
 	Template xsdTemplate;
 
-	boolean suppressGenerationTimestamp;
+	boolean includeGenerationTimestamp;
 
 	
 	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
@@ -69,7 +69,7 @@ public class DatabaseXmlSchemaGenerator {
 		// Load templates.
 		this.xsdTemplate =  templateConfig.getTemplate(XMLSCHEMA_TEMPLATE);
 		
-		this.suppressGenerationTimestamp = false;
+		this.includeGenerationTimestamp = false;
 	}
 	
 	
@@ -121,16 +121,16 @@ public class DatabaseXmlSchemaGenerator {
 		this.xmlElementCollectionStyle = coll_style;
 	}
 
-	public boolean getSuppressGenerationTimestamp()
+	public boolean getIncludeGenerationTimestamp()
 	{
-		return suppressGenerationTimestamp;
+		return includeGenerationTimestamp;
 	}
 
 
 	
-	public void setSuppressGenerationTimestamp(boolean suppressGenerationTimestamp)
+	public void setIncludeGenerationTimestamp(boolean includeGenerationTimestamp)
 	{
-		this.suppressGenerationTimestamp = suppressGenerationTimestamp;
+		this.includeGenerationTimestamp = includeGenerationTimestamp;
 	}
 
 	
@@ -177,7 +177,7 @@ public class DatabaseXmlSchemaGenerator {
 		template_model.put("child_els_opt", child_list_els_optional);
 		template_model.put("parent_els_opt", parent_els_optional);
 		template_model.put("generating_program", getClass().getName());
-		template_model.put("generated_date", suppressGenerationTimestamp ? null : new java.util.Date());
+		template_model.put("generated_date", includeGenerationTimestamp ? new java.util.Date() : null);
 		
 		try
 		{
