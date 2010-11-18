@@ -33,7 +33,7 @@
 			<artifactId>ojdbc6</artifactId>
 			<version>11.2.0.2.0</version>
 			<type>jar</type>
-			<scope>compile</scope> <!--  TODO: should be "test", but then it's not available to the generate-test-resources phase (?) -->
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
