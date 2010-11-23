@@ -6,6 +6,16 @@
 	<version>0.80</version>
 	<name>Xml Data Access Generator</name>
 	<description>Generates hierarchical SQL/XML queries and matching XML Schemas from simple table output specifications.</description>
+	
+	<distributionManagement>
+    <repository>
+        <id>nctr-maven-repo</id>
+        <name>nctr-maven-repo-releases</name>
+        <url>http://ncsvmweb01.nctr.fda.gov:8080/artifactory/libs-release-local</url>
+    </repository>
+	</distributionManagement>
+	
+	
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -112,15 +122,6 @@
       
 		</plugins>
 
-
-		<resources>
-			<resource>
-				<directory>${basedir}/src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>${basedir}/src/main/java</directory>
-			</resource>
-		</resources>
 	</build>
 
 </project>
