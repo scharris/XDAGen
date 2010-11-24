@@ -32,8 +32,8 @@
 			<version>1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>gov.fda.nctr.util</groupId>
-  		<artifactId>common-utils</artifactId>
+			<groupId>gov.fda.nctr</groupId>
+  		<artifactId>fun-utils</artifactId>
   		<version>1.0</version>
   	</dependency>
 		<dependency>
