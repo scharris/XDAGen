@@ -58,15 +58,15 @@ public class TestQueries extends TestCase {
 		inlineCollElsQryGen = new QueryGenerator(dbmd,
 		                                         "http://example/namespace");
 		                            		
-		this.drugInlineColls = inlineCollElsQryGen.table("drug").addAllChildTables()
-		                                                        .addAllParentTables();
+		this.drugInlineColls = inlineCollElsQryGen.table("drug").withAllChildTables()
+		                                                        .withAllParentTables();
 			                            		
 		wrappedCollElsQryGen = new QueryGenerator(dbmd,
 		                                          "http://example/namespace",
 		                                          XmlElementCollectionStyle.WRAPPED);
 		                            		
-		this.drugWrappedColls = wrappedCollElsQryGen.table("drug").addAllChildTables()
-	    			         	                                  .addAllParentTables();
+		this.drugWrappedColls = wrappedCollElsQryGen.table("drug").withAllChildTables()
+	    			         	                                  .withAllParentTables();
 		
 		insertData();
     }

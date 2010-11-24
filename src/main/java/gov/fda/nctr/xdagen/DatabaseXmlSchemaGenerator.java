@@ -142,10 +142,8 @@ public class DatabaseXmlSchemaGenerator {
 		
 		for(RelMetaData relmd: dbmd.getRelationMetaDatas())
 		{
-			TableOutputSpec ospec = new TableOutputSpec(relmd.getRelationId(), dbmd, el_namer);
-		
-			ospec.addAllChildTables();
-			ospec.addAllParentTables();
+			TableOutputSpec ospec = new TableOutputSpec(relmd.getRelationId(), dbmd, el_namer).withAllChildTables()
+			                                                                                  .withAllParentTables();
 			
 			ospecs.add(ospec);
 		}

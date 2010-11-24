@@ -1,5 +1,9 @@
 package gov.fda.nctr.xdagen;
 
+import static gov.fda.nctr.util.ListUtils.snoc;
+import static gov.fda.nctr.util.MiscFuns.eqOrNull;
+import static gov.fda.nctr.util.MiscFuns.hashcode;
+import static gov.fda.nctr.util.MiscFuns.requireArg;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.RelId;
@@ -9,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 
 public class TableOutputSpec {
 
@@ -27,6 +32,8 @@ public class TableOutputSpec {
 	DBMD dbmd;
 	
 	ElementNamer elementNamer;
+	
+	public Integer hashCode;
 	
 	
 	/** Create an output spec with all the includedFields for the passed table/view included but no parents or children.
@@ -83,15 +90,9 @@ public class TableOutputSpec {
 	                          List<Pair<ForeignKey,TableOutputSpec>> included_parent_table_specs) // opt
 	{
 		super();
-		this.relId = rel_id;
-		this.dbmd = db_md;
-		this.elementNamer = el_namer;
-		if ( rel_id == null )
-			throw new IllegalArgumentException("Relation id is required.");
-		if ( dbmd == null )
-			throw new IllegalArgumentException("Database metadata is required.");
-		if ( el_namer == null )
-			throw new IllegalArgumentException("Element namer is required.");
+		this.relId = requireArg(rel_id, "relation id");
+		this.dbmd = requireArg(db_md, "database metadata");
+		this.elementNamer = requireArg(el_namer, "element namer");
 		this.includedFields = included_fields != null ? new ArrayList<String>(included_fields) : db_md.getFieldNames(rel_id);
 		this.rowElementName = row_el_name != null ? row_el_name : el_namer.getDefaultRowElementName(rel_id);
 		this.rowCollectionElementName = row_collection_el_name != null ? row_collection_el_name : el_namer.getDefaultRowCollectionElementName(rel_id);		
@@ -99,6 +100,8 @@ public class TableOutputSpec {
 				                                                 : new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
 		this.parentSpecsByFK = included_parent_table_specs != null ? new ArrayList<Pair<ForeignKey,TableOutputSpec>>(included_parent_table_specs) 
 				                                                   : new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
+		
+		hashCode = null;
 	}
     
 	
@@ -112,25 +115,9 @@ public class TableOutputSpec {
 		return includedFields;
 	}
 	
-	public TableOutputSpec setFields(List<String> incl_fields)
-	{
-		if ( incl_fields == null )
-			throw new IllegalArgumentException("List of includedFields to include cannot be null.");
-		
-		includedFields = incl_fields;
-		return this;
-	}
-	
-	
 	public String getRowCollectionElementName()
 	{
 		return rowCollectionElementName;
-	}
-	
-	public TableOutputSpec setRowCollectionElementName(String coll_el_name)
-	{
-		rowCollectionElementName = coll_el_name;
-		return this;
 	}
 	
 	public String getRowElementName()
@@ -138,30 +125,18 @@ public class TableOutputSpec {
 		return rowElementName;
 	}
 
-	public TableOutputSpec setRowElementName(String el_name)
-	{
-		rowElementName = el_name;
-		return this;
-	}
-	
 	public ElementNamer getElementNamer()
 	{
 		return elementNamer;
 	}
 	
-	public TableOutputSpec setElementNamer(ElementNamer el_namer)
-	{
-		this.elementNamer = el_namer;
-		return this;
-	}
-
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Retrieval of included child table specifications
 	
 	public List<Pair<ForeignKey,TableOutputSpec>> getChildOutputSpecsByFK()
 	{
-		return childSpecsByFK;
+		return new ArrayList<Pair<ForeignKey,TableOutputSpec>>(childSpecsByFK);
 	}
 	
 	public List<TableOutputSpec> getChildOutputSpecs()
@@ -225,7 +200,7 @@ public class TableOutputSpec {
 	
 	public List<Pair<ForeignKey,TableOutputSpec>> getParentOutputSpecsByFK()
 	{
-		return parentSpecsByFK;
+		return new ArrayList<Pair<ForeignKey,TableOutputSpec>>(parentSpecsByFK);
 	}
 	
 	public List<TableOutputSpec> getParentOutputSpecs()
@@ -286,16 +261,12 @@ public class TableOutputSpec {
 	// Methods for including a child table in the output
 	
 	// Primary addChild implementation, all other addParent methods delegate to this one.
-	public TableOutputSpec addChild(RelId child_rel_id,
-	                                Set<String> reqd_fk_field_names,  // Optional.  Required if multiple fk's from this child table reference this parent.
-	                                TableOutputSpec child_output_spec)// Optional.
+	public TableOutputSpec withChild(RelId child_rel_id,
+	                                 Set<String> reqd_fk_field_names,  // Optional.  Required if multiple fk's from this child table reference this parent.
+	                                 TableOutputSpec child_output_spec)// Optional.
 	{
 		if ( child_output_spec == null )
-			child_output_spec = new TableOutputSpec(child_rel_id,
-			                                        dbmd,
-			                                        elementNamer,
-			                                        elementNamer.getChildRowElementNameWithinParent(child_rel_id, relId, reqd_fk_field_names),
-			                                        elementNamer.getChildRowCollectionElementNameWithinParent(child_rel_id, relId, reqd_fk_field_names));
+			child_output_spec = makeChildTableOutputSpec(child_rel_id, reqd_fk_field_names);
 
 		final Set<String> normd_reqd_fk_field_names = dbmd.normalizeNames(reqd_fk_field_names);
 
@@ -318,83 +289,107 @@ public class TableOutputSpec {
 		if ( sought_fk == null )
 			throw new IllegalArgumentException("No foreign key found from table " + child_rel_id + " to " + relId);
 
-		childSpecsByFK.add(Pair.make(sought_fk, child_output_spec));
-		
-		return this;
+		return new TableOutputSpec(relId,
+		                           dbmd,
+		                           elementNamer,
+		                           includedFields,
+		                           rowElementName,
+		                           rowCollectionElementName,
+		                           snoc(childSpecsByFK, Pair.make(sought_fk, child_output_spec)),
+		                           parentSpecsByFK);
 	}
 
 
 	/** Add a child table for inclusion in this table's output, with default output options.
 	    The child table should have exactly one foreign key to this table, otherwise the function
 	    allowing additionally a foreign key to be specified should be called instead. */ 
-	public TableOutputSpec addChild(String pq_child_rel_name)
+	public TableOutputSpec withChild(String pq_child_rel_name)
 	{
 		if ( pq_child_rel_name == null || pq_child_rel_name.length() == 0 )
 			throw new IllegalArgumentException("Child table name is required.");
 		
 		RelId child_rel_id = dbmd.toRelId(pq_child_rel_name);
 		
-		return addChild(child_rel_id,
-		                null,  // fk field names unspecified
-		                null); // default output spec
+		return withChild(child_rel_id,
+		                 null,  // fk field names unspecified
+		                 null); // default output spec
 	}
 	
-	public TableOutputSpec addChild(String pq_child_rel_name, // possibly qualified table or view name
-	                                Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this child table reference this parent.
+	public TableOutputSpec withChild(String pq_child_rel_name, // possibly qualified table or view name
+	                                 Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this child table reference this parent.
 	{
-		return addChild(dbmd.toRelId(pq_child_rel_name),
-		                reqd_fk_field_names,
-		                null);
+		return withChild(dbmd.toRelId(pq_child_rel_name),
+		                 reqd_fk_field_names,
+		                 null);
 	}
 
 	
 	/** Add a child table for inclusion in this table's output with specified output options.
 	    The child table should have exactly one foreign key to this table, otherwise the function
 	    allowing additionally a foreign key to be specified should be called instead. */ 
-	public TableOutputSpec addChild(TableOutputSpec child_output_spec)
+	public TableOutputSpec withChild(TableOutputSpec child_output_spec)
 	{
 		if ( child_output_spec == null )
 			throw new IllegalArgumentException("Child table output specification is required.");
 		
-		return addChild(child_output_spec.getRelationId(),
-		                null, // specific fk includedFields unspecified
-		                child_output_spec);
+		return withChild(child_output_spec.getRelationId(),
+		                 null, // specific fk includedFields unspecified
+		                 child_output_spec);
 	}
 	
-	public TableOutputSpec addChild(TableOutputSpec child_output_spec,
-	                                Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this child table reference this parent.
+	public TableOutputSpec withChild(TableOutputSpec child_output_spec,
+	                                 Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this child table reference this parent.
 	{
 		if ( child_output_spec == null )
 			throw new IllegalArgumentException("Child table output specification is required.");
 		
-		return addChild(child_output_spec.getRelationId(),
-		                reqd_fk_field_names,
-		                child_output_spec);
+		return withChild(child_output_spec.getRelationId(),
+		                 reqd_fk_field_names,
+		                 child_output_spec);
 	}
 	
 	/** Convenience method to include all child tables with default options and naming.  
 	 *  The included table output specifications will have default options, so they will
 	 *  not themselves specify any child or parent tables in their own output.  An
 	 *  individual table specification added in this manner can be customized by retrieving
-	 *  it via one of the getSpec* methods and modifying it. */
-	public TableOutputSpec addAllChildTables()
+	 *  it via one of the getSpec* methods and modifying it. The newly added child table
+	 *  specifications will replace any existing specifications for child tables.*/
+	public TableOutputSpec withAllChildTables()
 	{
+		List<Pair<ForeignKey,TableOutputSpec>> child_specs_by_fk = new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
+		
 		for(ForeignKey fk: dbmd.getForeignKeysFromChildrenTo(this.relId))
 		{
 			RelId child_rel_id = fk.getSourceRelationId();
 			
 			if ( dbmd.getRelationMetaData(child_rel_id) != null ) // ignore tables for which we have no metadata
 			{
-				Set<String> fk_fieldnames = new HashSet<String>(fk.getSourceFieldNames());
+				Set<String> fk_field_names = new HashSet<String>(fk.getSourceFieldNames());
 				
-				addChild(child_rel_id,
-				         fk_fieldnames,
-				         null);  // default output spec
+				child_specs_by_fk.add(Pair.make(fk,
+				                                makeChildTableOutputSpec(child_rel_id, fk_field_names)));
 			}
 		}
 		
-		return this;
+		return new TableOutputSpec(relId,
+		                           dbmd,
+		                           elementNamer,
+		                           includedFields,
+		                           rowElementName,
+		                           rowCollectionElementName,
+		                           child_specs_by_fk,
+		                           parentSpecsByFK);
 	}
+	
+	protected TableOutputSpec makeChildTableOutputSpec(RelId child_rel_id, Set<String> reqd_fk_field_names)
+	{
+		return new TableOutputSpec(child_rel_id,
+		                           dbmd,
+		                           elementNamer,
+		                           elementNamer.getChildRowElementNameWithinParent(child_rel_id, relId, reqd_fk_field_names),
+		                           elementNamer.getChildRowCollectionElementNameWithinParent(child_rel_id, relId, reqd_fk_field_names));
+	}
+
 	
 	// Methods for including a child table in the output
 	////////////////////////////////////////////////////////////////////////////////////
@@ -403,17 +398,14 @@ public class TableOutputSpec {
 	////////////////////////////////////////////////////////////////////////////////////
 	// Methods for including a parent table in the output
 	
+
 	// Primary addParent implementation, all other addParent methods delegate to this one.
-	public TableOutputSpec addParent(RelId parent_rel_id,
-	                                 Set<String> reqd_fk_field_names,  // Optional.  Required if multiple fk's from this table reference the parent.
-	                                 TableOutputSpec parent_output_spec)// Optional.
+	public TableOutputSpec withParent(RelId parent_rel_id,
+	                                  Set<String> reqd_fk_field_names,  // Optional.  Required if multiple fk's from this table reference the parent.
+	                                  TableOutputSpec parent_output_spec)// Optional.
 	{
 		if ( parent_output_spec == null )
-			parent_output_spec = new TableOutputSpec(parent_rel_id,
-			                                         dbmd,
-			                                         elementNamer,
-			                                         elementNamer.getParentRowElementNameWithinChild(relId, parent_rel_id, reqd_fk_field_names),
-			                                         null); // no collection element name necessary for parent spec
+			parent_output_spec = makeParentTableOutputSpec(parent_rel_id, reqd_fk_field_names);
 
 		final Set<String> normd_reqd_fk_field_names = dbmd.normalizeNames(reqd_fk_field_names);
 
@@ -437,33 +429,40 @@ public class TableOutputSpec {
 		if ( sought_fk == null )
 			throw new IllegalArgumentException("No foreign key found from table " + parent_rel_id + " to " + relId);
 
-		parentSpecsByFK.add(Pair.make(sought_fk, parent_output_spec));
-		
-		return this;
+
+		return new TableOutputSpec(relId,
+		                           dbmd,
+		                           elementNamer,
+		                           includedFields,
+		                           rowElementName,
+		                           rowCollectionElementName,
+		                           childSpecsByFK,
+		                           snoc(parentSpecsByFK, Pair.make(sought_fk, parent_output_spec)));
 	}
-	
+
+
 	/** Add a parent table for inclusion in this table's output, with default output options.
     The parent table should have exactly one foreign key from this table, otherwise the function
     allowing additionally a foreign key to be specified should be called instead. */ 
-	public TableOutputSpec addParent(String pq_parent_rel_name)
+	public TableOutputSpec withParent(String pq_parent_rel_name)
 	{
 		if ( pq_parent_rel_name == null || pq_parent_rel_name.length() == 0 )
 			throw new IllegalArgumentException("Parent table name is required.");
 	
-		return addParent(dbmd.toRelId(pq_parent_rel_name),
-		                 null,  // fk field names unspecified
-		                 null); // default output spec
+		return withParent(dbmd.toRelId(pq_parent_rel_name),
+		                  null,  // fk field names unspecified
+		                  null); // default output spec
 	}
 	
 
-	public TableOutputSpec addParent(String pq_parent_rel_name, // possibly qualified table or view name
-	                                 Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this table reference this parent.
+	public TableOutputSpec withParent(String pq_parent_rel_name, // possibly qualified table or view name
+	                                  Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this table reference this parent.
 	{
 		RelId parent_rel_id = dbmd.toRelId(pq_parent_rel_name);
 		
-		return addParent(parent_rel_id,
-		                 reqd_fk_field_names,
-		                 null);  // default output spec
+		return withParent(parent_rel_id,
+		                  reqd_fk_field_names,
+		                  null);  // default output spec
 		                 
 	}
 
@@ -471,52 +470,111 @@ public class TableOutputSpec {
 	/** Add a parent table for inclusion in this table's output with specified output options.
     The parent table should have exactly one foreign key from this table, otherwise the function
     allowing additionally a foreign key to be specified should be called instead. */ 
-	public TableOutputSpec addParent(TableOutputSpec parent_output_spec)
+	public TableOutputSpec withParent(TableOutputSpec parent_output_spec)
 	{
 		if ( parent_output_spec == null )
 			throw new IllegalArgumentException("Parent table output specification is required.");
 	
-		return addParent(parent_output_spec.getRelationId(),
-		                 null, // specific fk includedFields unspecified
-		                 parent_output_spec);
+		return withParent(parent_output_spec.getRelationId(),
+		                  null, // specific fk includedFields unspecified
+		                  parent_output_spec);
 	}
 
-	public TableOutputSpec addParent(TableOutputSpec parent_output_spec,
-	                                 Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this table reference this parent.
+	public TableOutputSpec withParent(TableOutputSpec parent_output_spec,
+	                                  Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this table reference this parent.
 	{
 		if ( parent_output_spec == null )
 			throw new IllegalArgumentException("Parent table output specification is required.");
 	
-		return addParent(parent_output_spec.getRelationId(),
-		                 reqd_fk_field_names,
-		                 parent_output_spec);
+		return withParent(parent_output_spec.getRelationId(),
+		                  reqd_fk_field_names,
+		                  parent_output_spec);
 	}
 	
 	/** Convenience method to include all parent tables with default options and naming.  
 	 *  The included table output specifications will have default options, so they will
 	 *  not themselves specify any child or parent tables in their own output.  An
 	 *  individual table specification added in this manner can be customized by retrieving
-	 *  it via one of the getSpec* methods and modifying it. */
-	public TableOutputSpec addAllParentTables()
+	 *  it via one of the getSpec* methods and modifying it.  The newly added parent
+	 *  specifications will replace any existing specifications for parent tables. */
+	public TableOutputSpec withAllParentTables()
 	{
+		List<Pair<ForeignKey,TableOutputSpec>> parent_specs_by_fk = new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
+
 		for(ForeignKey fk: dbmd.getForeignKeysToParentsFrom(this.relId))
 		{
 			RelId parent_rel_id = fk.getTargetRelationId();
 			
 			if ( dbmd.getRelationMetaData(parent_rel_id) != null ) // ignore tables for which we have no metadata
 			{
-				Set<String> fk_fieldnames = new HashSet<String>(fk.getSourceFieldNames());
+				Set<String> fk_field_names = new HashSet<String>(fk.getSourceFieldNames()); // not a mistake - source fields identify the foreign key
 				
-				addParent(parent_rel_id,
-				          fk_fieldnames,
-				          null);  // default output spec
+				parent_specs_by_fk.add(Pair.make(fk,
+				                                 makeParentTableOutputSpec(parent_rel_id, fk_field_names)));
 			}
 		}
 		
-		return this;
+		return new TableOutputSpec(relId,
+		                           dbmd,
+		                           elementNamer,
+		                           includedFields,
+		                           rowElementName,
+		                           rowCollectionElementName,
+		                           childSpecsByFK,
+		                           parent_specs_by_fk);
+
+	}
+	
+	protected TableOutputSpec makeParentTableOutputSpec(RelId parent_rel_id, Set<String> reqd_fk_field_names)
+	{
+		return new TableOutputSpec(parent_rel_id,
+		                           dbmd,
+		                           elementNamer,
+		                           elementNamer.getParentRowElementNameWithinChild(relId, parent_rel_id, reqd_fk_field_names),
+		                           null); // no collection element name necessary for parent spec
 	}
 	
 	// Methods for including a parent table in the output
 	////////////////////////////////////////////////////////////////////////////////////
 
+
+	
+	public int hashCode()
+	{
+		if ( hashCode == null )
+		{
+			hashCode = hashcode(relId)
+			         + hashcode(includedFields)
+			         + hashcode(childSpecsByFK)
+			         + hashcode(parentSpecsByFK)
+			         + hashcode(rowCollectionElementName)
+			         + hashcode(rowElementName)
+			         + hashcode(dbmd)
+			         + hashcode(elementNamer);
+		}
+		
+		return hashCode;
+	}
+	
+	public boolean equals(Object o)
+	{
+		if ( !(o instanceof TableOutputSpec) )
+			return false;
+		else
+		{
+			final TableOutputSpec tos = (TableOutputSpec)o;
+			
+			if (this == tos)
+				return true;
+			else
+				return eqOrNull(relId,tos.relId)
+				    && eqOrNull(includedFields,tos.includedFields)
+				    && eqOrNull(childSpecsByFK,tos.childSpecsByFK)
+				    && eqOrNull(parentSpecsByFK,tos.parentSpecsByFK)
+				    && eqOrNull(rowCollectionElementName,tos.rowCollectionElementName)
+				    && eqOrNull(rowElementName,tos.rowElementName)
+				    && eqOrNull(dbmd,tos.dbmd)
+				    && eqOrNull(elementNamer,tos.elementNamer);
+		}
+	}
 }

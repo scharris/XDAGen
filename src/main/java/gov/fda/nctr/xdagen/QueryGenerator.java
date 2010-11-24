@@ -410,8 +410,8 @@ public class QueryGenerator {
             
         TableOutputSpec ospec =
         	g.table(table_name)
-        	    .addAllChildTables()
-        		.addAllParentTables();
+        	    .withAllChildTables()
+        		.withAllParentTables();
         
         String sqlxml_qry = g.getRowElementsQuery(ospec);
         
