@@ -3,16 +3,16 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>gov.fda.nctr</groupId>
 	<artifactId>xdagen</artifactId>
-	<version>0.80</version>
+	<version>0.90-SNAPSHOT</version>
 	<name>Xml Data Access Generator</name>
 	<description>Generates hierarchical SQL/XML queries and matching XML Schemas from simple table output specifications.</description>
 	
 
 	<distributionManagement>
-	  <repository>
-  		<id>nctr-maven-repo-server</id>
-   		<url>http://ncsvmweb01.nctr.fda.gov:8080/mvnrepo/content/repositories/releases</url>
-		</repository>
+	  <snapshotRepository>
+    	<id>nctr-maven-repo-server</id>
+    	<url>http://ncsvmweb01.nctr.fda.gov:8080/mvnrepo/content/repositories/snapshots</url>
+  	</snapshotRepository>
 	</distributionManagement>
 	
   <properties>
