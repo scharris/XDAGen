@@ -1,5 +1,8 @@
 package gov.fda.nctr.xdagen;
 
+import static gov.fda.nctr.util.MiscFuns.eqOrNull;
+import static gov.fda.nctr.util.MiscFuns.hashcode;
+import static gov.fda.nctr.util.MiscFuns.requireArg;
 import static gov.fda.nctr.util.StringFunctions.indent;
 import static gov.fda.nctr.util.StringFunctions.lowercaseInitials;
 import static gov.fda.nctr.util.StringFunctions.makeNameNotInSet;
@@ -92,6 +95,18 @@ public class QueryGenerator {
 		rowForestQueryTemplate = templateConfig.getTemplate(ROWFOREST_QUERY_TEMPLATE);
 	}
 	
+	
+	public String getSql(XdaQuery xda_qry)
+	{
+		if ( xda_qry.getQueryStyle() == XdaQuery.QueryStyle.MULTIPLE_ROW_ELEMENT_RESULTS )
+			return getRowElementsQuery(xda_qry.getTableOutputSpec(),
+			                           xda_qry.getTableAlias(),
+			                           xda_qry.getFilterCondition());
+		else
+			return getRowCollectionElementQuery(xda_qry.getTableOutputSpec(),
+			                                    xda_qry.getTableAlias(),
+			                                    xda_qry.getFilterCondition());
+	}
 	
 	
 	public String getRowElementsQuery(TableOutputSpec ospec)
@@ -340,7 +355,6 @@ public class QueryGenerator {
 		return parent_table_subqueries;
 	}
 	
-
 	public DBMD getDatabaseMetaData()
 	{
 		return dbmd;
@@ -365,16 +379,73 @@ public class QueryGenerator {
 	}
 	
 	
-	public static<E> List<E> concat(List<E> l1, List<E> l2)
-	{
-		ArrayList<E> l = new ArrayList<E>(l1.size() + l2.size());
+	public static class XdaQuery {
 		
-		l.addAll(l1);
-		l.addAll(l2);
+		public enum QueryStyle { SINGLE_ROW_COLLECTION_ELEMENT_RESULT,
+			                     MULTIPLE_ROW_ELEMENT_RESULTS }
 		
-		return l;
+		TableOutputSpec ospec;
+		String tableAlias;
+		String filterCondition;
+		QueryStyle queryStyle;
+		
+		public XdaQuery(TableOutputSpec ospec,
+		                String tableAlias,
+		                String filterCondition,
+		                QueryStyle query_style)
+		{
+			super();
+			
+			this.ospec = requireArg(ospec, "table output spec");;
+			this.tableAlias = tableAlias;
+			this.filterCondition = filterCondition;
+			this.queryStyle = query_style;
+		}
+
+		public QueryStyle getQueryStyle()
+		{
+			return queryStyle;
+		}
+
+		public TableOutputSpec getTableOutputSpec()
+		{
+			return ospec;
+		}
+		
+		public String getTableAlias()
+		{
+			return tableAlias;
+		}
+		
+		public String getFilterCondition()
+		{
+			return filterCondition;
+		}
+		
+		public int hashCode()
+		{
+			return ospec.hashCode()
+			     + hashcode(tableAlias)
+			     + hashcode(filterCondition)
+			     + queryStyle.hashCode();
+		}
+		
+		public boolean equals(Object o)
+		{
+			if ( !(o instanceof XdaQuery) )
+				return false;
+			
+			XdaQuery q = (XdaQuery)o;
+			
+			if ( this == o )
+				return true;
+			else
+				return ospec.equals(q.ospec)
+				    && eqOrNull(tableAlias, q.tableAlias)
+				    && eqOrNull(filterCondition, q.filterCondition)
+				    && queryStyle.equals(q.queryStyle);
+		}
 	}
-	
 
 	
 	public static void main(String[] args) throws Exception
