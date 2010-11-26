@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>gov.fda.nctr</groupId>
 	<artifactId>xdagen</artifactId>
-	<version>0.90-SNAPSHOT</version>
+	<version>0.9.1-SNAPSHOT</version>
 	<name>Xml Data Access Generator</name>
 	<description>Generates hierarchical SQL/XML queries and matching XML Schemas from simple table output specifications.</description>
 	
@@ -30,11 +30,6 @@
 			<artifactId>dbmd</artifactId>
 			<version>1.0</version>
 		</dependency>
-		<dependency>
-			<groupId>gov.fda.nctr</groupId>
-  		<artifactId>fun-utils</artifactId>
-  		<version>0.7.0-SNAPSHOT</version>
-  	</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

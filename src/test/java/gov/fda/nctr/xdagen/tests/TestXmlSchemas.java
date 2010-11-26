@@ -2,7 +2,7 @@ package gov.fda.nctr.xdagen.tests;
 
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.RelId;
-import gov.fda.nctr.util.StringFunctions;
+import gov.fda.nctr.util.StringFuns;
 import gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator;
 import gov.fda.nctr.xdagen.DefaultElementNamer;
 import gov.fda.nctr.xdagen.ElementNamer;
@@ -38,7 +38,7 @@ public class TestXmlSchemas extends TestCase {
 	{
 		String xsd = getXmlSchema(XmlElementCollectionStyle.INLINE);
 		
-		String expected_xsd = StringFunctions.resourceAsString("expected_results/xmlschema_inline_el_colls.xsd");
+		String expected_xsd = StringFuns.resourceAsString("expected_results/xmlschema_inline_el_colls.xsd");
 
 		assertEquals("Inline collections XML Schema not as expected.", expected_xsd, xsd);
 	}
@@ -47,7 +47,7 @@ public class TestXmlSchemas extends TestCase {
 	{
 		String xsd = getXmlSchema(XmlElementCollectionStyle.WRAPPED);
 		
-		String expected_xsd = StringFunctions.resourceAsString("expected_results/xmlschema_wrapped_el_colls.xsd");
+		String expected_xsd = StringFuns.resourceAsString("expected_results/xmlschema_wrapped_el_colls.xsd");
 
 		assertEquals("Wrapped collections XML Schema not as expected.", expected_xsd, xsd);
 	}

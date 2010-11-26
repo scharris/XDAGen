@@ -7,8 +7,8 @@ import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.RelId;
 
-import static gov.fda.nctr.util.StringFunctions.lc;
-import static gov.fda.nctr.util.StringFunctions.stringFrom;
+import static gov.fda.nctr.util.StringFuns.lc;
+import static gov.fda.nctr.util.StringFuns.stringFrom;
 import static gov.fda.nctr.xdagen.XmlElementCollectionStyle.INLINE;
 
 

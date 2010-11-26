@@ -1,7 +1,7 @@
 package gov.fda.nctr.xdagen.tests;
 
 import gov.fda.nctr.dbmd.DBMD;
-import gov.fda.nctr.util.StringFunctions;
+import gov.fda.nctr.util.StringFuns;
 import gov.fda.nctr.xdagen.QueryGenerator;
 import gov.fda.nctr.xdagen.TableOutputSpec;
 import gov.fda.nctr.xdagen.XmlElementCollectionStyle;
@@ -78,7 +78,7 @@ public class TestQueries extends TestCase {
 	
 	private void insertData() throws SQLException, IOException
 	{
-		String sql = StringFunctions.resourceAsString("insert_test_data.sql").replaceAll("\r", " ");
+		String sql = StringFuns.resourceAsString("insert_test_data.sql").replaceAll("\r", " ");
 		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		
@@ -93,16 +93,16 @@ public class TestQueries extends TestCase {
 		Clob row_xml_clob = (Clob)getOneResult("ROW_XML", sql);
 		assertNotNull(row_xml_clob);
 		
-		String row_xml = StringFunctions.readStreamAsString(row_xml_clob.getCharacterStream());
+		String row_xml = StringFuns.readStreamAsString(row_xml_clob.getCharacterStream());
 		
 
 		if ( onlyWriteExpectedData )
 		{
-			StringFunctions.writeStringToFile(row_xml, "src/test/resources/expected_results/drug_1_rowxml_inline_el_colls.xml");
+			StringFuns.writeStringToFile(row_xml, "src/test/resources/expected_results/drug_1_rowxml_inline_el_colls.xml");
 			return;
 		}
 		
-		String expected_rowxml = StringFunctions.resourceAsString("expected_results/drug_1_rowxml_inline_el_colls.xml");
+		String expected_rowxml = StringFuns.resourceAsString("expected_results/drug_1_rowxml_inline_el_colls.xml");
 		
 		assertEquals(expected_rowxml.trim(), row_xml.trim());
 	}
@@ -114,15 +114,15 @@ public class TestQueries extends TestCase {
 		Clob row_xml_clob = (Clob)getOneResult("ROW_XML", sql);
 		assertNotNull(row_xml_clob);
 		
-		String row_xml = StringFunctions.readStreamAsString(row_xml_clob.getCharacterStream());
+		String row_xml = StringFuns.readStreamAsString(row_xml_clob.getCharacterStream());
 		
 		if ( onlyWriteExpectedData )
 		{
-			StringFunctions.writeStringToFile(row_xml, "src/test/resources/expected_results/drug_1_rowxml_wrapped_el_colls.xml");
+			StringFuns.writeStringToFile(row_xml, "src/test/resources/expected_results/drug_1_rowxml_wrapped_el_colls.xml");
 			return;
 		}
 		
-		String expected_rowxml = StringFunctions.resourceAsString("expected_results/drug_1_rowxml_wrapped_el_colls.xml");
+		String expected_rowxml = StringFuns.resourceAsString("expected_results/drug_1_rowxml_wrapped_el_colls.xml");
 		
 		assertEquals(expected_rowxml.trim(), row_xml.trim());
 	}
@@ -134,15 +134,15 @@ public class TestQueries extends TestCase {
 		
 		Clob rowcoll_xml_clob = (Clob)getOneResult("ROWCOLL_XML", sql);
 		
-		String rowcoll_xml = StringFunctions.readStreamAsString(rowcoll_xml_clob.getCharacterStream());
+		String rowcoll_xml = StringFuns.readStreamAsString(rowcoll_xml_clob.getCharacterStream());
 		
 		if ( onlyWriteExpectedData )
 		{
-			StringFunctions.writeStringToFile(rowcoll_xml, "src/test/resources/expected_results/drugs_listing_inline_el_colls.xml");
+			StringFuns.writeStringToFile(rowcoll_xml, "src/test/resources/expected_results/drugs_listing_inline_el_colls.xml");
 			return;
 		}
 		
-		String expected_rowcoll_xml = StringFunctions.resourceAsString("expected_results/drugs_listing_inline_el_colls.xml");
+		String expected_rowcoll_xml = StringFuns.resourceAsString("expected_results/drugs_listing_inline_el_colls.xml");
 		
 		assertEquals(rowcoll_xml, expected_rowcoll_xml);
 	}
@@ -153,15 +153,15 @@ public class TestQueries extends TestCase {
 		
 		Clob rowcoll_xml_clob = (Clob)getOneResult("ROWCOLL_XML", sql);
 		
-		String rowcoll_xml = StringFunctions.readStreamAsString(rowcoll_xml_clob.getCharacterStream());
+		String rowcoll_xml = StringFuns.readStreamAsString(rowcoll_xml_clob.getCharacterStream());
 		
 		if ( onlyWriteExpectedData )
 		{
-			StringFunctions.writeStringToFile(rowcoll_xml, "src/test/resources/expected_results/drugs_listing_wrapped_el_colls.xml");
+			StringFuns.writeStringToFile(rowcoll_xml, "src/test/resources/expected_results/drugs_listing_wrapped_el_colls.xml");
 			return;
 		}
 		
-		String expected_rowcoll_xml = StringFunctions.resourceAsString("expected_results/drugs_listing_wrapped_el_colls.xml");
+		String expected_rowcoll_xml = StringFuns.resourceAsString("expected_results/drugs_listing_wrapped_el_colls.xml");
 		
 		assertEquals(rowcoll_xml, expected_rowcoll_xml);
 	}
@@ -185,11 +185,11 @@ public class TestQueries extends TestCase {
 
 		if ( onlyWriteExpectedData )
 		{
-			StringFunctions.writeStringToFile(sql, "src/test/resources/expected_results/drugs_query_inline_el_colls.sql");
+			StringFuns.writeStringToFile(sql, "src/test/resources/expected_results/drugs_query_inline_el_colls.sql");
 			return;
 		}
 		
-		String expected_sql = StringFunctions.resourceAsString("expected_results/drugs_query_inline_el_colls.sql");
+		String expected_sql = StringFuns.resourceAsString("expected_results/drugs_query_inline_el_colls.sql");
 
 		assertEquals("Inline collections drugs query not as expected.", expected_sql, sql);
 	}
@@ -201,11 +201,11 @@ public class TestQueries extends TestCase {
 		
 		if ( onlyWriteExpectedData )
 		{
-			StringFunctions.writeStringToFile(sql, "src/test/resources/expected_results/drugs_query_wrapped_el_colls.sql");
+			StringFuns.writeStringToFile(sql, "src/test/resources/expected_results/drugs_query_wrapped_el_colls.sql");
 			return;
 		}
 		
-		String expected_sql = StringFunctions.resourceAsString("expected_results/drugs_query_wrapped_el_colls.sql");
+		String expected_sql = StringFuns.resourceAsString("expected_results/drugs_query_wrapped_el_colls.sql");
 
 		assertEquals("Wrapped collections drugs query not as expected.", expected_sql, sql);
 	}
@@ -217,11 +217,11 @@ public class TestQueries extends TestCase {
 		
 		if ( onlyWriteExpectedData )
 		{
-			StringFunctions.writeStringToFile(sql, "src/test/resources/expected_results/drugs_collection_query_inline_el_colls.sql");
+			StringFuns.writeStringToFile(sql, "src/test/resources/expected_results/drugs_collection_query_inline_el_colls.sql");
 			return;
 		}
 		
-		String expected_sql = StringFunctions.resourceAsString("expected_results/drugs_collection_query_inline_el_colls.sql").replaceAll("\r","");
+		String expected_sql = StringFuns.resourceAsString("expected_results/drugs_collection_query_inline_el_colls.sql").replaceAll("\r","");
 
 		 assertEquals("Inline collections drugs collection query not as expected.", expected_sql, sql);
 	}
@@ -233,11 +233,11 @@ public class TestQueries extends TestCase {
 		
 		if ( onlyWriteExpectedData )
 		{
-			StringFunctions.writeStringToFile(sql, "src/test/resources/expected_results/drugs_collection_query_wrapped_el_colls.sql");
+			StringFuns.writeStringToFile(sql, "src/test/resources/expected_results/drugs_collection_query_wrapped_el_colls.sql");
 			return;
 		}
 		
-		String expected_sql = StringFunctions.resourceAsString("expected_results/drugs_collection_query_wrapped_el_colls.sql").replaceAll("\r","");
+		String expected_sql = StringFuns.resourceAsString("expected_results/drugs_collection_query_wrapped_el_colls.sql").replaceAll("\r","");
 
 		 assertEquals("Wrapped collections drugs collection query not as expected.", expected_sql, sql);
 	}

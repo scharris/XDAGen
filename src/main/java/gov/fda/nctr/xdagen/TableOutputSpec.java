@@ -1,9 +1,8 @@
 package gov.fda.nctr.xdagen;
 
-import static gov.fda.nctr.util.ListUtils.snoc;
-import static gov.fda.nctr.util.MiscFuns.eqOrNull;
-import static gov.fda.nctr.util.MiscFuns.hashcode;
-import static gov.fda.nctr.util.MiscFuns.requireArg;
+import static gov.fda.nctr.util.CoreFuns.eqOrNull;
+import static gov.fda.nctr.util.CoreFuns.hashcode;
+import static gov.fda.nctr.util.CoreFuns.requireArg;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.RelId;
@@ -577,4 +576,11 @@ public class TableOutputSpec {
 				    && eqOrNull(elementNamer,tos.elementNamer);
 		}
 	}
+	
+    public static <E> List<E> snoc(List<E> l, E e)
+    {
+        List<E> cl = new ArrayList<E>(l);
+        cl.add(e);
+        return cl;
+    }
 }

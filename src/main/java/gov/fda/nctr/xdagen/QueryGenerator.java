@@ -1,11 +1,11 @@
 package gov.fda.nctr.xdagen;
 
-import static gov.fda.nctr.util.MiscFuns.eqOrNull;
-import static gov.fda.nctr.util.MiscFuns.hashcode;
-import static gov.fda.nctr.util.MiscFuns.requireArg;
-import static gov.fda.nctr.util.StringFunctions.indent;
-import static gov.fda.nctr.util.StringFunctions.lowercaseInitials;
-import static gov.fda.nctr.util.StringFunctions.makeNameNotInSet;
+import static gov.fda.nctr.util.CoreFuns.eqOrNull;
+import static gov.fda.nctr.util.CoreFuns.hashcode;
+import static gov.fda.nctr.util.CoreFuns.requireArg;
+import static gov.fda.nctr.util.StringFuns.indent;
+import static gov.fda.nctr.util.StringFuns.lowercaseInitials;
+import static gov.fda.nctr.util.StringFuns.makeNameNotInSet;
 
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
