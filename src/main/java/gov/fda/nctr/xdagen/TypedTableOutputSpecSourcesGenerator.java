@@ -1,7 +1,9 @@
 package gov.fda.nctr.xdagen;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
@@ -21,21 +23,20 @@ import gov.fda.nctr.util.StringFuns;
 
 public class TypedTableOutputSpecSourcesGenerator {
 
-	DBMD dbmd;
+	protected DBMD dbmd;
 	
-	String targetPackage; // Target package for generated classes.
+	protected String targetPackage; // Target package for generated classes.
 	
-	Namer namer; // Controls naming of the generated classes and their parent/child addition methods.
+	protected Namer namer; // Controls naming of the generated classes and their parent/child addition methods.
 	
-	File outputDir;
+	protected File outputDir;
 	
-	Configuration templateConfig;
-	Template classSourceFileTemplate;
+	protected Configuration templateConfig;
+	protected Template classSourceFileTemplate;
 	
-	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
-	private static final String JAVA_SOURCE_FILE_TEMPLATE =  "TypedTableOutputSpecJavaSource.ftl";
+	protected static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
+	protected static final String JAVA_SOURCE_FILE_TEMPLATE =  "TypedTableOutputSpecJavaSource.ftl";
 
-	
 	// Primary constructor.
 	public TypedTableOutputSpecSourcesGenerator(DBMD dbmd,
 	                                            String target_java_package,
@@ -127,10 +128,15 @@ public class TypedTableOutputSpecSourcesGenerator {
 	}
 	
 	
-	public void writeSourceFilesTo(File dir) throws IOException
+	public void writeSourceFilesTo(File output_root_dir) throws IOException
 	{
-		if ( dir == null || !dir.isDirectory() )
-			throw new IllegalArgumentException("Expected output directory, got <" + dir + ">.");
+		if ( output_root_dir == null || !output_root_dir.isDirectory() )
+			throw new IllegalArgumentException("Expected output directory, got <" + output_root_dir + ">.");
+		
+		String package_as_path = targetPackage.replace('.', File.separatorChar);
+
+		File output_leaf_dir = new File(output_root_dir, package_as_path);
+		output_leaf_dir.mkdirs();
 		
 		for(RelMetaData rmd: dbmd.getRelationMetaDatas())
 		{
@@ -141,7 +147,7 @@ public class TypedTableOutputSpecSourcesGenerator {
 			String file_name = namer.getGeneratedClassName(relid) + ".java";
 			
 			StringFuns.writeStringToFile(java_src,
-			                             new File(dir, file_name));
+			                             new File(output_leaf_dir, file_name));
 		}
 	}
 	
@@ -194,4 +200,37 @@ public class TypedTableOutputSpecSourcesGenerator {
 	// Naming interface and default implementation.
 	///////////////////////////////////////////////////////////////
 	
+	
+	
+    public static void main(String[] args) throws Exception
+    {
+        int arg_ix = 0;
+        String dbmd_xml_infile_path;
+        String target_java_package;
+        File output_dir;
+    	
+        if ( args.length == 3 )
+        {
+        	dbmd_xml_infile_path = args[arg_ix++];
+        	target_java_package = args[arg_ix++];
+        	output_dir = new File(args[arg_ix++]);
+        	if ( !output_dir.isDirectory() )
+        		throw new IllegalArgumentException("Output directory not found.");
+        }
+        else
+        	throw new IllegalArgumentException("Expected arguments: <db-metadata-file> <target-java-package> <output-dir>");
+
+        InputStream dbmd_is = new FileInputStream(dbmd_xml_infile_path);
+        
+        DBMD dbmd = DBMD.readXML(dbmd_is);
+        dbmd_is.close();
+        
+        TypedTableOutputSpecSourcesGenerator g = new TypedTableOutputSpecSourcesGenerator(dbmd,
+                                                                                          target_java_package);
+        
+        g.writeSourceFilesTo(output_dir);
+        
+        System.exit(0);
+    }
+
 }
