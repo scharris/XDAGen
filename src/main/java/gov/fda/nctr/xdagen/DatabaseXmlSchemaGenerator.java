@@ -39,7 +39,6 @@ public class DatabaseXmlSchemaGenerator {
 	
 	
 	Configuration templateConfig;
-	Template wrappedCollectionsXSDTemplate;
 	Template xsdTemplate;
 
 	boolean includeGenerationTimestamp;
@@ -67,7 +66,7 @@ public class DatabaseXmlSchemaGenerator {
 		this.templateConfig.setObjectWrapper(new DefaultObjectWrapper());
 		
 		// Load templates.
-		this.xsdTemplate =  templateConfig.getTemplate(XMLSCHEMA_TEMPLATE);
+		this.xsdTemplate = templateConfig.getTemplate(XMLSCHEMA_TEMPLATE);
 		
 		this.includeGenerationTimestamp = false;
 	}
@@ -84,11 +83,6 @@ public class DatabaseXmlSchemaGenerator {
 		     new DefaultTypeNamer(dbmd));
 	}
 	
-	
-	public DBMD getDbmd()
-	{
-		return dbmd;
-	}
 	
 	public String getTargetXmlNamespace()
 	{

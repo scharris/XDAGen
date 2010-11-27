@@ -1,5 +1,6 @@
 package gov.fda.nctr.util;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +39,23 @@ public class StringFuns {
 		
 		return sb.toString().toLowerCase();
 	}
+	
+	public static String capitalize(String s)
+	{
+		return s.substring(0,1).toUpperCase() + s.substring(1);
+	}
+	
+	public static String camelCase(String name)
+	{
+        StringBuilder res = new StringBuilder();
+        for (String word : name.split("_"))
+        {
+            res.append(Character.toUpperCase(word.charAt(0)));
+            res.append(word.substring(1).toLowerCase());
+        }
+        return res.toString();
+    }    
+
 
 	public static List<String> dotQualify(List<String> names, String maybe_alias)
 	{
@@ -173,7 +191,12 @@ public class StringFuns {
 
 	public static void writeStringToFile(String s, String file_path) throws IOException
 	{
-		FileWriter fw = new FileWriter(file_path);
+		writeStringToFile(s, new File(file_path));
+	}
+	
+	public static void writeStringToFile(String s, File file) throws IOException
+	{
+		FileWriter fw = new FileWriter(file);
 		fw.write(s);
 		fw.close();
 	}

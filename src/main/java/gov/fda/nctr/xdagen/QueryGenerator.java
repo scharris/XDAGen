@@ -38,16 +38,14 @@ public class QueryGenerator {
 	
 	XmlElementCollectionStyle xmlElementCollectionStyle;
 	
-
+	String outputXmlNamespace;
 	
+	// Output templates
 	Configuration templateConfig;
 	Template rowElementsQueryTemplate;
 	Template rowCollectionElementQueryTemplate;
 	Template rowForestQueryTemplate;
 
-	String outputXmlNamespace;
-
-	
 	
 	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
 	private static final String ROWELEMENTSSQUERY_TEMPLATE_NAME = "RowElementsQuery.ftl";
