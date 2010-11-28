@@ -5,8 +5,6 @@ import java.util.HashSet;
 
 import gov.fda.nctr.xdagen.TableOutputSpec;
 import gov.fda.nctr.xdagen.ElementNamer;
-import gov.fda.nctr.xdagen.DefaultElementNamer;
-import gov.fda.nctr.xdagen.XmlElementCollectionStyle;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.RelId;
 
@@ -27,7 +25,7 @@ public class ${class_name} extends TableOutputSpec {
   public ${class_name}(DBMD dbmd)
   {
     this(dbmd,
-         new DefaultElementNamer(dbmd, XmlElementCollectionStyle.INLINE));
+         ${element_namer_creation_expr});
   }
   
   

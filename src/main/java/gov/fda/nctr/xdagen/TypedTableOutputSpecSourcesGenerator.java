@@ -1,5 +1,9 @@
 package gov.fda.nctr.xdagen;
 
+import static gov.fda.nctr.util.StringFuns.camelCase;
+import static gov.fda.nctr.util.StringFuns.lc;
+import static gov.fda.nctr.util.StringFuns.stringFrom;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -7,6 +11,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import freemarker.cache.ClassTemplateLoader;
@@ -18,9 +23,9 @@ import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.dbmd.RelMetaData;
+import gov.fda.nctr.dbmd.DBMD.ForeignKeyInclusion;
 import gov.fda.nctr.util.StringFuns;
 
-// TODO: should allow setting a factory function to be called to create an ElementNamer in generated source, so DefaultElementNamer isn't the only possibility for the 1-arg constructor in the generated classes.
 
 public class TypedTableOutputSpecSourcesGenerator {
 
@@ -32,6 +37,12 @@ public class TypedTableOutputSpecSourcesGenerator {
 	
 	protected File outputDir;
 	
+	/* Setting this field allows controlling how ElementNamers are constructed in the generated classes for cases that an explicit ElementNamer
+	 * is not provided by their clients. The element namer may include references to a DBMD value named "dbmd".  The default is:
+	 *   "new gov.fda.nctr.xdagen.DefaultElementNamer(dbmd, gov.fda.nctr.xdagen.XmlElementCollectionStyle.INLINE)"
+	 */
+	protected String elementNamerCreationExpr;
+	
 	protected Configuration templateConfig;
 	protected Template classSourceFileTemplate;
 	
@@ -41,11 +52,14 @@ public class TypedTableOutputSpecSourcesGenerator {
 	// Primary constructor.
 	public TypedTableOutputSpecSourcesGenerator(DBMD dbmd,
 	                                            String target_java_package,
+	                                            String element_namer_creation_expr, // optional
 	                                            Namer namer)  // optional
 		throws IOException
 	{
 		this.dbmd = dbmd;
 		this.targetPackage = target_java_package;
+		this.elementNamerCreationExpr = element_namer_creation_expr == null ? "new gov.fda.nctr.xdagen.DefaultElementNamer(dbmd, gov.fda.nctr.xdagen.XmlElementCollectionStyle.INLINE)"
+				                                                            : element_namer_creation_expr;
 		this.namer = namer != null ? namer : new DefaultNamer(dbmd);
 		
 		// Configure template engine.
@@ -64,6 +78,7 @@ public class TypedTableOutputSpecSourcesGenerator {
 	{
 		this(dbmd,
 		     target_java_package,
+		     null,
 		     new DefaultNamer(dbmd));
 	}
 	
@@ -88,6 +103,22 @@ public class TypedTableOutputSpecSourcesGenerator {
 		this.namer = namer;
 	}
 	
+	/** Setting this property allows controlling how ElementNamers are constructed in the generated classes for cases that an explicit ElementNamer
+	 *  is not provided by their clients. The element namer may include references to a DBMD value named "dbmd".  The default is:
+	 *   "new gov.fda.nctr.xdagen.DefaultElementNamer(dbmd, gov.fda.nctr.xdagen.XmlElementCollectionStyle.XmlElementCollectionStyle.XmlElementCollectionStyle.INLINE)"
+	 *  This allows the generated classes to be constructed with a desired ElementNamer which is set at code-generation time, so that their
+	 *  clients do not have to explicitly pass ElementNamer instances.
+	 */
+	public String getElementNamerCreationExpression()
+	{
+		return elementNamerCreationExpr;
+	}
+	
+	public void setElementNamerCreationExpression(String el_namer_creation_expr)
+	{
+		this.elementNamerCreationExpr = el_namer_creation_expr;
+	}
+	
 	public void setOutputDirectory(File output_dir)
 	{
 		this.outputDir = output_dir;
@@ -104,6 +135,7 @@ public class TypedTableOutputSpecSourcesGenerator {
 		
 		template_model.put("target_package", targetPackage);
 		template_model.put("namer", namer);
+		template_model.put("element_namer_creation_expr", elementNamerCreationExpr);
 		template_model.put("relid", rel_id);
 		template_model.put("fks_from_child_tables", dbmd.getForeignKeysFromTo(null, rel_id, DBMD.ForeignKeyInclusion.REGISTERED_TABLES_ONLY));
 		template_model.put("fks_to_parent_tables",  dbmd.getForeignKeysFromTo(rel_id, null, DBMD.ForeignKeyInclusion.REGISTERED_TABLES_ONLY));
@@ -178,24 +210,58 @@ public class TypedTableOutputSpecSourcesGenerator {
 		@Override
 		public String getGeneratedClassName(RelId rel_id)
 		{
-			return StringFuns.camelCase(rel_id.getName()) + "TableOutputSpec";
+			return camelCase(rel_id.getName()) + "TableOutputSpec";
 		}
 
 		@Override
 		public String getChildAdditionMethodName(ForeignKey fk_from_child)
 		{
-			// TODO: need to disambiguate if there are more than one fk from this child to this table.
-			return "with" + StringFuns.camelCase(fk_from_child.getSourceRelationId().getName()) + "List";
+			List<ForeignKey> fks = dbmd.getForeignKeysFromTo(fk_from_child.getSourceRelationId(),
+			                                                 fk_from_child.getTargetRelationId(),
+			                                                 ForeignKeyInclusion.REGISTERED_TABLES_ONLY);
+			
+			RelId rel_to_add = fk_from_child.getSourceRelationId();
+			
+			if ( fks.size() <= 1 ) // Only one fk from this child to this parent exists: use simple name.
+			{
+				return getSimpleChildAdditionMethodName(rel_to_add);
+			}
+			else // Multiple fks from this child to this parent exist: use properly qualified name to avoid name collision.
+			{
+				return getSimpleChildAdditionMethodName(rel_to_add) +
+				       "ReferencingVia" + camelCase(stringFrom(lc(fk_from_child.getSourceFieldNames()),"_and_"));
+			}
 		}
 		
 		@Override
 		public String getParentAdditionMethodName(ForeignKey fk_to_parent)
 		{
-			// TODO: need to disambiguate if there are more than one fk from this child to this table.
-			return "with" + StringFuns.camelCase(fk_to_parent.getTargetRelationId().getName());
+			List<ForeignKey> fks = dbmd.getForeignKeysFromTo(fk_to_parent.getSourceRelationId(),
+			                                                 fk_to_parent.getTargetRelationId(),
+			                                                 ForeignKeyInclusion.REGISTERED_TABLES_ONLY);
+			
+			RelId rel_to_add = fk_to_parent.getTargetRelationId();
+			
+			if ( fks.size() <= 1 ) // Only one fk from this child to this parent exists: use simple name.
+			{
+				return getSimpleParentAdditionMethodName(rel_to_add);
+			}
+			else // Multiple fks from this child to this parent exist: use properly qualified name to avoid name collision.
+			{
+				return getSimpleParentAdditionMethodName(rel_to_add) +
+				       "ReferencedVia" + camelCase(stringFrom(lc(fk_to_parent.getSourceFieldNames()),"_and_"));
+			}
 		}
 
-
+		protected String getSimpleChildAdditionMethodName(RelId child_relid)
+		{
+			return "with" + camelCase(child_relid.getName()) + "List";
+		}
+		
+		protected String getSimpleParentAdditionMethodName(RelId parent_relid)
+		{
+			return "with" + camelCase(parent_relid.getName());
+		}
 	}
 	
 	// Naming interface and default implementation.
