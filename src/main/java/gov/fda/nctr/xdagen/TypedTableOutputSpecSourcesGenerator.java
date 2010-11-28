@@ -185,14 +185,14 @@ public class TypedTableOutputSpecSourcesGenerator {
 		public String getChildAdditionMethodName(ForeignKey fk_from_child)
 		{
 			// TODO: need to disambiguate if there are more than one fk from this child to this table.
-			return "with" + StringFuns.camelCase(fk_from_child.getSourceRelationId().getName()) + "ChildTable";
+			return "with" + StringFuns.camelCase(fk_from_child.getSourceRelationId().getName()) + "List";
 		}
 		
 		@Override
 		public String getParentAdditionMethodName(ForeignKey fk_to_parent)
 		{
 			// TODO: need to disambiguate if there are more than one fk from this child to this table.
-			return "with" + StringFuns.camelCase(fk_to_parent.getTargetRelationId().getName()) + "ParentTable";
+			return "with" + StringFuns.camelCase(fk_to_parent.getTargetRelationId().getName());
 		}
 
 
