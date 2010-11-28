@@ -360,17 +360,13 @@ public class TableOutputSpec implements Cloneable {
 	{
 		List<Pair<ForeignKey,TableOutputSpec>> child_specs_by_fk = new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
 		
-		for(ForeignKey fk: dbmd.getForeignKeysFromChildrenTo(this.relId))
+		for(ForeignKey fk: dbmd.getForeignKeysFromTo(null, this.relId, DBMD.ForeignKeyInclusion.REGISTERED_TABLES_ONLY))
 		{
 			RelId child_rel_id = fk.getSourceRelationId();
 			
-			if ( dbmd.getRelationMetaData(child_rel_id) != null ) // ignore tables for which we have no metadata
-			{
-				Set<String> fk_field_names = new HashSet<String>(fk.getSourceFieldNames());
+			Set<String> fk_field_names = new HashSet<String>(fk.getSourceFieldNames());
 				
-				child_specs_by_fk.add(Pair.make(fk,
-				                                makeChildTableOutputSpec(child_rel_id, fk_field_names)));
-			}
+			child_specs_by_fk.add(Pair.make(fk, makeChildTableOutputSpec(child_rel_id, fk_field_names)));
 		}
 		
 		try
@@ -509,17 +505,13 @@ public class TableOutputSpec implements Cloneable {
 	{
 		List<Pair<ForeignKey,TableOutputSpec>> parent_specs_by_fk = new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
 
-		for(ForeignKey fk: dbmd.getForeignKeysToParentsFrom(this.relId))
+		for(ForeignKey fk: dbmd.getForeignKeysFromTo(this.relId, null, DBMD.ForeignKeyInclusion.REGISTERED_TABLES_ONLY))
 		{
 			RelId parent_rel_id = fk.getTargetRelationId();
 			
-			if ( dbmd.getRelationMetaData(parent_rel_id) != null ) // ignore tables for which we have no metadata
-			{
-				Set<String> fk_field_names = new HashSet<String>(fk.getSourceFieldNames()); // not a mistake - source fields identify the foreign key
+			Set<String> fk_field_names = new HashSet<String>(fk.getSourceFieldNames()); // source fields always identify the foreign key
 				
-				parent_specs_by_fk.add(Pair.make(fk,
-				                                 makeParentTableOutputSpec(parent_rel_id, fk_field_names)));
-			}
+			parent_specs_by_fk.add(Pair.make(fk, makeParentTableOutputSpec(parent_rel_id, fk_field_names)));
 		}
 		
 		try

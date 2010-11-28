@@ -20,6 +20,7 @@ import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.dbmd.RelMetaData;
 import gov.fda.nctr.util.StringFuns;
 
+// TODO: should allow setting a factory function to be called to create an ElementNamer in generated source, so DefaultElementNamer isn't the only possibility for the 1-arg constructor in the generated classes.
 
 public class TypedTableOutputSpecSourcesGenerator {
 
@@ -104,8 +105,8 @@ public class TypedTableOutputSpecSourcesGenerator {
 		template_model.put("target_package", targetPackage);
 		template_model.put("namer", namer);
 		template_model.put("relid", rel_id);
-		template_model.put("fks_from_child_tables", dbmd.getForeignKeysFromChildrenTo(rel_id));
-		template_model.put("fks_to_parent_tables",  dbmd.getForeignKeysToParentsFrom(rel_id));
+		template_model.put("fks_from_child_tables", dbmd.getForeignKeysFromTo(null, rel_id, DBMD.ForeignKeyInclusion.REGISTERED_TABLES_ONLY));
+		template_model.put("fks_to_parent_tables",  dbmd.getForeignKeysFromTo(rel_id, null, DBMD.ForeignKeyInclusion.REGISTERED_TABLES_ONLY));
 		
 		try
 		{
