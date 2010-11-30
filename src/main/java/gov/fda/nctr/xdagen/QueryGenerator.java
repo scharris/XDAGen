@@ -73,9 +73,9 @@ public class QueryGenerator {
 	
 	
 	// Primary constructor.
-	public QueryGenerator(DBMD dbmd,
-	                      String output_xml_namespace, // optional, xml namespace for generated xml elements
-	                      XmlElementCollectionStyle xml_collection_style) 
+	public QueryGenerator(DBMD dbmd,                                       // Required
+	                      String output_xml_namespace,                     // Optional xml namespace for generated xml elements
+	                      XmlElementCollectionStyle xml_collection_style)  // Required
 	  throws IOException
 	{
 		this.dbmd = dbmd;
@@ -109,7 +109,7 @@ public class QueryGenerator {
 	
 	public String getRowElementsQuery(TableOutputSpec ospec)
 	{
-		return getRowElementsQuery(ospec, 
+		return getRowElementsQuery(ospec,
 		                           lowercaseInitials(ospec.getRelationId().getName(),"_"),
 		                           null,  // no WHERE clause condition
 		                           RowOutputType.CLOB_ROW_XML_ONLY,
@@ -117,20 +117,19 @@ public class QueryGenerator {
 		
 	}
 	
-	public String getRowElementsQuery(TableOutputSpec ospec,
-	                                  String table_alias) // Optional, defaults to lowercase initials of underscore separated table words.  Use "" to force using no alias.
+	public String getRowElementsQuery(TableOutputSpec ospec,       // Required
+	                                  String table_alias)          // Required
 	{
 		return getRowElementsQuery(ospec,
 		                           table_alias,
-		                           null,  // no WHERE clause condition
+		                           null, // no WHERE clause condition
 		                           RowOutputType.CLOB_ROW_XML_ONLY,
 		                           XmlNamespaceOption.INCLUDE_IF_SET);
 	}
 	
-
-	public String getRowElementsQuery(TableOutputSpec ospec,
-	                                  String table_alias, // Required
-	                                  String filter_condition) // Optional.  Any includedFields referenced should be qualified with table_alias.
+	public String getRowElementsQuery(TableOutputSpec ospec,       // Required
+	                                  String table_alias,          // Required
+	                                  String filter_condition)     // Optional.  Any fields referenced should be qualified with table_alias.
 	{
 		return getRowElementsQuery(ospec,
 		                           table_alias,
@@ -138,18 +137,18 @@ public class QueryGenerator {
 		                           RowOutputType.CLOB_ROW_XML_ONLY,
 		                           XmlNamespaceOption.INCLUDE_IF_SET);
 	}
+
+
 	
-	/** Returns a query for rows of the indicated table, with optional leading includedFields followed by an XMLType column row_xml containing
-	 *  the xml representation of the row.  
-	 */
-	public String getRowElementsQuery(TableOutputSpec ospec,
-	                                  String table_alias, // Required
-	                                  String filter_condition, // Optional.  Any includedFields referenced should be qualified with table_alias.
-	                                  RowOutputType row_output_type,
-	                                  XmlNamespaceOption xmlns_opt)
+	public String getRowElementsQuery(TableOutputSpec ospec,         // Required
+	                                  String table_alias,            // Required
+	                                  String filter_condition,       // Optional. Any includedFields referenced should be qualified with table_alias.
+	                                  RowOutputType row_output_type, // Required
+	                                  XmlNamespaceOption xmlns_opt)  // Required
 	{
+		requireArg(ospec, "output spec");
 		if ( table_alias == null || table_alias.trim().length() == 0 )
-			throw new IllegalArgumentException("Table alias is required.");
+			throw new IllegalArgumentException("Table alias cannot be null or an empty string.");
 		
 		String xml_namespace = xmlns_opt == XmlNamespaceOption.INCLUDE_IF_SET ? outputXmlNamespace : null;
 		
@@ -174,6 +173,8 @@ public class QueryGenerator {
 		template_model.put("parent_subqueries", getParentTableSubqueries(ospec, table_alias, "     "));
 		template_model.put("table_alias", table_alias);
 		template_model.put("filter_condition", filter_condition);
+		if ( ospec.getRowOrdering() != null )
+			template_model.put("order_by_exprs", ospec.getRowOrdering().getOrderByExpressions(table_alias));
 
 		try
 		{
@@ -190,8 +191,8 @@ public class QueryGenerator {
 		}
 	}
 	
-	public String getRowCollectionElementQuery(TableOutputSpec ospec,
-	                                           String rows_query_alias, // Optional.
+	public String getRowCollectionElementQuery(TableOutputSpec ospec,              // Required
+	                                           String rows_query_alias,            // Optional
 	                                           String filter_cond_over_rows_query) // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
 	{
 		return getRowCollectionElementQuery(ospec,
@@ -201,11 +202,11 @@ public class QueryGenerator {
 		                                    XmlNamespaceOption.INCLUDE_IF_SET);
 	}
 	
-	public String getRowCollectionElementQuery(TableOutputSpec ospec,
-	                                           String rows_query_alias, // Optional.
+	public String getRowCollectionElementQuery(TableOutputSpec ospec,              // Required
+	                                           String rows_query_alias,            // Optional
 	                                           String filter_cond_over_rows_query, // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
-	                                           XmlOutputType xml_output_type,
-	                                           XmlNamespaceOption xmlns_opt)
+	                                           XmlOutputType xml_output_type,      // Required
+	                                           XmlNamespaceOption xmlns_opt)       // Required
 	{
 		String rows_query = getRowElementsQuery(ospec, 
 		                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
@@ -217,15 +218,16 @@ public class QueryGenerator {
 		
 		String xml_namespace = xmlns_opt == XmlNamespaceOption.INCLUDE_IF_SET ? outputXmlNamespace : null;
 		
-		
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		template_model.put("row_collection_element_name", ospec.getRowCollectionElementName());
 		template_model.put("xmlns", xml_namespace);
 		template_model.put("convert_to_clob", convert_to_clob);
 		template_model.put("rows_query", indent(rows_query, "   ", false));
 		template_model.put("rows_query_alias", rows_query_alias);
-		template_model.put("where_cond", filter_cond_over_rows_query != null ? "where\n" + indent(filter_cond_over_rows_query, "  ")
-				                                                             : "");
+		template_model.put("where_cond", filter_cond_over_rows_query != null ? "where\n" + indent(filter_cond_over_rows_query, "  ") : "");
+		if ( ospec.getRowOrdering() != null )
+			template_model.put("order_by_exprs", ospec.getRowOrdering().getOrderByExpressions(rows_query_alias));
+
 		try
 		{
 			Writer sw = new StringWriter();
@@ -242,7 +244,7 @@ public class QueryGenerator {
 	}
 
 	/** Return a single row whose rowcoll_xml column contains a forest of xml elements representing the rows of the indicated table for
-	 * which ospec is the output specification.
+	 *  which ospec is the output specification.
 	 */
 	public String getRowForestQuery(TableOutputSpec ospec,
 	                                String rows_query_alias, // Optional.
@@ -257,8 +259,10 @@ public class QueryGenerator {
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		template_model.put("rows_query", indent(rows_query, "   ", false));
 		template_model.put("rows_query_alias", rows_query_alias);
-		template_model.put("where_cond", filter_cond_over_rows_query != null ? "where\n" + indent(filter_cond_over_rows_query, "  ")
-				                                                             : "");
+		template_model.put("where_cond", filter_cond_over_rows_query != null ? "where\n" + indent(filter_cond_over_rows_query, "  ") : "");
+		if ( ospec.getRowOrdering() != null )
+			template_model.put("order_by_exprs", ospec.getRowOrdering().getOrderByExpressions(rows_query_alias));
+		
 		try
 		{
 			Writer sw = new StringWriter();
@@ -383,31 +387,42 @@ public class QueryGenerator {
 			                     MULTIPLE_ROW_ELEMENT_RESULTS }
 		
 		TableOutputSpec ospec;
+		QueryStyle queryStyle;
 		String tableAlias;
 		String filterCondition;
-		QueryStyle queryStyle;
+		
 		
 		public XdaQuery(TableOutputSpec ospec,
-		                String tableAlias,
-		                String filterCondition,
-		                QueryStyle query_style)
+		                QueryStyle query_style,
+		                String table_alias)
+		{
+			this(ospec,
+			     query_style,
+			     table_alias,
+			     null);
+		}
+		
+		public XdaQuery(TableOutputSpec ospec,
+		                QueryStyle query_style,
+		                String table_alias,
+		                String filter_condition)
 		{
 			super();
 			
-			this.ospec = requireArg(ospec, "table output spec");;
-			this.tableAlias = tableAlias;
-			this.filterCondition = filterCondition;
+			this.ospec = requireArg(ospec, "table output spec");
 			this.queryStyle = query_style;
-		}
-
-		public QueryStyle getQueryStyle()
-		{
-			return queryStyle;
+			this.tableAlias = table_alias;
+			this.filterCondition = filter_condition;
 		}
 
 		public TableOutputSpec getTableOutputSpec()
 		{
 			return ospec;
+		}
+		
+		public QueryStyle getQueryStyle()
+		{
+			return queryStyle;
 		}
 		
 		public String getTableAlias()
@@ -419,6 +434,7 @@ public class QueryGenerator {
 		{
 			return filterCondition;
 		}
+
 		
 		public int hashCode()
 		{

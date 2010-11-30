@@ -4,20 +4,22 @@ select -- rows of ${relid}
   <#if convert_to_clob>xmlserialize(content </#if>xmlelement("${row_element_name}"<#if xmlns??>, xmlattributes('${xmlns}' as "xmlns")</#if>
    ,xmlforest(
      <#list all_fields as f>
-     ${field_prefix}${f.name} "${f.name?lower_case}"${f_has_next?string(',','')}  <#-- ,xmlelement("${f.name?lower_case}", ${field_prefix}${f.name}) -->
+     ${field_prefix}${f.name} "${f.name?lower_case}"${f_has_next?string(',','')}
      </#list>
     )
-   -- <#if (child_subqueries![])?size == 0>No</#if> child tables for ${relid}
-   <#list child_subqueries![] as child_subquery>
+   -- <#if (child_subqueries!)?size == 0>No</#if> child tables for ${relid}
+   <#list child_subqueries! as child_subquery>
    ,(${child_subquery}
     ) -- child subquery
    </#list>
-   -- <#if (parent_subqueries![])?size == 0>No</#if> parent tables for ${relid}
-   <#list parent_subqueries![] as parent_subquery>
+   -- <#if (parent_subqueries!)?size == 0>No</#if> parent tables for ${relid}
+   <#list parent_subqueries! as parent_subquery>
    ,(${parent_subquery}
     ) -- parent subquery
    </#list>
   )<#if convert_to_clob> as clob)</#if> row_xml
 from ${relid.idString} ${table_alias}<#if ((filter_condition!"")?length > 0)>
 where
-  ${filter_condition}</#if>
+  ${filter_condition}</#if><#if (order_by_exprs!)?size != 0>
+order by <#list order_by_exprs as expr>${expr}${expr_has_next?string(',','')}</#list><#t>
+</#if>

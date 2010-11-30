@@ -23,7 +23,7 @@ import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.dbmd.RelMetaData;
-import gov.fda.nctr.dbmd.DBMD.ForeignKeyInclusion;
+import gov.fda.nctr.dbmd.DBMD.ForeignKeyScope;
 import gov.fda.nctr.util.StringFuns;
 
 
@@ -137,8 +137,8 @@ public class TypedTableOutputSpecSourcesGenerator {
 		template_model.put("namer", namer);
 		template_model.put("element_namer_creation_expr", elementNamerCreationExpr);
 		template_model.put("relid", rel_id);
-		template_model.put("fks_from_child_tables", dbmd.getForeignKeysFromTo(null, rel_id, DBMD.ForeignKeyInclusion.REGISTERED_TABLES_ONLY));
-		template_model.put("fks_to_parent_tables",  dbmd.getForeignKeysFromTo(rel_id, null, DBMD.ForeignKeyInclusion.REGISTERED_TABLES_ONLY));
+		template_model.put("fks_from_child_tables", dbmd.getForeignKeysFromTo(null, rel_id, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY));
+		template_model.put("fks_to_parent_tables",  dbmd.getForeignKeysFromTo(rel_id, null, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY));
 		
 		try
 		{
@@ -218,7 +218,7 @@ public class TypedTableOutputSpecSourcesGenerator {
 		{
 			List<ForeignKey> fks = dbmd.getForeignKeysFromTo(fk_from_child.getSourceRelationId(),
 			                                                 fk_from_child.getTargetRelationId(),
-			                                                 ForeignKeyInclusion.REGISTERED_TABLES_ONLY);
+			                                                 ForeignKeyScope.REGISTERED_TABLES_ONLY);
 			
 			RelId rel_to_add = fk_from_child.getSourceRelationId();
 			
@@ -238,7 +238,7 @@ public class TypedTableOutputSpecSourcesGenerator {
 		{
 			List<ForeignKey> fks = dbmd.getForeignKeysFromTo(fk_to_parent.getSourceRelationId(),
 			                                                 fk_to_parent.getTargetRelationId(),
-			                                                 ForeignKeyInclusion.REGISTERED_TABLES_ONLY);
+			                                                 ForeignKeyScope.REGISTERED_TABLES_ONLY);
 			
 			RelId rel_to_add = fk_to_parent.getTargetRelationId();
 			

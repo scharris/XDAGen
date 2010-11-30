@@ -1,5 +1,6 @@
 package gov.fda.nctr.xdagen.tests;
 
+import static gov.fda.nctr.xdagen.TableOutputSpec.RowOrdering.byFields;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.util.StringFuns;
 import gov.fda.nctr.xdagen.QueryGenerator;
@@ -88,7 +89,9 @@ public class TestQueries extends TestCase {
 
 	public void testOneRowElementsQueryRowXmlWithInlineCollections() throws IOException, SQLException
 	{
-		String sql = inlineCollElsQryGen.getRowElementsQuery(drugInlineColls, "d", "d.id = 1");
+		String sql = inlineCollElsQryGen.getRowElementsQuery(drugInlineColls,
+		                                                     "d",
+		                                                     "d.id = 1");
 
 		Clob row_xml_clob = (Clob)getOneResult("ROW_XML", sql);
 		assertNotNull(row_xml_clob);
@@ -109,7 +112,9 @@ public class TestQueries extends TestCase {
 	
 	public void testOneRowElementsQueryRowXmlWithWrappedCollections() throws IOException, SQLException
 	{
-		String sql = wrappedCollElsQryGen.getRowElementsQuery(drugWrappedColls, "d", "d.id = 1");
+		String sql = wrappedCollElsQryGen.getRowElementsQuery(drugWrappedColls,
+		                                                      "d",
+		                                                      "d.id = 1");
 
 		Clob row_xml_clob = (Clob)getOneResult("ROW_XML", sql);
 		assertNotNull(row_xml_clob);
@@ -128,9 +133,61 @@ public class TestQueries extends TestCase {
 	}
 	
 	
+	public void testRowElementsOrderingAndFilteringWithInlineCollections() throws IOException, SQLException
+	{
+		TableOutputSpec drug_desc_id_ospec = drugInlineColls.withRowOrdering(byFields("id desc","name")); // name superfluous here but just checking multiple order-by expressions
+		
+		String sql = inlineCollElsQryGen.getRowElementsQuery(drug_desc_id_ospec,
+		                                                     "d",
+		                                                     "d.id >= 1 and d.id <= 5");
+
+		Clob row_xml_clob = (Clob)getNthResult(2, "ROW_XML", sql); // 2nd row with this sorting and filtering should be drug with id = 4.
+		assertNotNull(row_xml_clob);
+		
+		String row_xml = StringFuns.readStreamAsString(row_xml_clob.getCharacterStream());
+		
+		if ( onlyWriteExpectedData )
+		{
+			StringFuns.writeStringToFile(row_xml, "src/test/resources/expected_results/drug4_rowxml_inline_el_colls.xml");
+			return;
+		}
+		
+		String expected_rowxml = StringFuns.resourceAsString("expected_results/drug4_rowxml_inline_el_colls.xml");
+		
+		assertEquals(expected_rowxml.trim(), row_xml.trim());
+	}
+
+	
+	public void testRowElementsOrderingAndFilteringWithWrappedCollections() throws IOException, SQLException
+	{
+		TableOutputSpec drug_desc_id_ospec = drugWrappedColls.withRowOrdering(byFields("id desc"));
+		
+		String sql = wrappedCollElsQryGen.getRowElementsQuery(drug_desc_id_ospec,
+		                                                      "d",
+		                                                      "d.id >= 1 and d.id <= 5");
+
+		Clob row_xml_clob = (Clob)getNthResult(2, "ROW_XML", sql); // 2nd row with this sorting and filtering should be drug with id = 4.
+		assertNotNull(row_xml_clob);
+		
+		String row_xml = StringFuns.readStreamAsString(row_xml_clob.getCharacterStream());
+		
+		if ( onlyWriteExpectedData )
+		{
+			StringFuns.writeStringToFile(row_xml, "src/test/resources/expected_results/drug4_rowxml_wrapped_el_colls.xml");
+			return;
+		}
+		
+		String expected_rowxml = StringFuns.resourceAsString("expected_results/drug4_rowxml_wrapped_el_colls.xml");
+		
+		assertEquals(expected_rowxml.trim(), row_xml.trim());
+	}
+	
+	
 	public void testRowCollectionElementQueryWithInlineCollections() throws SQLException, IOException 
 	{
-		String sql = inlineCollElsQryGen.getRowCollectionElementQuery(drugInlineColls, null, null);
+		TableOutputSpec drug_id_ordered_ospec = drugInlineColls.withRowOrdering(byFields("id"));
+		
+		String sql = inlineCollElsQryGen.getRowCollectionElementQuery(drug_id_ordered_ospec, null, null);
 		
 		Clob rowcoll_xml_clob = (Clob)getOneResult("ROWCOLL_XML", sql);
 		
@@ -149,7 +206,9 @@ public class TestQueries extends TestCase {
 	
 	public void testRowCollectionElementQueryWithWrappedCollections() throws SQLException, IOException 
 	{
-		String sql = wrappedCollElsQryGen.getRowCollectionElementQuery(drugWrappedColls, null, null);
+		TableOutputSpec drug_id_ordered_ospec = drugWrappedColls.withRowOrdering(byFields("id"));
+		
+		String sql = wrappedCollElsQryGen.getRowCollectionElementQuery(drug_id_ordered_ospec, null, null);
 		
 		Clob rowcoll_xml_clob = (Clob)getOneResult("ROWCOLL_XML", sql);
 		
@@ -169,19 +228,40 @@ public class TestQueries extends TestCase {
 
 	protected Object getOneResult(String col_name, String sql) throws SQLException
 	{
+		return getNthResult(1, col_name, sql);
+	}
+	
+	
+	protected Object getNthResult(int n, String col_name, String sql) throws SQLException
+	{
 		PreparedStatement stmt = conn.prepareStatement(sql);
+		ResultSet rs = null;
 		
-		ResultSet rs = stmt.executeQuery();
+		try
+		{
+			rs = stmt.executeQuery();
 		
-		assertTrue(rs.next());
+			while(n > 0)
+			{
+				assertTrue(rs.next());
+				--n;
+			}
 		
-		return rs.getObject(col_name);
+			return rs.getObject(col_name);
+		}
+		finally
+		{
+			if ( rs != null )
+				rs.close();
+			if ( stmt != null )
+				stmt.close();
+		}
 	}
 	
 
 	public void testInlineCollectionsDrugRowElementsQueryText() throws IOException
 	{
-		String sql = inlineCollElsQryGen.getRowElementsQuery(drugInlineColls, "d", null);
+		String sql = inlineCollElsQryGen.getRowElementsQuery(drugInlineColls, "d");
 
 		if ( onlyWriteExpectedData )
 		{
@@ -197,7 +277,7 @@ public class TestQueries extends TestCase {
 	
 	public void testWrappedCollectionsDrugRowElementsQueryText() throws IOException
 	{
-		String sql = wrappedCollElsQryGen.getRowElementsQuery(drugWrappedColls, "d", null);
+		String sql = wrappedCollElsQryGen.getRowElementsQuery(drugWrappedColls, "d");
 		
 		if ( onlyWriteExpectedData )
 		{
