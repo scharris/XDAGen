@@ -37,6 +37,7 @@ public class DatabaseXmlSchemaGenerator {
 	
 	TypeNamer typeNamer;
 	
+	ElementNamer elNamer;
 	
 	Configuration templateConfig;
 	Template xsdTemplate;
@@ -49,16 +50,18 @@ public class DatabaseXmlSchemaGenerator {
 
 	
 	// Primary constructor.
-	public DatabaseXmlSchemaGenerator(DBMD dbmd,
-	                                  String target_xml_namespace,
-	                                  XmlElementCollectionStyle xml_el_coll_style,
-	                                  TypeNamer type_namer)  // optional
+	public DatabaseXmlSchemaGenerator(DBMD dbmd,                                   // Required
+	                                  String target_xml_namespace,                 // Optional
+	                                  XmlElementCollectionStyle xml_el_coll_style, // Required
+	                                  TypeNamer type_namer,                        // Optional
+	                                  ElementNamer el_namer)                       // Optional
 		throws IOException
 	{
 		this.dbmd = dbmd;
 		this.targetXmlNamespace = target_xml_namespace;
 		this.xmlElementCollectionStyle = xml_el_coll_style;
 		this.typeNamer = type_namer != null ? type_namer : new DefaultTypeNamer(dbmd);
+		this.elNamer = el_namer != null ? el_namer : new DefaultElementNamer(dbmd, xml_el_coll_style);
 		
 		// Configure template engine.
 		this.templateConfig = new Configuration();
@@ -80,7 +83,8 @@ public class DatabaseXmlSchemaGenerator {
 		this(dbmd,
 		     target_xml_namespace,
 		     xml_el_coll_style,
-		     new DefaultTypeNamer(dbmd));
+		     new DefaultTypeNamer(dbmd),
+		     new DefaultElementNamer(dbmd, xml_el_coll_style));
 	}
 	
 	
@@ -105,6 +109,17 @@ public class DatabaseXmlSchemaGenerator {
 		this.typeNamer = type_namer;
 	}
 	
+	public ElementNamer getElementNamer()
+	{
+		return elNamer;
+	}
+	
+	public void setElementNamer(ElementNamer el_namer)
+	{
+		this.elNamer = el_namer;
+	}
+	
+	
 	public XmlElementCollectionStyle getXmlElementCollectionStyle()
 	{
 		return xmlElementCollectionStyle;
@@ -127,17 +142,27 @@ public class DatabaseXmlSchemaGenerator {
 		this.includeGenerationTimestamp = includeGenerationTimestamp;
 	}
 
+
 	
 	public String getStandardXMLSchema(Set<RelId> rels_getting_toplevel_el,      // define top level elements for these
-	                                   Set<RelId> rels_getting_toplevel_list_el,
-	                                   ElementNamer el_namer)
+	                                   Set<RelId> rels_getting_toplevel_list_el) // define top level list elements for these
+	{
+		return getXMLSchema(rels_getting_toplevel_el,
+		                    rels_getting_toplevel_list_el,
+		                    new DefaultTableOutputSpecFactory(dbmd, elNamer));
+	}
+
+	
+	public String getXMLSchema(Set<RelId> rels_getting_toplevel_el,      // define top level elements for these
+	                           Set<RelId> rels_getting_toplevel_list_el, // define top level list elements for these
+	                           TableOutputSpec.Factory ospec_factory)    // Required
 	{
 		List<TableOutputSpec> ospecs = new ArrayList<TableOutputSpec>();
 		
 		for(RelMetaData relmd: dbmd.getRelationMetaDatas())
 		{
-			TableOutputSpec ospec = new TableOutputSpec(relmd.getRelationId(), dbmd, el_namer).withAllChildTables()
-			                                                                                  .withAllParentTables();
+			TableOutputSpec ospec = ospec_factory.table(relmd.getRelationId()).withAllChildTables()
+																			  .withAllParentTables();
 			
 			ospecs.add(ospec);
 		}
@@ -150,7 +175,6 @@ public class DatabaseXmlSchemaGenerator {
 	}
 
 	
-
 	public String getXMLSchema(List<TableOutputSpec> ospecs,
 	                           Set<RelId> toplevel_el_rels,      // define top level elements for these, or for all if null.
 	                           Set<RelId> toplevel_list_el_rels, // define top level list elements for these, or for all if null.
@@ -365,11 +389,8 @@ public class DatabaseXmlSchemaGenerator {
         toplevel_el_relids = toplevel_el_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_relids_strlist)) : null;
         toplevel_el_list_relids = toplevel_el_list_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_list_relids_strlist)) : null;
         
-        ElementNamer el_namer = new DefaultElementNamer(dbmd, xml_collection_style);
-        
         String xsd = g.getStandardXMLSchema(toplevel_el_relids,
-                                            toplevel_el_list_relids,
-                                            el_namer);
+                                            toplevel_el_list_relids);
         
         OutputStream os = new FileOutputStream(xmlschema_outfile_path);
         os.write(xsd.getBytes());

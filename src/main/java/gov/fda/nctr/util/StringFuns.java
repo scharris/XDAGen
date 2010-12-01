@@ -56,6 +56,16 @@ public class StringFuns {
         return res.toString();
     }    
 
+	public static String camelCaseInitialLower(String name)
+	{
+        StringBuilder res = new StringBuilder();
+        for (String word : name.split("_"))
+        {
+        	res.append(res.length() == 0 ? Character.toLowerCase(word.charAt(0)) : Character.toUpperCase(word.charAt(0)));
+            res.append(word.substring(1).toLowerCase());
+        }
+        return res.toString();
+    }
 
 	public static List<String> dotQualify(List<String> names, String maybe_alias)
 	{

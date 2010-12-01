@@ -4,8 +4,6 @@ import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.util.StringFuns;
 import gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator;
-import gov.fda.nctr.xdagen.DefaultElementNamer;
-import gov.fda.nctr.xdagen.ElementNamer;
 import gov.fda.nctr.xdagen.XmlElementCollectionStyle;
 
 import java.io.IOException;
@@ -64,11 +62,8 @@ public class TestXmlSchemas extends TestCase {
         Set<RelId> toplevel_el_relids = null;
         Set<RelId> toplevel_el_list_relids = null;
         
-        ElementNamer el_namer = new DefaultElementNamer(dbmd, el_coll_style);
-        
         String xsd = g.getStandardXMLSchema(toplevel_el_relids,
-                                            toplevel_el_list_relids,
-                                            el_namer);
+                                            toplevel_el_list_relids);
         
         return xsd;
 	}

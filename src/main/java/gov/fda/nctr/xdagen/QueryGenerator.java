@@ -36,10 +36,14 @@ public class QueryGenerator {
 
 	DBMD dbmd;
 	
-	XmlElementCollectionStyle xmlElementCollectionStyle;
-	
 	String outputXmlNamespace;
 	
+	XmlElementCollectionStyle xmlElementCollectionStyle;
+	
+	/* This member merely allows using the convenient table() method, but is easy to create in its default form automatically here
+	 * from other members, so the clients often won't have to bother with TOS factories or their construction directly. */
+	TableOutputSpec.Factory tosFactory; 
+
 	// Output templates
 	Configuration templateConfig;
 	Template rowElementsQueryTemplate;
@@ -78,10 +82,11 @@ public class QueryGenerator {
 	                      XmlElementCollectionStyle xml_collection_style)  // Required
 	  throws IOException
 	{
-		this.dbmd = dbmd;
+		this.dbmd = requireArg(dbmd, "database metadata");
 		this.outputXmlNamespace = output_xml_namespace;
-		this.xmlElementCollectionStyle = xml_collection_style;
-
+		this.xmlElementCollectionStyle = requireArg(xml_collection_style, "xml element collection style");
+		this.tosFactory = new DefaultTableOutputSpecFactory(dbmd, xml_collection_style);
+		
 		// Configure template engine.
 		templateConfig = new Configuration();
 		templateConfig.setTemplateLoader(new ClassTemplateLoader(getClass(), CLASSPATH_TEMPLATES_DIR_PATH));
@@ -93,6 +98,15 @@ public class QueryGenerator {
 		rowForestQueryTemplate = templateConfig.getTemplate(ROWFOREST_QUERY_TEMPLATE);
 	}
 	
+	public void setTableOutputSpecFactory(TableOutputSpec.Factory f)
+	{
+		this.tosFactory = f;
+	}
+	
+	public TableOutputSpec.Factory getTableOutputSpecFactory()
+	{
+		return tosFactory;
+	}
 	
 	public String getSql(XdaQuery xda_qry)
 	{
@@ -374,10 +388,10 @@ public class QueryGenerator {
 	}
 
 
-	// Convenience method for creating an initial TableOutputSpec with dbmd and an element namer consistent with the element collection style in use in this query generator.
+	// Convenience method for creating an initial TableOutputSpec with dbmd and an element typedTableOutputSpecNamer consistent with the element collection style in use in this query generator.
 	public TableOutputSpec table(String pq_rel_name)
 	{
-		return new TableOutputSpec(pq_rel_name, dbmd, new DefaultElementNamer(dbmd, xmlElementCollectionStyle));
+		return tosFactory.table(pq_rel_name);
 	}
 	
 	

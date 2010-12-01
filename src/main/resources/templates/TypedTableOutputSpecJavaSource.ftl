@@ -4,35 +4,34 @@ import java.util.Set;
 import java.util.HashSet;
 
 import gov.fda.nctr.xdagen.TableOutputSpec;
-import gov.fda.nctr.xdagen.ElementNamer;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.RelId;
 
 
-<#assign class_name = namer.getGeneratedClassName(relid)/>
+<#assign class_name = namer.getTypedTableOutputSpecClassName(relid)/>
 
 public class ${class_name} extends TableOutputSpec {
 
-  public ${class_name}(DBMD dbmd, ElementNamer el_namer)
+  public ${class_name}(DBMD dbmd, TableOutputSpec.Factory tos_factory)
   {
     super(new RelId(<#if relid.catalog??>"${relid.catalog}"<#else>null</#if>,<#rt>
                     <#if relid.schema??>"${relid.schema}"<#else>null</#if>,<#t>
                     <#if relid.name??>"${relid.name}"<#else>null</#if>)<#lt>,
           dbmd,
-          el_namer);
+          tos_factory);
   }
   
   public ${class_name}(DBMD dbmd)
   {
     this(dbmd,
-         ${element_namer_creation_expr});
+         ${default_tableoutputspec_factory_expr});
   }
   
   
 <#list fks_from_child_tables as fk_from_child>
   <#assign method_name = namer.getChildAdditionMethodName(fk_from_child)/><#t>
   <#assign child_relid = fk_from_child.sourceRelationId/><#t>
-  <#assign child_ospec_class_name = namer.getGeneratedClassName(child_relid)/><#t>
+  <#assign child_ospec_class_name = namer.getTypedTableOutputSpecClassName(child_relid)/><#t>
   /** Add child table ${child_relid} with particular output specification. */
   public ${class_name} ${method_name}(${child_ospec_class_name} child_ospec)
   {
@@ -53,7 +52,7 @@ public class ${class_name} extends TableOutputSpec {
   /** Add child table ${child_relid} with default output specification. */
   public ${class_name} ${method_name}()
   {
-    return ${method_name}(new ${child_ospec_class_name}(this.dbmd, this.elementNamer));
+    return ${method_name}(new ${child_ospec_class_name}(this.dbmd, this.factory));
   }
 </#list>
 
@@ -61,7 +60,7 @@ public class ${class_name} extends TableOutputSpec {
 <#list fks_to_parent_tables as fk_to_parent>
   <#assign method_name = namer.getParentAdditionMethodName(fk_to_parent)/><#t>
   <#assign parent_relid = fk_to_parent.targetRelationId/><#t>
-  <#assign parent_ospec_class_name = namer.getGeneratedClassName(parent_relid)/><#t>
+  <#assign parent_ospec_class_name = namer.getTypedTableOutputSpecClassName(parent_relid)/><#t>
   /** Add parent table ${parent_relid} with particular output specification. */
   public ${class_name} ${method_name}(${parent_ospec_class_name} parent_ospec)
   {
@@ -82,7 +81,7 @@ public class ${class_name} extends TableOutputSpec {
   /** Add parent table ${parent_relid} with default output specification. */
   public ${class_name} ${method_name}()
   {
-    return ${method_name}(new ${parent_ospec_class_name}(this.dbmd, this.elementNamer));
+    return ${method_name}(new ${parent_ospec_class_name}(this.dbmd, this.factory));
   }
 </#list>
 }

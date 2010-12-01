@@ -1,8 +1,10 @@
 package gov.fda.nctr.xdagen;
 
 import static gov.fda.nctr.util.StringFuns.camelCase;
+import static gov.fda.nctr.util.StringFuns.camelCaseInitialLower;
 import static gov.fda.nctr.util.StringFuns.lc;
 import static gov.fda.nctr.util.StringFuns.stringFrom;
+import static gov.fda.nctr.util.StringFuns.writeStringToFile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,34 +35,33 @@ public class TypedTableOutputSpecSourcesGenerator {
 	
 	protected String targetPackage; // Target package for generated classes.
 	
-	protected Namer namer; // Controls naming of the generated classes and their parent/child addition methods.
+	protected TypedTableOutputSpecNamer typedTableOutputSpecNamer; // Controls naming of the generated classes and their parent/child addition methods.
 	
 	protected File outputDir;
 	
-	/* Setting this field allows controlling how ElementNamers are constructed in the generated classes for cases that an explicit ElementNamer
-	 * is not provided by their clients. The element namer may include references to a DBMD value named "dbmd".  The default is:
-	 *   "new gov.fda.nctr.xdagen.DefaultElementNamer(dbmd, gov.fda.nctr.xdagen.XmlElementCollectionStyle.INLINE)"
-	 */
-	protected String elementNamerCreationExpr;
+	protected String defaultTableOutputSpecFactoryExpr; // For use by secondary constructor in which client doesn't supply a TableOutputSpec.Factory instance.
 	
 	protected Configuration templateConfig;
 	protected Template classSourceFileTemplate;
+	protected Template prototypesSourceFileTemplate;
 	
 	protected static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
 	protected static final String JAVA_SOURCE_FILE_TEMPLATE =  "TypedTableOutputSpecJavaSource.ftl";
+	protected static final String PROTOTYPES_SOURCE_FILE_TEMPLATE =  "AllTypedTableOutputSpecPrototypesJavaSource.ftl";
 
 	// Primary constructor.
 	public TypedTableOutputSpecSourcesGenerator(DBMD dbmd,
 	                                            String target_java_package,
-	                                            String element_namer_creation_expr, // optional
-	                                            Namer namer)  // optional
+	                                            String default_tableoutputspec_factory_expr, // optional
+	                                            TypedTableOutputSpecNamer typedtos_namer)  // optional
 		throws IOException
 	{
 		this.dbmd = dbmd;
 		this.targetPackage = target_java_package;
-		this.elementNamerCreationExpr = element_namer_creation_expr == null ? "new gov.fda.nctr.xdagen.DefaultElementNamer(dbmd, gov.fda.nctr.xdagen.XmlElementCollectionStyle.INLINE)"
-				                                                            : element_namer_creation_expr;
-		this.namer = namer != null ? namer : new DefaultNamer(dbmd);
+		this.defaultTableOutputSpecFactoryExpr = default_tableoutputspec_factory_expr == null ?
+				"new gov.fda.nctr.xdagen.DefaultTableOutputSpecFactory(dbmd, gov.fda.nctr.xdagen.XmlElementCollectionStyle.INLINE)"
+			  : default_tableoutputspec_factory_expr;
+		this.typedTableOutputSpecNamer = typedtos_namer != null ? typedtos_namer : new DefaultTypedTableOutputSpecNamer(dbmd);
 		
 		// Configure template engine.
 		this.templateConfig = new Configuration();
@@ -69,6 +70,7 @@ public class TypedTableOutputSpecSourcesGenerator {
 		
 		// Load templates.
 		this.classSourceFileTemplate = templateConfig.getTemplate(JAVA_SOURCE_FILE_TEMPLATE);
+		this.prototypesSourceFileTemplate = templateConfig.getTemplate(PROTOTYPES_SOURCE_FILE_TEMPLATE);
 	}
 	
 	
@@ -79,7 +81,7 @@ public class TypedTableOutputSpecSourcesGenerator {
 		this(dbmd,
 		     target_java_package,
 		     null,
-		     new DefaultNamer(dbmd));
+		     new DefaultTypedTableOutputSpecNamer(dbmd));
 	}
 	
 	
@@ -93,30 +95,28 @@ public class TypedTableOutputSpecSourcesGenerator {
 		return targetPackage;
 	}
 
-	public Namer getNamer()
+	public TypedTableOutputSpecNamer getTypedTableOutputSpecNamer()
 	{
-		return namer;
+		return typedTableOutputSpecNamer;
 	}
 	
-	public void setNamer(Namer namer)
+	public void setTypedTableOutputSpecNamer(TypedTableOutputSpecNamer typedTableOutputSpecNamer)
 	{
-		this.namer = namer;
+		this.typedTableOutputSpecNamer = typedTableOutputSpecNamer;
 	}
 	
-	/** Setting this property allows controlling how ElementNamers are constructed in the generated classes for cases that an explicit ElementNamer
-	 *  is not provided by their clients. The element namer may include references to a DBMD value named "dbmd".  The default is:
-	 *   "new gov.fda.nctr.xdagen.DefaultElementNamer(dbmd, gov.fda.nctr.xdagen.XmlElementCollectionStyle.XmlElementCollectionStyle.XmlElementCollectionStyle.INLINE)"
-	 *  This allows the generated classes to be constructed with a desired ElementNamer which is set at code-generation time, so that their
-	 *  clients do not have to explicitly pass ElementNamer instances.
+	/* Setting this field allows controlling how a TableOutputSpec.Factory is supplied in the generated classes for cases that an explicit
+	 * factory is not provided by their clients. The factory may include references to a DBMD value named "dbmd".  The default is:
+	 *   "new gov.fda.nctr.xdagen.DefaultTableOutputSpecFactory(dbmd, gov.fda.nctr.xdagen.XmlElementCollectionStyle.INLINE)"
 	 */
-	public String getElementNamerCreationExpression()
+	public String getDefaultTableOutputSpecFactoryExpression()
 	{
-		return elementNamerCreationExpr;
+		return defaultTableOutputSpecFactoryExpr;
 	}
 	
-	public void setElementNamerCreationExpression(String el_namer_creation_expr)
+	public void setDefaultTableOutputSpecFactoryExpression(String fe)
 	{
-		this.elementNamerCreationExpr = el_namer_creation_expr;
+		this.defaultTableOutputSpecFactoryExpr = fe;
 	}
 	
 	public void setOutputDirectory(File output_dir)
@@ -129,22 +129,45 @@ public class TypedTableOutputSpecSourcesGenerator {
 		return outputDir;
 	}
 	
-	public String getJavaSource(RelId rel_id)
+	public String getJavaSource(RelId relid)
 	{
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		
 		template_model.put("target_package", targetPackage);
-		template_model.put("namer", namer);
-		template_model.put("element_namer_creation_expr", elementNamerCreationExpr);
-		template_model.put("relid", rel_id);
-		template_model.put("fks_from_child_tables", dbmd.getForeignKeysFromTo(null, rel_id, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY));
-		template_model.put("fks_to_parent_tables",  dbmd.getForeignKeysFromTo(rel_id, null, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY));
+		template_model.put("namer", typedTableOutputSpecNamer);
+		template_model.put("default_tableoutputspec_factory_expr", defaultTableOutputSpecFactoryExpr);
+		template_model.put("relid", relid);
+		template_model.put("fks_from_child_tables", dbmd.getForeignKeysFromTo(null, relid, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY));
+		template_model.put("fks_to_parent_tables",  dbmd.getForeignKeysFromTo(relid, null, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY));
 		
 		try
 		{
 			Writer sw = new StringWriter();
 			
 			classSourceFileTemplate.process(template_model, sw);
+		
+			return sw.toString();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			throw new RuntimeException("Failed to produce typed table output spec source file from template: " + e.getMessage());
+		}	
+	}
+	
+	public String getPrototypesJavaSource()
+	{
+		Map<String,Object> template_model = new HashMap<String,Object>();
+		
+		template_model.put("target_package", targetPackage);
+		template_model.put("namer", typedTableOutputSpecNamer);
+		template_model.put("relids", dbmd.getRelationIds());
+		
+		try
+		{
+			Writer sw = new StringWriter();
+			
+			prototypesSourceFileTemplate.process(template_model, sw);
 		
 			return sw.toString();
 		}
@@ -177,40 +200,47 @@ public class TypedTableOutputSpecSourcesGenerator {
 			
 			String java_src = getJavaSource(relid);
 			
-			String file_name = namer.getGeneratedClassName(relid) + ".java";
+			String file_name = typedTableOutputSpecNamer.getTypedTableOutputSpecClassName(relid) + ".java";
 			
 			StringFuns.writeStringToFile(java_src,
 			                             new File(output_leaf_dir, file_name));
 		}
+		
+		writeStringToFile(getPrototypesJavaSource(),
+						  new File(output_leaf_dir, typedTableOutputSpecNamer.getPrototypesClassName() + ".java"));
 	}
 	
 	
 	///////////////////////////////////////////////////////////////
 	// Naming interface and default implementation.
 	
-	public static interface Namer {
+	public static interface TypedTableOutputSpecNamer {
 		
-		public String getGeneratedClassName(RelId rel_id);
+		public String getTypedTableOutputSpecClassName(RelId relid);
 		
 		public String getChildAdditionMethodName(ForeignKey fk_from_child);
 		
 		public String getParentAdditionMethodName(ForeignKey fk_to_parent);
 		
+		public String getPrototypesClassName();
+		
+		public String getPrototypeMemberName(RelId relid);
+		
 	}
 	
-	public static class DefaultNamer implements Namer {
+	public static class DefaultTypedTableOutputSpecNamer implements TypedTableOutputSpecNamer {
 		
 		DBMD dbmd;
 		
-		public DefaultNamer(DBMD dbmd)
+		public DefaultTypedTableOutputSpecNamer(DBMD dbmd)
 		{
 			this.dbmd = dbmd;
 		}
 		
 		@Override
-		public String getGeneratedClassName(RelId rel_id)
+		public String getTypedTableOutputSpecClassName(RelId relid)
 		{
-			return camelCase(rel_id.getName()) + "TableOutputSpec";
+			return camelCase(relid.getName()) + "TableOutputSpec";
 		}
 
 		@Override
@@ -252,6 +282,19 @@ public class TypedTableOutputSpecSourcesGenerator {
 				       "ReferencedVia" + camelCase(stringFrom(lc(fk_to_parent.getSourceFieldNames()),"_and_"));
 			}
 		}
+		
+		@Override
+		public String getPrototypesClassName()
+		{
+			return "Prototypes";
+		}
+		
+		@Override
+		public String getPrototypeMemberName(RelId relid)
+		{
+			return camelCaseInitialLower(relid.getName());
+		}
+
 
 		protected String getSimpleChildAdditionMethodName(RelId child_relid)
 		{

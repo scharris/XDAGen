@@ -15,11 +15,11 @@ public interface ElementNamer {
 	                                     Set<String> reqd_fk_field_names); // optional, set of child fk field names used to disambiguate fk's
 	
 	public String getChildRowCollectionElementNameWithinParent(RelId child_rel_id,
-	                                               RelId parent_rel_id,
-	                                               Set<String> reqd_fk_field_names); // optional
+	                                                           RelId parent_rel_id,
+	                                                           Set<String> reqd_fk_field_names); // optional
 	
 	public String getParentRowElementNameWithinChild(RelId child_rel_id,
-	                                      RelId parent_rel_id,
-	                                      Set<String> reqd_fk_field_names); // optional
+	                                                 RelId parent_rel_id,
+	                                                 Set<String> reqd_fk_field_names); // optional
 	
 }
