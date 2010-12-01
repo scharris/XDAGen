@@ -18,10 +18,10 @@ public class ${class_name} {
       {
         if ( !initialized )
         {
-        	<#list relids as relid>
+          <#list relids as relid>
           ${namer.getPrototypeMemberName(relid)} = new ${namer.getTypedTableOutputSpecClassName(relid)}(dbmd, tos_factory);
-					</#list>
-        	
+          </#list>
+          
           initialized = true;
         }
       }

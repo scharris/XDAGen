@@ -6,6 +6,7 @@ import java.util.HashSet;
 import gov.fda.nctr.xdagen.TableOutputSpec;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.RelId;
+import gov.fda.nctr.dbmd.ForeignKey;
 
 
 <#assign class_name = namer.getTypedTableOutputSpecClassName(relid)/>
@@ -84,4 +85,114 @@ public class ${class_name} extends TableOutputSpec {
     return ${method_name}(new ${parent_ospec_class_name}(this.dbmd, this.factory));
   }
 </#list>
+
+
+  // The rest of the methods just provide covariant return types (by casting) for the "with" methods which returned cloned and modified instances.
+
+  @Override
+  public ${class_name} withChild(ForeignKey fk_from_child,          // Required
+                                 TableOutputSpec child_output_spec) // Optional
+  {
+    return (${class_name})super.withChild(fk_from_child, child_output_spec);
+  }
+
+  @Override
+  public ${class_name} withChild(RelId child_relid,               // Required
+                                 Set<String> reqd_fk_field_names,  // Optional.  Required if multiple fk's from this child table reference this parent.
+                                 TableOutputSpec child_output_spec)
+  {
+    return (${class_name})super.withChild(child_relid, reqd_fk_field_names, child_output_spec);
+  }
+
+  @Override
+  public ${class_name} withChild(String pq_child_rel_name)
+  {
+    return (${class_name})super.withChild(pq_child_rel_name);
+  }
+
+  @Override
+  public ${class_name} withChild(String pq_child_rel_name,         // Required, possibly qualified table or view name.
+                                 Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this child table reference this parent.
+  {
+    return (${class_name})super.withChild(pq_child_rel_name, reqd_fk_field_names);
+  }
+
+  @Override
+  public ${class_name} withChild(TableOutputSpec child_output_spec) // Required
+  {
+    return (${class_name})super.withChild(child_output_spec);
+  }
+
+  @Override
+  public ${class_name} withChild(TableOutputSpec child_output_spec, // Required
+                                 Set<String> reqd_fk_field_names)   // Optional.  Required if multiple fk's from this child table reference this parent.
+  {
+    return (${class_name})super.withChild(child_output_spec, reqd_fk_field_names);
+  }
+
+  @Override
+  public ${class_name} withAllChildTables()
+  {
+    return (${class_name})super.withAllChildTables();
+  }
+
+  @Override
+  public ${class_name} withParent(ForeignKey fk_to_parent,            // Required
+                                  TableOutputSpec parent_output_spec) // Optional
+  {
+    return (${class_name})super.withParent(fk_to_parent, parent_output_spec);
+  }
+
+  @Override
+  public ${class_name} withParent(RelId parent_relid,               // Required
+                                  Set<String> reqd_fk_field_names,  // Optional.  Required if multiple fk's from this child table reference this parent.
+                                  TableOutputSpec parent_output_spec)
+  {
+    return (${class_name})super.withParent(parent_relid, reqd_fk_field_names, parent_output_spec);
+  }
+
+  @Override
+  public ${class_name} withParent(String pq_parent_rel_name)
+  {
+    return (${class_name})super.withParent(pq_parent_rel_name);
+  }
+
+  @Override
+  public ${class_name} withParent(String pq_parent_rel_name,         // Required, possibly qualified table or view name.
+                                  Set<String> reqd_fk_field_names)   // Optional.  Required if multiple fk's from this child table reference this parent.
+  {
+    return (${class_name})super.withParent(pq_parent_rel_name, reqd_fk_field_names);
+  }
+
+  @Override
+  public ${class_name} withParent(TableOutputSpec parent_output_spec) // Required
+  {
+    return (${class_name})super.withParent(parent_output_spec);
+  }
+
+  @Override
+  public ${class_name} withParent(TableOutputSpec parent_output_spec, // Required
+                                  Set<String> reqd_fk_field_names)    // Optional.  Required if multiple fk's from this child table reference this parent.
+  {
+    return (${class_name})super.withParent(parent_output_spec, reqd_fk_field_names);
+  }
+
+  @Override
+  public ${class_name} withAllParentTables()
+  {
+    return (${class_name})super.withAllParentTables();
+  }
+  
+
+  @Override
+  public ${class_name} orderedBy(TableOutputSpec.RowOrdering row_ordering)
+  {
+    return (${class_name})super.orderedBy(row_ordering);
+  }
+
+  @Override
+  public ${class_name} withTableOutputSpecFactory(TableOutputSpec.Factory f)
+  {
+      return (${class_name})super.withTableOutputSpecFactory(f);
+  }
 }

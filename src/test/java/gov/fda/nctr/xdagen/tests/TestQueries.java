@@ -1,6 +1,6 @@
 package gov.fda.nctr.xdagen.tests;
 
-import static gov.fda.nctr.xdagen.TableOutputSpec.RowOrdering.byFields;
+import static gov.fda.nctr.xdagen.TableOutputSpec.RowOrdering.fields;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.util.StringFuns;
 import gov.fda.nctr.xdagen.QueryGenerator;
@@ -135,7 +135,7 @@ public class TestQueries extends TestCase {
 	
 	public void testRowElementsOrderingAndFilteringWithInlineCollections() throws IOException, SQLException
 	{
-		TableOutputSpec drug_desc_id_ospec = drugInlineColls.withRowOrdering(byFields("id desc","name")); // name superfluous here but just checking multiple order-by expressions
+		TableOutputSpec drug_desc_id_ospec = drugInlineColls.orderedBy(fields("id desc","name")); // name superfluous here but just checking multiple order-by expressions
 		
 		String sql = inlineCollElsQryGen.getRowElementsQuery(drug_desc_id_ospec,
 		                                                     "d",
@@ -160,7 +160,7 @@ public class TestQueries extends TestCase {
 	
 	public void testRowElementsOrderingAndFilteringWithWrappedCollections() throws IOException, SQLException
 	{
-		TableOutputSpec drug_desc_id_ospec = drugWrappedColls.withRowOrdering(byFields("id desc"));
+		TableOutputSpec drug_desc_id_ospec = drugWrappedColls.orderedBy(fields("id desc"));
 		
 		String sql = wrappedCollElsQryGen.getRowElementsQuery(drug_desc_id_ospec,
 		                                                      "d",
@@ -185,7 +185,7 @@ public class TestQueries extends TestCase {
 	
 	public void testRowCollectionElementQueryWithInlineCollections() throws SQLException, IOException 
 	{
-		TableOutputSpec drug_id_ordered_ospec = drugInlineColls.withRowOrdering(byFields("id"));
+		TableOutputSpec drug_id_ordered_ospec = drugInlineColls.orderedBy(fields("id"));
 		
 		String sql = inlineCollElsQryGen.getRowCollectionElementQuery(drug_id_ordered_ospec, null, null);
 		
@@ -206,7 +206,7 @@ public class TestQueries extends TestCase {
 	
 	public void testRowCollectionElementQueryWithWrappedCollections() throws SQLException, IOException 
 	{
-		TableOutputSpec drug_id_ordered_ospec = drugWrappedColls.withRowOrdering(byFields("id"));
+		TableOutputSpec drug_id_ordered_ospec = drugWrappedColls.orderedBy(fields("id"));
 		
 		String sql = wrappedCollElsQryGen.getRowCollectionElementQuery(drug_id_ordered_ospec, null, null);
 		

@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-// TODO: Allow customizing output field names (Map<String,String>).
 
 public class TableOutputSpec implements Cloneable {
 
@@ -544,7 +543,7 @@ public class TableOutputSpec implements Cloneable {
 		
 		/** Convenience method for constructing order by expressions for field names.
 		 *  The field names may optionally including a trailing " asc" or " desc" to specify sort direction. */ 
-		public static RowOrdering byFields(final String... field_names)
+		public static RowOrdering fields(final String... field_names)
 		{
 			return new RowOrdering() {
 				public List<String> getOrderByExpressions(String field_qualifying_alias)
@@ -556,7 +555,7 @@ public class TableOutputSpec implements Cloneable {
 	}
 	
 	
-	public TableOutputSpec withRowOrdering(RowOrdering row_ordering)
+	public TableOutputSpec orderedBy(RowOrdering row_ordering)
 	{
 		try
 		{
@@ -578,7 +577,7 @@ public class TableOutputSpec implements Cloneable {
 	///////////////////////////////////////////////////////////////////////////////////
 	// Factory customization
 
-	public TableOutputSpec withFactory(Factory f)
+	public TableOutputSpec withTableOutputSpecFactory(Factory f)
 	{
 		try
 		{
