@@ -3,8 +3,8 @@ select -- rows of ${relid}
 <#if include_table_field_columns>  ${table_alias}.*,${"\n"}</#if>  -- row_xml
   <#if convert_to_clob>xmlserialize(content </#if>xmlelement("${row_element_name}"<#if xmlns??>, xmlattributes('${xmlns}' as "xmlns")</#if>
    ,xmlforest(
-     <#list all_fields as f>
-     ${field_prefix}${f.name} "${f.name?lower_case}"${f_has_next?string(',','')}
+     <#list output_field_names as fname>
+     ${field_prefix}${fname} "${fname?lower_case}"${fname_has_next?string(',','')}
      </#list>
     )
    -- <#if (child_subqueries!)?size == 0>No</#if> child tables for ${relid}

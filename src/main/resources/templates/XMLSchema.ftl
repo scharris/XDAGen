@@ -8,7 +8,6 @@
 --> 
 
 <#list ospecs as ospec>
-  <#assign relmd = qgen.databaseMetaData.getRelationMetaData(ospec.relationId)/><#t>
   <#assign el_name = ospec.rowElementName><#t>
   <#assign el_type_name = typeNamer.getRowElementTypeName(ospec.relationId)/><#t>
   <#assign list_el_name = ospec.rowCollectionElementName/><#t>
@@ -21,7 +20,7 @@
   <complexType name="${el_type_name}">
     <sequence>
       <!-- fields -->
-      <#list relmd.fields as f>
+      <#list ospec.includedFields as f>
       <#assign field_xs_type = qgen.getXmlSchemaTypeForJdbcTypeCode(f.jdbcTypeCode)>
       <element name="${f.name?lower_case}" type="${field_xs_type}" minOccurs="<#if f.nullable>0<#else>1</#if>"<#if f.nullable> nillable="true"</#if>/>
       </#list>

@@ -6,6 +6,7 @@ import static gov.fda.nctr.util.CoreFuns.requireArg;
 import static gov.fda.nctr.util.StringFuns.dotQualify;
 import static java.util.Arrays.asList;
 import gov.fda.nctr.dbmd.DBMD;
+import gov.fda.nctr.dbmd.Field;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.util.Pair;
@@ -32,7 +33,7 @@ public class TableOutputSpec implements Cloneable {
 	
 	protected RelId relId;
 	
-    protected List<String> includedFields;
+    protected List<Field> includedFields;
     
 	protected List<Pair<ForeignKey,TableOutputSpec>> childSpecsByFK;
     
@@ -65,14 +66,14 @@ public class TableOutputSpec implements Cloneable {
     }
 	
 
-    public TableOutputSpec(RelId relID,           // required
+    public TableOutputSpec(RelId relId,           // required
 	                       DBMD dbmd,             // required
 	                       Factory ospec_factory) // required
 	{
-    	this(relID,
+    	this(relId,
     	     dbmd,
     	     ospec_factory,
-    	     dbmd.getFieldNames(relID),
+    	     dbmd.getRelationMetaData(relId).getFields(),
     	     null, // row ordering
     	     null, // row el name
     	     null, // row coll el name
@@ -80,16 +81,16 @@ public class TableOutputSpec implements Cloneable {
     	     null);// parent table specs
 	}
 
-    public TableOutputSpec(RelId relID,                   // required
+    public TableOutputSpec(RelId relId,                   // required
 	                       DBMD dbmd,                     // required
 	                       Factory ospec_factory,         // required
 	                       String row_el_name,            // optional
 	                       String row_collection_el_name) // optional
 	{
-    	this(relID,
+    	this(relId,
     	     dbmd,
     	     ospec_factory,
-    	     dbmd.getFieldNames(relID),
+    	     dbmd.getRelationMetaData(relId).getFields(),
     	     null, // row ordering
     	     row_el_name,
     	     row_collection_el_name,
@@ -101,7 +102,7 @@ public class TableOutputSpec implements Cloneable {
     protected TableOutputSpec(RelId relid,                   // required
                               DBMD dbmd,                     // required
                               Factory ospec_factory,         // required
-                              List<String> included_fields,  // optional
+                              List<Field> included_fields,  // optional
                               RowOrdering row_ordering,      // optional
                               String row_el_name,            // optional
                               String row_collection_el_name, // optional
@@ -112,7 +113,7 @@ public class TableOutputSpec implements Cloneable {
 		this.relId = requireArg(relid, "relation id");
 		this.dbmd = requireArg(dbmd, "database metadata");
 		this.factory = requireArg(ospec_factory, "table output spec factory");
-		this.includedFields = included_fields != null ? new ArrayList<String>(included_fields) : dbmd.getFieldNames(relid);
+		this.includedFields = included_fields != null ? new ArrayList<Field>(included_fields) : dbmd.getRelationMetaData(relid).getFields();
 		this.rowOrdering = row_ordering;
 		this.rowElementName = row_el_name != null ? row_el_name : relid.getName().toLowerCase();
 		this.rowCollectionElementName = row_collection_el_name != null ? row_collection_el_name : relid.getName().toLowerCase() + "-listing";		
@@ -140,9 +141,19 @@ public class TableOutputSpec implements Cloneable {
 		return factory;
 	}
 	
-	public List<String> getFields()
+	public List<Field> getIncludedFields()
 	{
 		return includedFields;
+	}
+	
+	public List<String> getIncludedFieldNames()
+	{
+		List<String> res = new ArrayList<String>();
+		
+		for(Field f: includedFields)
+			res.add(f.getName());
+		
+		return res;
 	}
 	
 	public String getRowCollectionElementName()

@@ -15,7 +15,6 @@ import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.ForeignKey.EquationStyle;
 import gov.fda.nctr.dbmd.RelId;
-import gov.fda.nctr.dbmd.RelMetaData;
 import gov.fda.nctr.util.Pair;
 
 import java.io.FileInputStream;
@@ -168,8 +167,6 @@ public class QueryGenerator {
 		
 		final RelId relid = ospec.getRelationId();
 		
-		final RelMetaData relmd = dbmd.getRelationMetaData(relid);
-		
 		boolean convert_to_clob = row_output_type == RowOutputType.CLOB_ROW_XML_ONLY ||
 		                          row_output_type == RowOutputType.ALL_FIELDS_THEN_CLOB_ROW_XML;
 		
@@ -181,7 +178,7 @@ public class QueryGenerator {
 		template_model.put("relid", relid);
 		template_model.put("include_table_field_columns", include_leading_table_fields);
 		template_model.put("convert_to_clob", convert_to_clob);
-		template_model.put("all_fields", relmd.getFields());
+		template_model.put("output_field_names", ospec.getIncludedFieldNames());
 		template_model.put("row_element_name", ospec.getRowElementName());
 		template_model.put("child_subqueries", getChildTableSubqueries(ospec, table_alias, "     "));
 		template_model.put("parent_subqueries", getParentTableSubqueries(ospec, table_alias, "     "));
