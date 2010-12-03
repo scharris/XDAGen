@@ -53,9 +53,7 @@ public class TestXmlSchemas extends TestCase {
 	
 	private String getXmlSchema(XmlElementCollectionStyle el_coll_style) throws IOException
 	{
-        DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd,
-                                                                      "http://example/namespace",
-                                                                      el_coll_style);
+        DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd, el_coll_style);
         
         g.setIncludeGenerationTimestamp(false);
         
@@ -63,7 +61,8 @@ public class TestXmlSchemas extends TestCase {
         Set<RelId> toplevel_el_list_relids = null;
         
         String xsd = g.getStandardXMLSchema(toplevel_el_relids,
-                                            toplevel_el_list_relids);
+                                            toplevel_el_list_relids,
+                                            "http://example/namespace");
         
         return xsd;
 	}

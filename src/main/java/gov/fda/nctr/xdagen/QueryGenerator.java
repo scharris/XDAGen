@@ -30,19 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class QueryGenerator {
 
 	DBMD dbmd;
 	
-	String outputXmlNamespace;
-	
 	XmlElementCollectionStyle xmlElementCollectionStyle;
 	
-	/* This member merely allows using the convenient table() method, but is easy to create in its default form automatically here
-	 * from other members, so the clients often won't have to bother with TOS factories or their construction directly. */
-	TableOutputSpec.Factory tosFactory; 
-
 	// Output templates
 	Configuration templateConfig;
 	Template rowElementsQueryTemplate;
@@ -67,24 +60,20 @@ public class QueryGenerator {
 	
 	
 	
-	public QueryGenerator(DBMD dbmd, String output_xml_namespace) throws IOException
+	public QueryGenerator(DBMD dbmd) throws IOException
 	{
 		this(dbmd, 
-		     output_xml_namespace,
 		     XmlElementCollectionStyle.INLINE);
 	}
 	
 	
 	// Primary constructor.
 	public QueryGenerator(DBMD dbmd,                                       // Required
-	                      String output_xml_namespace,                     // Optional xml namespace for generated xml elements
 	                      XmlElementCollectionStyle xml_collection_style)  // Required
 	  throws IOException
 	{
 		this.dbmd = requireArg(dbmd, "database metadata");
-		this.outputXmlNamespace = output_xml_namespace;
 		this.xmlElementCollectionStyle = requireArg(xml_collection_style, "xml element collection style");
-		this.tosFactory = new DefaultTableOutputSpecFactory(dbmd, xml_collection_style);
 		
 		// Configure template engine.
 		templateConfig = new Configuration();
@@ -95,16 +84,6 @@ public class QueryGenerator {
 		rowElementsQueryTemplate = templateConfig.getTemplate(ROWELEMENTSSQUERY_TEMPLATE_NAME);
 		rowCollectionElementQueryTemplate = templateConfig.getTemplate(ROWCOLLECTIONELEMENT_QUERY_TEMPLATE);
 		rowForestQueryTemplate = templateConfig.getTemplate(ROWFOREST_QUERY_TEMPLATE);
-	}
-	
-	public void setTableOutputSpecFactory(TableOutputSpec.Factory f)
-	{
-		this.tosFactory = f;
-	}
-	
-	public TableOutputSpec.Factory getTableOutputSpecFactory()
-	{
-		return tosFactory;
 	}
 	
 	public String getSql(XdaQuery xda_qry)
@@ -126,7 +105,7 @@ public class QueryGenerator {
 		                           lowercaseInitials(ospec.getRelationId().getName(),"_"),
 		                           null,  // no WHERE clause condition
 		                           RowOutputType.CLOB_ROW_XML_ONLY,
-		                           XmlNamespaceOption.INCLUDE_IF_SET);
+		                           null); // no default xml namespace in effect yet
 		
 	}
 	
@@ -137,7 +116,7 @@ public class QueryGenerator {
 		                           table_alias,
 		                           null, // no WHERE clause condition
 		                           RowOutputType.CLOB_ROW_XML_ONLY,
-		                           XmlNamespaceOption.INCLUDE_IF_SET);
+		                           null); // no default xml namespace in effect yet
 	}
 	
 	public String getRowElementsQuery(TableOutputSpec ospec,       // Required
@@ -148,22 +127,22 @@ public class QueryGenerator {
 		                           table_alias,
 		                           filter_condition,
 		                           RowOutputType.CLOB_ROW_XML_ONLY,
-		                           XmlNamespaceOption.INCLUDE_IF_SET);
+		                           null); // no default xml namespace in effect yet
 	}
 
 
 	
-	public String getRowElementsQuery(TableOutputSpec ospec,         // Required
-	                                  String table_alias,            // Required
-	                                  String filter_condition,       // Optional. Any includedFields referenced should be qualified with table_alias.
-	                                  RowOutputType row_output_type, // Required
-	                                  XmlNamespaceOption xmlns_opt)  // Required
+	public String getRowElementsQuery(TableOutputSpec ospec,          // Required
+	                                  String table_alias,             // Required
+	                                  String filter_condition,        // Optional. Any includedFields referenced should be qualified with table_alias.
+	                                  RowOutputType row_output_type,  // Required
+	                                  String default_xmlns_in_effect) // Optional, the xmlns uri which can be assumed to be in effect where this query's output will be embedded, if any.
 	{
 		requireArg(ospec, "output spec");
 		if ( table_alias == null || table_alias.trim().length() == 0 )
 			throw new IllegalArgumentException("Table alias cannot be null or an empty string.");
 		
-		String xml_namespace = xmlns_opt == XmlNamespaceOption.INCLUDE_IF_SET ? outputXmlNamespace : null;
+		String xmlns = ospec.getOutputXmlNamespace();
 		
 		final RelId relid = ospec.getRelationId();
 		
@@ -174,7 +153,8 @@ public class QueryGenerator {
                                     	       row_output_type == RowOutputType.ALL_FIELDS_THEN_CLOB_ROW_XML;
 		
 		Map<String,Object> template_model = new HashMap<String,Object>();
-		template_model.put("xmlns", xml_namespace);
+		template_model.put("xmlns", xmlns);
+		template_model.put("xmlns_is_default", eqOrNull(xmlns, default_xmlns_in_effect));
 		template_model.put("relid", relid);
 		template_model.put("include_table_field_columns", include_leading_table_fields);
 		template_model.put("convert_to_clob", convert_to_clob);
@@ -210,28 +190,27 @@ public class QueryGenerator {
 		                                    rows_query_alias,
 		                                    filter_cond_over_rows_query,
 		                                    XmlOutputType.CLOB,
-		                                    XmlNamespaceOption.INCLUDE_IF_SET);
+		                                    null); // no default xml namespace in effect yet
 	}
 	
 	public String getRowCollectionElementQuery(TableOutputSpec ospec,              // Required
 	                                           String rows_query_alias,            // Optional
 	                                           String filter_cond_over_rows_query, // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
 	                                           XmlOutputType xml_output_type,      // Required
-	                                           XmlNamespaceOption xmlns_opt)       // Required
+	                                           String default_xmlns_in_effect)     // Optional, the xmlns uri which can be assumed to be in effect where this query's output will be embedded, if any.
 	{
-		String rows_query = getRowElementsQuery(ospec, 
+		String rows_query = getRowElementsQuery(ospec,
 		                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
 		                                        null,  // no WHERE clause condition
 		                                        RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML, // Export all includedFields for possible use in WHERE condition over the rows query.
-		                                        XmlNamespaceOption.SUPPRESS); // Collection element above these will determine the namespace.
+		                                        ospec.getOutputXmlNamespace()); // Row elements will be embedded in the collection produced here in which the ospec's xmlns will be the default.
 		
 		boolean convert_to_clob = xml_output_type == XmlOutputType.CLOB;
 		
-		String xml_namespace = xmlns_opt == XmlNamespaceOption.INCLUDE_IF_SET ? outputXmlNamespace : null;
-		
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		template_model.put("row_collection_element_name", ospec.getRowCollectionElementName());
-		template_model.put("xmlns", xml_namespace);
+		template_model.put("xmlns", ospec.getOutputXmlNamespace());
+		template_model.put("xmlns_is_default", eqOrNull(ospec.getOutputXmlNamespace(), default_xmlns_in_effect));
 		template_model.put("convert_to_clob", convert_to_clob);
 		template_model.put("rows_query", indent(rows_query, "   ", false));
 		template_model.put("rows_query_alias", rows_query_alias);
@@ -258,14 +237,15 @@ public class QueryGenerator {
 	 *  which ospec is the output specification.
 	 */
 	public String getRowForestQuery(TableOutputSpec ospec,
-	                                String rows_query_alias, // Optional.
-	                                String filter_cond_over_rows_query) // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
+	                                String rows_query_alias,            // Optional.
+	                                String filter_cond_over_rows_query, // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
+	                                String default_xmlns_in_effect)     // Optional, the xmlns uri which can be assumed to be in effect where this query's output will be embedded, if any.
 	{
 		String rows_query = getRowElementsQuery(ospec, 
 		                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
 		                                        null,  // no WHERE clause condition
 		                                        RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML, // Export all includedFields for possible use in WHERE condition over the rows query.
-		                                        XmlNamespaceOption.SUPPRESS); // Collection element above these will determine the namespace.
+		                                        default_xmlns_in_effect);  // Row elements will be embedded directly in the surrounding context, in which default_xmlns_in_effect is the default xml ns.
 		
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		template_model.put("rows_query", indent(rows_query, "   ", false));
@@ -313,7 +293,8 @@ public class QueryGenerator {
 			{
 				child_coll_subqry = getRowForestQuery(child_ospec,
 				                                      child_rowelemsquery_alias,
-				                                      child_rowelemsquery_cond); // Ancestor element will determine namespace.
+				                                      child_rowelemsquery_cond,
+				                                      parent_ospec.getOutputXmlNamespace()); // Parent's xml namespace will be the default where this query output is embedded.
 			}
 			else // wrap element collections
 			{
@@ -321,7 +302,7 @@ public class QueryGenerator {
 				                                                 child_rowelemsquery_alias,
 				                                                 child_rowelemsquery_cond,
 				                                                 XmlOutputType.XMLTYPE,
-				                                                 XmlNamespaceOption.SUPPRESS); // Ancestor element will determine namespace.
+				                                                 parent_ospec.getOutputXmlNamespace()); // Parent's xml namespace will be the default where this query output is embedded.
 			}
 			
 			if ( trailing_lines_prefix != null )
@@ -353,16 +334,16 @@ public class QueryGenerator {
 			                                        parent_table_alias,
 			                                        EquationStyle.TARGET_ON_LEFTHAND_SIDE);
 			
-			String parent_rowel_query = getRowElementsQuery(parent_ospec,
-			                                                parent_table_alias,
-			                                                parent_rows_cond,
-			                                                RowOutputType.XMLTYPE_ROW_XML_ONLY,
-			                                                XmlNamespaceOption.SUPPRESS);  // Ancestor element will determine namespace.
+			String parent_rowels_query = getRowElementsQuery(parent_ospec,
+			                                                 parent_table_alias,
+			                                                 parent_rows_cond,
+			                                                 RowOutputType.XMLTYPE_ROW_XML_ONLY,
+			                                                 child_ospec.getOutputXmlNamespace()); // Child's xml namespace will be the default where this query output is embedded.
 			
 			if ( trailing_lines_prefix != null )
-				parent_rowel_query = indent(parent_rowel_query, trailing_lines_prefix, false);
+				parent_rowels_query = indent(parent_rowels_query, trailing_lines_prefix, false);
 
-			parent_table_subqueries.add(parent_rowel_query);
+			parent_table_subqueries.add(parent_rowels_query);
 		}
 		
 		return parent_table_subqueries;
@@ -373,25 +354,7 @@ public class QueryGenerator {
 		return dbmd;
 	}
 	
-	public String getDefaultOutputXmlNamespace()
-	{
-		return outputXmlNamespace;
-	}
 
-	
-	public void setDefaultOutputXmlNamespace(String defaultOutputXmlNamespace)
-	{
-		this.outputXmlNamespace = defaultOutputXmlNamespace;
-	}
-
-
-	// Convenience method for creating an initial TableOutputSpec with dbmd and an element typedTableOutputSpecNamer consistent with the element collection style in use in this query generator.
-	public TableOutputSpec table(String pq_rel_name)
-	{
-		return tosFactory.table(pq_rel_name);
-	}
-	
-	
 	public static class XdaQuery {
 		
 		public enum QueryStyle { SINGLE_ROW_COLLECTION_ELEMENT_RESULT,
@@ -501,11 +464,14 @@ public class QueryGenerator {
         System.out.println("Database metadata for " + dbmd.getRelationMetaDatas().size() + " relations read from file.");
         
         QueryGenerator g = new QueryGenerator(dbmd,
-                                              "http://example/namespace",
                                               xml_collection_style);
-            
+        
+        TableOutputSpec.Factory tosf = new DefaultTableOutputSpecFactory(dbmd,
+                                                                         new DefaultElementNamer(dbmd, xml_collection_style),
+                                                                         "http://example/namespace");
+        
         TableOutputSpec ospec =
-        	g.table(table_name)
+        	tosf.table(table_name)
         	    .withAllChildTables()
         		.withAllParentTables();
         

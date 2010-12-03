@@ -195,4 +195,11 @@ public class ${class_name} extends TableOutputSpec {
   {
       return (${class_name})super.withTableOutputSpecFactory(f);
   }
+  
+  @Override
+  public ${class_name} withOutputXmlNamespace(String ns)
+  {
+      return (${class_name})super.withOutputXmlNamespace(ns);
+  }
+  
 }

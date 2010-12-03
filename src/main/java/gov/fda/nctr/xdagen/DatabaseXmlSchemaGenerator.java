@@ -31,8 +31,6 @@ public class DatabaseXmlSchemaGenerator {
 
 	DBMD dbmd;
 	
-	String targetXmlNamespace;
-	
 	XmlElementCollectionStyle xmlElementCollectionStyle;
 	
 	TypeNamer typeNamer;
@@ -51,14 +49,12 @@ public class DatabaseXmlSchemaGenerator {
 	
 	// Primary constructor.
 	public DatabaseXmlSchemaGenerator(DBMD dbmd,                                   // Required
-	                                  String target_xml_namespace,                 // Optional
 	                                  XmlElementCollectionStyle xml_el_coll_style, // Required
 	                                  TypeNamer type_namer,                        // Optional
 	                                  ElementNamer el_namer)                       // Optional
 		throws IOException
 	{
 		this.dbmd = dbmd;
-		this.targetXmlNamespace = target_xml_namespace;
 		this.xmlElementCollectionStyle = xml_el_coll_style;
 		this.typeNamer = type_namer != null ? type_namer : new DefaultTypeNamer(dbmd);
 		this.elNamer = el_namer != null ? el_namer : new DefaultElementNamer(dbmd, xml_el_coll_style);
@@ -76,29 +72,16 @@ public class DatabaseXmlSchemaGenerator {
 	
 	
 	public DatabaseXmlSchemaGenerator(DBMD dbmd,
-	                                  String target_xml_namespace,
 	                                  XmlElementCollectionStyle xml_el_coll_style)
 		throws IOException
 	{
 		this(dbmd,
-		     target_xml_namespace,
 		     xml_el_coll_style,
 		     new DefaultTypeNamer(dbmd),
 		     new DefaultElementNamer(dbmd, xml_el_coll_style));
 	}
 	
 	
-	public String getTargetXmlNamespace()
-	{
-		return targetXmlNamespace;
-	}
-
-	public void setTargetXmlNamespace(String targetXmlNamespace)
-	{
-		this.targetXmlNamespace = targetXmlNamespace;
-	}
-
-
 	public TypeNamer getTypeNamer()
 	{
 		return typeNamer;
@@ -135,8 +118,6 @@ public class DatabaseXmlSchemaGenerator {
 		return includeGenerationTimestamp;
 	}
 
-
-	
 	public void setIncludeGenerationTimestamp(boolean includeGenerationTimestamp)
 	{
 		this.includeGenerationTimestamp = includeGenerationTimestamp;
@@ -145,17 +126,18 @@ public class DatabaseXmlSchemaGenerator {
 
 	
 	public String getStandardXMLSchema(Set<RelId> rels_getting_toplevel_el,      // define top level elements for these
-	                                   Set<RelId> rels_getting_toplevel_list_el) // define top level list elements for these
+	                                   Set<RelId> rels_getting_toplevel_list_el, // define top level list elements for these
+	                                   String target_xml_namespace)              // 
 	{
-		return getXMLSchema(rels_getting_toplevel_el,
-		                    rels_getting_toplevel_list_el,
-		                    new DefaultTableOutputSpecFactory(dbmd, elNamer));
+		return getXMLSchema(new DefaultTableOutputSpecFactory(dbmd, elNamer, target_xml_namespace),
+		                    rels_getting_toplevel_el,
+		                    rels_getting_toplevel_list_el);
 	}
 
 	
-	public String getXMLSchema(Set<RelId> rels_getting_toplevel_el,      // define top level elements for these
-	                           Set<RelId> rels_getting_toplevel_list_el, // define top level list elements for these
-	                           TableOutputSpec.Factory ospec_factory)    // Required
+	public String getXMLSchema(TableOutputSpec.Factory ospec_factory,    // Required
+	                           Set<RelId> rels_getting_toplevel_el,      // Optional, define top level elements for these
+	                           Set<RelId> rels_getting_toplevel_list_el) // Optional, define top level list elements for these
 	{
 		List<TableOutputSpec> ospecs = new ArrayList<TableOutputSpec>();
 		
@@ -175,18 +157,21 @@ public class DatabaseXmlSchemaGenerator {
 	}
 
 	
-	public String getXMLSchema(List<TableOutputSpec> ospecs,
-	                           Set<RelId> toplevel_el_rels,      // define top level elements for these, or for all if null.
-	                           Set<RelId> toplevel_list_el_rels, // define top level list elements for these, or for all if null.
+	public String getXMLSchema(List<TableOutputSpec> ospecs,     // Required, all should have the same (or no) output xml namespace
+	                           Set<RelId> toplevel_el_rels,      // Optional, define top level elements for these, or for all if null.
+	                           Set<RelId> toplevel_list_el_rels, // Optinoal, define top level list elements for these, or for all if null.
 	                           boolean child_list_els_optional,  // whether child list elements should be optional (for schema reusability)
 	                           boolean parent_els_optional)      // whether parent elements     "
 	{
+		String xmlns = getSingleCommonXmlNamespaceOrErrorWith(ospecs,
+		                                                      "Input TableOutputSpecs must all have the same xml namespace (or none) for this method.");
+		
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		
 		template_model.put("qgen", this);
 		template_model.put("inline_el_collections", xmlElementCollectionStyle == XmlElementCollectionStyle.INLINE);
 		template_model.put("typeNamer", typeNamer);
-		template_model.put("target_namespace", targetXmlNamespace);
+		template_model.put("target_namespace", xmlns);
 		template_model.put("ospecs", ospecs);
 		template_model.put("toplevel_el_rels", toplevel_el_rels);
 		template_model.put("toplevel_list_el_rels", toplevel_list_el_rels);
@@ -209,8 +194,22 @@ public class DatabaseXmlSchemaGenerator {
 			throw new RuntimeException("Failed to produce XML Schema from template: " + e.getMessage());
 		}	
 	}
+
+
+	private String getSingleCommonXmlNamespaceOrErrorWith(List<TableOutputSpec> ospecs, String msg) throws IllegalArgumentException
+	{
+		String xmlns;
+		Set<String> xmlnss = getXmlNamespaces(ospecs);
+		if ( xmlnss.size() > 1 )
+			throw new IllegalArgumentException(msg);
+		else if ( xmlnss.size() == 1 )
+			xmlns = xmlnss.iterator().next();
+		else
+			xmlns = null;
+		return xmlns;
+	}
 	
-	
+
 	public DBMD getDatabaseMetaData()
 	{
 		return dbmd;
@@ -290,6 +289,18 @@ public class DatabaseXmlSchemaGenerator {
 			return relids;
 		}
 	}
+	
+
+	private static Set<String> getXmlNamespaces(List<TableOutputSpec> ospecs)
+	{
+		Set<String> xmlnss = new HashSet<String>();
+		
+		for(TableOutputSpec ospec: ospecs)
+			xmlnss.add(ospec.getOutputXmlNamespace());
+		
+		return xmlnss;
+	}
+
 	
 	///////////////////////////////////////////////////////////////
 	// Type naming interface and default implementation.
@@ -382,15 +393,14 @@ public class DatabaseXmlSchemaGenerator {
         DBMD dbmd = DBMD.readXML(dbmd_is);
         dbmd_is.close();
         
-        DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd,
-                                                                      target_namespace,
-                                                                      xml_collection_style);
+        DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd, xml_collection_style);
 
         toplevel_el_relids = toplevel_el_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_relids_strlist)) : null;
         toplevel_el_list_relids = toplevel_el_list_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_list_relids_strlist)) : null;
         
         String xsd = g.getStandardXMLSchema(toplevel_el_relids,
-                                            toplevel_el_list_relids);
+                                            toplevel_el_list_relids,
+                                            target_namespace);
         
         OutputStream os = new FileOutputStream(xmlschema_outfile_path);
         os.write(xsd.getBytes());

@@ -9,6 +9,7 @@ import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.Field;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.RelId;
+import gov.fda.nctr.util.CollFuns;
 import gov.fda.nctr.util.Pair;
 
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ public class TableOutputSpec implements Cloneable {
 	}
 	
 	protected RelId relId;
+	
+	protected String outputXmlNamespace;
 	
     protected List<Field> includedFields;
     
@@ -58,23 +61,27 @@ public class TableOutputSpec implements Cloneable {
      database metadata may not be found for databases supporting schemas. */
 	public TableOutputSpec(String pq_relname,     // required
                            DBMD dbmd,             // required
-                           Factory ospec_factory) // required
+                           Factory ospec_factory, // required
+                           String output_xml_ns)  // optional
     {
     	this(dbmd.toRelId(pq_relname),
     	     dbmd,
-    	     ospec_factory);
+    	     ospec_factory,
+    	     output_xml_ns);
     }
 	
 
     public TableOutputSpec(RelId relId,           // required
 	                       DBMD dbmd,             // required
-	                       Factory ospec_factory) // required
+	                       Factory ospec_factory, // required
+	                       String output_xml_ns)  // optional
 	{
     	this(relId,
     	     dbmd,
     	     ospec_factory,
     	     dbmd.getRelationMetaData(relId).getFields(),
     	     null, // row ordering
+    	     output_xml_ns,
     	     null, // row el name
     	     null, // row coll el name
     	     null, // child table specs
@@ -84,6 +91,7 @@ public class TableOutputSpec implements Cloneable {
     public TableOutputSpec(RelId relId,                   // required
 	                       DBMD dbmd,                     // required
 	                       Factory ospec_factory,         // required
+	                       String output_xml_ns,          // optional
 	                       String row_el_name,            // optional
 	                       String row_collection_el_name) // optional
 	{
@@ -92,6 +100,7 @@ public class TableOutputSpec implements Cloneable {
     	     ospec_factory,
     	     dbmd.getRelationMetaData(relId).getFields(),
     	     null, // row ordering
+    	     output_xml_ns,
     	     row_el_name,
     	     row_collection_el_name,
     	     null,
@@ -102,8 +111,9 @@ public class TableOutputSpec implements Cloneable {
     protected TableOutputSpec(RelId relid,                   // required
                               DBMD dbmd,                     // required
                               Factory ospec_factory,         // required
-                              List<Field> included_fields,  // optional
+                              List<Field> included_fields,   // optional
                               RowOrdering row_ordering,      // optional
+                              String output_xml_ns,          // optional
                               String row_el_name,            // optional
                               String row_collection_el_name, // optional
                               List<Pair<ForeignKey,TableOutputSpec>> included_child_table_specs,  // optional
@@ -115,6 +125,7 @@ public class TableOutputSpec implements Cloneable {
 		this.factory = requireArg(ospec_factory, "table output spec factory");
 		this.includedFields = included_fields != null ? new ArrayList<Field>(included_fields) : dbmd.getRelationMetaData(relid).getFields();
 		this.rowOrdering = row_ordering;
+		this.outputXmlNamespace = output_xml_ns;
 		this.rowElementName = row_el_name != null ? row_el_name : relid.getName().toLowerCase();
 		this.rowCollectionElementName = row_collection_el_name != null ? row_collection_el_name : relid.getName().toLowerCase() + "-listing";		
 		this.childSpecsByFK = included_child_table_specs != null ? new ArrayList<Pair<ForeignKey,TableOutputSpec>>(included_child_table_specs)
@@ -134,6 +145,11 @@ public class TableOutputSpec implements Cloneable {
 	public DBMD getDatabaseMetaData()
 	{
 		return dbmd;
+	}
+	
+	public String getOutputXmlNamespace()
+	{
+		return outputXmlNamespace;
 	}
 	
 	public Factory getFactory()
@@ -312,7 +328,7 @@ public class TableOutputSpec implements Cloneable {
 		{
 			TableOutputSpec copy = (TableOutputSpec)this.clone();
 			
-			copy.childSpecsByFK = associativeListWithEntry(childSpecsByFK, fk_from_child, child_output_spec);
+			copy.childSpecsByFK = CollFuns.associativeListWithEntry(childSpecsByFK, fk_from_child, child_output_spec);
 			
 			return copy;
 		}
@@ -433,7 +449,7 @@ public class TableOutputSpec implements Cloneable {
 		{
 			TableOutputSpec copy = (TableOutputSpec)this.clone();
 			
-			copy.parentSpecsByFK = associativeListWithEntry(parentSpecsByFK, fk_to_parent, parent_output_spec);
+			copy.parentSpecsByFK = CollFuns.associativeListWithEntry(parentSpecsByFK, fk_to_parent, parent_output_spec);
 			
 			return copy;
 		}
@@ -607,6 +623,29 @@ public class TableOutputSpec implements Cloneable {
 	///////////////////////////////////////////////////////////////////////////////////
 	
 	
+	
+	///////////////////////////////////////////////////////////////////////////////////
+	// Output XML Namespace customization
+
+	public TableOutputSpec withOutputXmlNamespace(String ns)
+	{
+		try
+		{
+			TableOutputSpec copy = (TableOutputSpec)this.clone();
+			copy.outputXmlNamespace = ns;
+			
+			return copy;
+		}
+		catch(CloneNotSupportedException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	// Output XML Namespace customization
+	///////////////////////////////////////////////////////////////////////////////////
+	
+	
 	public int hashCode()
 	{
 		if ( hashCode == null )
@@ -619,6 +658,7 @@ public class TableOutputSpec implements Cloneable {
 			         + hashcode(rowCollectionElementName)
 			         + hashcode(rowOrdering)
 				     + hashcode(dbmd)
+				     + hashcode(outputXmlNamespace)
 			         + hashcode(factory);
 
 		}
@@ -648,42 +688,12 @@ public class TableOutputSpec implements Cloneable {
 					    && eqOrNull(rowCollectionElementName,tos.rowCollectionElementName)
 					    && eqOrNull(rowElementName,tos.rowElementName)
 					    && eqOrNull(rowOrdering, tos.rowOrdering)
-					    && eqOrNull(dbmd,tos.dbmd)
+					    && eqOrNull(dbmd, tos.dbmd)
+					    && eqOrNull(outputXmlNamespace, tos.outputXmlNamespace)
 					    && eqOrNull(factory,tos.factory);
 
 			}
 		}
-	}
-	
-    public static <E> List<E> snoc(List<E> l, E e)
-    {
-        List<E> cl = new ArrayList<E>(l);
-        cl.add(e);
-        return cl;
-    }
-    
-	static <K,V> List<Pair<K,V>> associativeListWithEntry(final List<Pair<K,V>> l, final K k, final V v)
-	{
-		List<Pair<K,V>> res = new ArrayList<Pair<K,V>>();
-		
-		Pair<K,V> new_entry = Pair.make(k,v);
-		
-		boolean added = false;
-		for(Pair<K,V> entry: l)
-		{
-			if (entry.fst().equals(k))
-			{
-				res.add(new_entry);
-				added = true;
-			}
-			else
-				res.add(entry);
-		}
-		
-		if ( !added )
-			res.add(new_entry);
-		
-		return res;
 	}
 
 }

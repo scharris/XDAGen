@@ -3,6 +3,8 @@ package gov.fda.nctr.xdagen.tests;
 import static gov.fda.nctr.xdagen.TableOutputSpec.RowOrdering.fields;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.util.StringFuns;
+import gov.fda.nctr.xdagen.DefaultElementNamer;
+import gov.fda.nctr.xdagen.DefaultTableOutputSpecFactory;
 import gov.fda.nctr.xdagen.QueryGenerator;
 import gov.fda.nctr.xdagen.TableOutputSpec;
 import gov.fda.nctr.xdagen.XmlElementCollectionStyle;
@@ -32,6 +34,9 @@ public class TestQueries extends TestCase {
 	QueryGenerator inlineCollElsQryGen;
 	QueryGenerator wrappedCollElsQryGen;
 	
+	TableOutputSpec.Factory inlineCollElsTOSFactory;
+	TableOutputSpec.Factory wrappedCollElsTOSFactory;
+	
 	TableOutputSpec drugInlineColls;
 	TableOutputSpec drugWrappedColls;
 
@@ -54,20 +59,21 @@ public class TestQueries extends TestCase {
 		this.conn = createConnection(Utils.loadProperties("jdbc.connect.properties"));
 
 		
-		
+		inlineCollElsTOSFactory = new DefaultTableOutputSpecFactory(dbmd,
+		                                                            new DefaultElementNamer(dbmd, XmlElementCollectionStyle.INLINE),
+			                                                        "http://example/namespace");
+		wrappedCollElsTOSFactory = new DefaultTableOutputSpecFactory(dbmd,
+		                                                             new DefaultElementNamer(dbmd, XmlElementCollectionStyle.WRAPPED),
+			                                                         "http://example/namespace");
 			
-		inlineCollElsQryGen = new QueryGenerator(dbmd,
-		                                         "http://example/namespace");
+		inlineCollElsQryGen = new QueryGenerator(dbmd);
+		wrappedCollElsQryGen = new QueryGenerator(dbmd, XmlElementCollectionStyle.WRAPPED);
 		                            		
-		this.drugInlineColls = inlineCollElsQryGen.table("drug").withAllChildTables()
-		                                                        .withAllParentTables();
-			                            		
-		wrappedCollElsQryGen = new QueryGenerator(dbmd,
-		                                          "http://example/namespace",
-		                                          XmlElementCollectionStyle.WRAPPED);
+		this.drugInlineColls = inlineCollElsTOSFactory.table("drug").withAllChildTables()
+		                                                            .withAllParentTables();
 		                            		
-		this.drugWrappedColls = wrappedCollElsQryGen.table("drug").withAllChildTables()
-	    			         	                                  .withAllParentTables();
+		this.drugWrappedColls = wrappedCollElsTOSFactory.table("drug").withAllChildTables()
+	    			         	                                      .withAllParentTables();
 		
 		insertData();
     }
