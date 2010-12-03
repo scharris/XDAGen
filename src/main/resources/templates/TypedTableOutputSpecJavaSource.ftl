@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 import gov.fda.nctr.xdagen.TableOutputSpec;
+import gov.fda.nctr.xdagen.ChildCollectionsStyle;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.dbmd.ForeignKey;
@@ -13,21 +14,16 @@ import gov.fda.nctr.dbmd.ForeignKey;
 
 public class ${class_name} extends TableOutputSpec {
 
-  public ${class_name}(DBMD dbmd, TableOutputSpec.Factory tos_factory)
+  public ${class_name}(DBMD dbmd, TableOutputSpec.Factory tos_factory, ChildCollectionsStyle child_colls_style, String xml_namespace)
   {
     super(new RelId(<#if relid.catalog??>"${relid.catalog}"<#else>null</#if>,<#rt>
                     <#if relid.schema??>"${relid.schema}"<#else>null</#if>,<#t>
                     <#if relid.name??>"${relid.name}"<#else>null</#if>)<#lt>,
           dbmd,
-          tos_factory);
+          tos_factory,
+          child_colls_style,
+          xml_namespace);
   }
-  
-  public ${class_name}(DBMD dbmd)
-  {
-    this(dbmd,
-         ${default_tableoutputspec_factory_expr});
-  }
-  
   
 <#list fks_from_child_tables as fk_from_child>
   <#assign method_name = namer.getChildAdditionMethodName(fk_from_child)/><#t>
@@ -53,7 +49,7 @@ public class ${class_name} extends TableOutputSpec {
   /** Add child table ${child_relid} with default output specification. */
   public ${class_name} ${method_name}()
   {
-    return ${method_name}(new ${child_ospec_class_name}(this.dbmd, this.factory));
+    return ${method_name}(new ${child_ospec_class_name}(this.dbmd, this.factory, this.childCollsStyle, this.outputXmlNamespace));
   }
 </#list>
 
@@ -82,7 +78,7 @@ public class ${class_name} extends TableOutputSpec {
   /** Add parent table ${parent_relid} with default output specification. */
   public ${class_name} ${method_name}()
   {
-    return ${method_name}(new ${parent_ospec_class_name}(this.dbmd, this.factory));
+    return ${method_name}(new ${parent_ospec_class_name}(this.dbmd, this.factory, this.childCollsStyle, this.outputXmlNamespace));
   }
 </#list>
 
@@ -203,8 +199,8 @@ public class ${class_name} extends TableOutputSpec {
   }
   
   @Override
-  public ${class_name} withChildCollectionsStyle(TableOutputSpec.ChildCollectionsStyle child_colls_style)
+  public ${class_name} withChildCollectionsStyle(ChildCollectionsStyle child_colls_style)
   {
-      return (${class_name})super.withChildElementCollectionStyle(child_colls_style);
+      return (${class_name})super.withChildCollectionsStyle(child_colls_style);
   }
 }

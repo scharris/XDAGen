@@ -39,8 +39,6 @@ public class TypedTableOutputSpecSourcesGenerator {
 	
 	protected File outputDir;
 	
-	protected String defaultTableOutputSpecFactoryExpr; // For use by secondary constructor in which client doesn't supply a TableOutputSpec.Factory instance.
-	
 	protected Configuration templateConfig;
 	protected Template classSourceFileTemplate;
 	protected Template prototypesSourceFileTemplate;
@@ -58,9 +56,6 @@ public class TypedTableOutputSpecSourcesGenerator {
 	{
 		this.dbmd = dbmd;
 		this.targetPackage = target_java_package;
-		this.defaultTableOutputSpecFactoryExpr = default_tableoutputspec_factory_expr == null ?
-				"new gov.fda.nctr.xdagen.DefaultTableOutputSpecFactory(dbmd, gov.fda.nctr.xdagen.XmlElementCollectionStyle.INLINE)"
-			  : default_tableoutputspec_factory_expr;
 		this.typedTableOutputSpecNamer = typedtos_namer != null ? typedtos_namer : new DefaultTypedTableOutputSpecNamer(dbmd);
 		
 		// Configure template engine.
@@ -105,20 +100,6 @@ public class TypedTableOutputSpecSourcesGenerator {
 		this.typedTableOutputSpecNamer = typedTableOutputSpecNamer;
 	}
 	
-	/* Setting this field allows controlling how a TableOutputSpec.Factory is supplied in the generated classes for cases that an explicit
-	 * factory is not provided by their clients. The factory may include references to a DBMD value named "dbmd".  The default is:
-	 *   "new gov.fda.nctr.xdagen.DefaultTableOutputSpecFactory(dbmd, gov.fda.nctr.xdagen.XmlElementCollectionStyle.INLINE)"
-	 */
-	public String getDefaultTableOutputSpecFactoryExpression()
-	{
-		return defaultTableOutputSpecFactoryExpr;
-	}
-	
-	public void setDefaultTableOutputSpecFactoryExpression(String fe)
-	{
-		this.defaultTableOutputSpecFactoryExpr = fe;
-	}
-	
 	public void setOutputDirectory(File output_dir)
 	{
 		this.outputDir = output_dir;
@@ -135,7 +116,6 @@ public class TypedTableOutputSpecSourcesGenerator {
 		
 		template_model.put("target_package", targetPackage);
 		template_model.put("namer", typedTableOutputSpecNamer);
-		template_model.put("default_tableoutputspec_factory_expr", defaultTableOutputSpecFactoryExpr);
 		template_model.put("relid", relid);
 		template_model.put("fks_from_child_tables", dbmd.getForeignKeysFromTo(null, relid, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY));
 		template_model.put("fks_to_parent_tables",  dbmd.getForeignKeysFromTo(relid, null, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY));
