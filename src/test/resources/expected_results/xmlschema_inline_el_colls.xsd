@@ -13,9 +13,13 @@
   <complexType name="advisory">
     <sequence>
       <!-- fields -->
+       
       <element name="id" type="decimal" minOccurs="1"/>
+ 
       <element name="drug_id" type="decimal" minOccurs="1"/>
+ 
       <element name="advisory_type_id" type="decimal" minOccurs="1"/>
+ 
       <element name="text" type="string" minOccurs="1"/>
       
       <!-- child elements -->
@@ -40,8 +44,11 @@
   <complexType name="advisory_type">
     <sequence>
       <!-- fields -->
+       
       <element name="id" type="decimal" minOccurs="1"/>
+ 
       <element name="name" type="string" minOccurs="1"/>
+ 
       <element name="authority_id" type="decimal" minOccurs="1"/>
       
       <!-- child elements -->
@@ -66,9 +73,13 @@
   <complexType name="authority">
     <sequence>
       <!-- fields -->
+       
       <element name="id" type="decimal" minOccurs="1"/>
+ 
       <element name="name" type="string" minOccurs="1"/>
+ 
       <element name="url" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="description" type="string" minOccurs="0" nillable="true"/>
       
       <!-- child elements -->
@@ -93,9 +104,13 @@
   <complexType name="brand">
     <sequence>
       <!-- fields -->
+       
       <element name="drug_id" type="decimal" minOccurs="1"/>
+ 
       <element name="brand_name" type="string" minOccurs="1"/>
+ 
       <element name="language_code" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="manufacturer_id" type="decimal" minOccurs="0" nillable="true"/>
       
       <!-- child elements -->
@@ -120,18 +135,31 @@
   <complexType name="compound">
     <sequence>
       <!-- fields -->
+       
       <element name="id" type="decimal" minOccurs="1"/>
+ 
       <element name="display_name" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="nctr_isis_id" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="smiles" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="canonical_smiles" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="cas" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="mol_formula" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="mol_weight" type="decimal" minOccurs="0" nillable="true"/>
+ 
       <element name="mol_file" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="inchi" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="inchi_key" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="standard_inchi" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="standard_inchi_key" type="string" minOccurs="0" nillable="true"/>
       
       <!-- child elements -->
@@ -155,12 +183,19 @@
   <complexType name="drug">
     <sequence>
       <!-- fields -->
+       
       <element name="id" type="decimal" minOccurs="1"/>
+ 
       <element name="name" type="string" minOccurs="1"/>
+ 
       <element name="compound_id" type="decimal" minOccurs="1"/>
+ 
       <element name="mesh_id" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="drugbank_id" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="cid" type="decimal" minOccurs="0" nillable="true"/>
+ 
       <element name="therapeutic_indications" type="string" minOccurs="0" nillable="true"/>
       
       <!-- child elements -->
@@ -188,9 +223,13 @@
   <complexType name="drug_functional_category">
     <sequence>
       <!-- fields -->
+       
       <element name="drug_id" type="decimal" minOccurs="1"/>
+ 
       <element name="functional_category_id" type="decimal" minOccurs="1"/>
+ 
       <element name="authority_id" type="decimal" minOccurs="1"/>
+ 
       <element name="seq" type="decimal" minOccurs="0" nillable="true"/>
       
       <!-- child elements -->
@@ -216,8 +255,11 @@
   <complexType name="drug_reference">
     <sequence>
       <!-- fields -->
+       
       <element name="drug_id" type="decimal" minOccurs="1"/>
+ 
       <element name="reference_id" type="decimal" minOccurs="1"/>
+ 
       <element name="priority" type="decimal" minOccurs="0" nillable="true"/>
       
       <!-- child elements -->
@@ -242,9 +284,13 @@
   <complexType name="functional_category">
     <sequence>
       <!-- fields -->
+       
       <element name="id" type="decimal" minOccurs="1"/>
+ 
       <element name="name" type="string" minOccurs="1"/>
+ 
       <element name="description" type="string" minOccurs="0" nillable="true"/>
+ 
       <element name="parent_functional_category_id" type="decimal" minOccurs="0" nillable="true"/>
       
       <!-- child elements -->
@@ -270,7 +316,9 @@
   <complexType name="manufacturer">
     <sequence>
       <!-- fields -->
+       
       <element name="id" type="decimal" minOccurs="1"/>
+ 
       <element name="name" type="string" minOccurs="1"/>
       
       <!-- child elements -->
@@ -294,7 +342,9 @@
   <complexType name="reference">
     <sequence>
       <!-- fields -->
+       
       <element name="id" type="decimal" minOccurs="1"/>
+ 
       <element name="publication" type="string" minOccurs="1"/>
       
       <!-- child elements -->

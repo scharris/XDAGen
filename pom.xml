@@ -72,7 +72,7 @@
 				</executions>
 			</plugin>
 
-      <!-- Generate database metadata resources for testing. -->
+      <!-- Generate database metadata resources for testing.  This shouldn't usually be run except to initially generate the expected xsd's and dbmd.xml.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -95,6 +95,7 @@
           </execution>
         </executions>
       </plugin>
+      -->
       
       <!--  Validate expected xml query results against the expected xml schemas.
             Other tests will guarantee that actual query results are the same as these expected ones. -->

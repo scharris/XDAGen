@@ -20,9 +20,8 @@
   <complexType name="${el_type_name}">
     <sequence>
       <!-- fields -->
-      <#list ospec.includedFields as f>
-      <#assign field_xs_type = qgen.getXmlSchemaTypeForJdbcTypeCode(f.jdbcTypeCode)>
-      <element name="${f.name?lower_case}" type="${field_xs_type}" minOccurs="<#if f.nullable>0<#else>1</#if>"<#if f.nullable> nillable="true"</#if>/>
+      <#list ospec.outputFieldElementNamesByField as pair> <#assign f = pair.fst()/> <#assign field_el_name = pair.snd()/> <#assign field_xs_type = qgen.getXmlSchemaTypeForJdbcTypeCode(f.jdbcTypeCode)>
+      <element name="${field_el_name}" type="${field_xs_type}" minOccurs="<#if f.nullable>0<#else>1</#if>"<#if f.nullable> nillable="true"</#if>/>
       </#list>
       
       <!-- child elements -->

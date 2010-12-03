@@ -42,8 +42,8 @@ public class TableOutputSpec implements Cloneable {
 	
 	protected String outputXmlNamespace;
 	
-    protected List<Field> includedFields;
-    
+	protected List<Pair<Field,String>> outputFieldElementNamesByField;
+	
 	protected List<Pair<ForeignKey,TableOutputSpec>> childSpecsByFK;
     
 	protected List<Pair<ForeignKey,TableOutputSpec>> parentSpecsByFK;
@@ -86,7 +86,7 @@ public class TableOutputSpec implements Cloneable {
     	     dbmd,
     	     ospec_factory,
     	     child_colls_style,
-    	     dbmd.getRelationMetaData(relId).getFields(),
+    	     null, // output el name / field associations
     	     null, // row ordering
     	     output_xml_ns,
     	     null, // row el name
@@ -107,7 +107,7 @@ public class TableOutputSpec implements Cloneable {
     	     dbmd,
     	     ospec_factory,
     	     child_colls_style,
-    	     dbmd.getRelationMetaData(relId).getFields(),
+    	     null, // output el name / field associations
     	     null, // row ordering
     	     output_xml_ns,
     	     row_el_name,
@@ -117,15 +117,15 @@ public class TableOutputSpec implements Cloneable {
 	}
 
 
-    protected TableOutputSpec(RelId relid,                             // required
-                              DBMD dbmd,                               // required
-                              Factory ospec_factory,                   // required
-                              ChildCollectionsStyle child_colls_style, // required
-                              List<Field> included_fields,             // optional
-                              RowOrdering row_ordering,                // optional
-                              String output_xml_ns,                    // optional
-                              String row_el_name,                      // optional
-                              String row_collection_el_name,           // optional
+    protected TableOutputSpec(RelId relid,                                       // required
+                              DBMD dbmd,                                         // required
+                              Factory ospec_factory,                             // required
+                              ChildCollectionsStyle child_colls_style,           // required
+                              List<Pair<Field,String>> output_el_names_by_field, // optional
+                              RowOrdering row_ordering,                          // optional
+                              String output_xml_ns,                              // optional
+                              String row_el_name,                                // optional
+                              String row_collection_el_name,                     // optional
                               List<Pair<ForeignKey,TableOutputSpec>> included_child_table_specs,  // optional
                               List<Pair<ForeignKey,TableOutputSpec>> included_parent_table_specs) // optional
 	{
@@ -134,7 +134,8 @@ public class TableOutputSpec implements Cloneable {
 		this.dbmd = requireArg(dbmd, "database metadata");
 		this.factory = requireArg(ospec_factory, "table output spec factory");
 		this.childCollsStyle = child_colls_style;
-		this.includedFields = included_fields != null ? new ArrayList<Field>(included_fields) : dbmd.getRelationMetaData(relid).getFields();
+		this.outputFieldElementNamesByField = output_el_names_by_field != null ? new ArrayList<Pair<Field,String>>(output_el_names_by_field) 
+				                                                               : getDefaultOutputElementNamesByField(relId);
 		this.rowOrdering = row_ordering;
 		this.outputXmlNamespace = output_xml_ns;
 		this.rowElementName = row_el_name != null ? row_el_name : relid.getName().toLowerCase();
@@ -148,6 +149,17 @@ public class TableOutputSpec implements Cloneable {
 	}
     
 	
+	protected List<Pair<Field,String>> getDefaultOutputElementNamesByField(RelId relid)
+	{
+		List<Pair<Field,String>> res = new ArrayList<Pair<Field,String>>();
+		
+		for(Field f: dbmd.getRelationMetaData(relid).getFields())
+			res.add(Pair.make(f, f.getName().toLowerCase()));
+		
+		return res;
+	}
+
+
 	public RelId getRelationId()
 	{
 		return relId;
@@ -178,19 +190,29 @@ public class TableOutputSpec implements Cloneable {
 		return childCollsStyle == ChildCollectionsStyle.INLINE;
 	}
 	
-	public List<Field> getIncludedFields()
+	public List<Field> getOutputFields()
 	{
-		return includedFields;
+		ArrayList<Field> res = new ArrayList<Field>();
+		
+		for(Pair<Field,String> p: outputFieldElementNamesByField)
+			res.add(p.fst());
+		
+		return res;
 	}
 	
-	public List<String> getIncludedFieldNames()
+	public List<String> getOutputFieldElementNames()
 	{
 		List<String> res = new ArrayList<String>();
 		
-		for(Field f: includedFields)
-			res.add(f.getName());
+		for(Pair<Field,String> p: outputFieldElementNamesByField)
+			res.add(p.snd());
 		
 		return res;
+	}
+	
+	public List<Pair<Field,String>> getOutputFieldElementNamesByField()
+	{
+		return outputFieldElementNamesByField;
 	}
 	
 	public String getRowCollectionElementName()
@@ -698,7 +720,7 @@ public class TableOutputSpec implements Cloneable {
 			         + hashcode(factory)
 			         + hashcode(childCollsStyle)
 			         + hashcode(outputXmlNamespace)
-			         + hashcode(includedFields)
+			         + hashcode(outputFieldElementNamesByField)
 			         + hashcode(childSpecsByFK)
 			         + hashcode(parentSpecsByFK)
 			         + hashcode(rowElementName)
@@ -731,7 +753,7 @@ public class TableOutputSpec implements Cloneable {
 					    && eqOrNull(factory, tos.factory)
 					    && eqOrNull(childCollsStyle, tos.childCollsStyle)
 					    && eqOrNull(outputXmlNamespace, tos.outputXmlNamespace)
-					    && eqOrNull(includedFields, tos.includedFields)
+					    && eqOrNull(outputFieldElementNamesByField, tos.outputFieldElementNamesByField)
 					    && eqOrNull(childSpecsByFK, tos.childSpecsByFK)
 					    && eqOrNull(parentSpecsByFK, tos.parentSpecsByFK)
 					    && eqOrNull(rowCollectionElementName, tos.rowCollectionElementName)
