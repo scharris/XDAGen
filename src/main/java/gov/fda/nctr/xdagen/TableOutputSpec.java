@@ -34,6 +34,12 @@ public class TableOutputSpec implements Cloneable {
 	
 	protected RelId relId;
 	
+	protected DBMD dbmd;
+
+	protected Factory factory;
+
+	protected ChildCollectionsStyle childCollsStyle;
+	
 	protected String outputXmlNamespace;
 	
     protected List<Field> includedFields;
@@ -48,9 +54,6 @@ public class TableOutputSpec implements Cloneable {
 	
 	protected RowOrdering rowOrdering;
 	
-	protected DBMD dbmd;
-
-	protected Factory factory;
 
 	
 	protected Integer hashCode;
@@ -59,26 +62,30 @@ public class TableOutputSpec implements Cloneable {
 	/** Create an output spec with all the includedFields for the passed table/view included but no parents or children.
      If the table name is not qualified by schema, then the DBMD should have an owning schema specified, else
      database metadata may not be found for databases supporting schemas. */
-	public TableOutputSpec(String pq_relname,     // required
-                           DBMD dbmd,             // required
-                           Factory ospec_factory, // required
-                           String output_xml_ns)  // optional
+	public TableOutputSpec(String pq_relname,                       // required
+                           DBMD dbmd,                               // required
+                           Factory ospec_factory,                   // required
+                           ChildCollectionsStyle child_colls_style, // required
+                           String output_xml_ns)                    // optional (null for no namespace)
     {
     	this(dbmd.toRelId(pq_relname),
     	     dbmd,
     	     ospec_factory,
+    	     child_colls_style,
     	     output_xml_ns);
     }
 	
 
-    public TableOutputSpec(RelId relId,           // required
-	                       DBMD dbmd,             // required
-	                       Factory ospec_factory, // required
-	                       String output_xml_ns)  // optional
+    public TableOutputSpec(RelId relId,                             // required
+	                       DBMD dbmd,                               // required
+	                       Factory ospec_factory,                   // required
+	                       ChildCollectionsStyle child_colls_style, // required
+	                       String output_xml_ns)                    // optional (null for no namespace)
 	{
     	this(relId,
     	     dbmd,
     	     ospec_factory,
+    	     child_colls_style,
     	     dbmd.getRelationMetaData(relId).getFields(),
     	     null, // row ordering
     	     output_xml_ns,
@@ -88,16 +95,18 @@ public class TableOutputSpec implements Cloneable {
     	     null);// parent table specs
 	}
 
-    public TableOutputSpec(RelId relId,                   // required
-	                       DBMD dbmd,                     // required
-	                       Factory ospec_factory,         // required
-	                       String output_xml_ns,          // optional
-	                       String row_el_name,            // optional
-	                       String row_collection_el_name) // optional
+    public TableOutputSpec(RelId relId,                             // required
+	                       DBMD dbmd,                               // required
+	                       Factory ospec_factory,                   // required
+	                       ChildCollectionsStyle child_colls_style, // required
+	                       String output_xml_ns,                    // optional
+	                       String row_el_name,                      // optional
+	                       String row_collection_el_name)           // optional
 	{
     	this(relId,
     	     dbmd,
     	     ospec_factory,
+    	     child_colls_style,
     	     dbmd.getRelationMetaData(relId).getFields(),
     	     null, // row ordering
     	     output_xml_ns,
@@ -108,14 +117,15 @@ public class TableOutputSpec implements Cloneable {
 	}
 
 
-    protected TableOutputSpec(RelId relid,                   // required
-                              DBMD dbmd,                     // required
-                              Factory ospec_factory,         // required
-                              List<Field> included_fields,   // optional
-                              RowOrdering row_ordering,      // optional
-                              String output_xml_ns,          // optional
-                              String row_el_name,            // optional
-                              String row_collection_el_name, // optional
+    protected TableOutputSpec(RelId relid,                             // required
+                              DBMD dbmd,                               // required
+                              Factory ospec_factory,                   // required
+                              ChildCollectionsStyle child_colls_style, // required
+                              List<Field> included_fields,             // optional
+                              RowOrdering row_ordering,                // optional
+                              String output_xml_ns,                    // optional
+                              String row_el_name,                      // optional
+                              String row_collection_el_name,           // optional
                               List<Pair<ForeignKey,TableOutputSpec>> included_child_table_specs,  // optional
                               List<Pair<ForeignKey,TableOutputSpec>> included_parent_table_specs) // optional
 	{
@@ -123,6 +133,7 @@ public class TableOutputSpec implements Cloneable {
 		this.relId = requireArg(relid, "relation id");
 		this.dbmd = requireArg(dbmd, "database metadata");
 		this.factory = requireArg(ospec_factory, "table output spec factory");
+		this.childCollsStyle = child_colls_style;
 		this.includedFields = included_fields != null ? new ArrayList<Field>(included_fields) : dbmd.getRelationMetaData(relid).getFields();
 		this.rowOrdering = row_ordering;
 		this.outputXmlNamespace = output_xml_ns;
@@ -155,6 +166,16 @@ public class TableOutputSpec implements Cloneable {
 	public Factory getFactory()
 	{
 		return factory;
+	}
+	
+	public ChildCollectionsStyle getChildCollectionsStyle()
+	{
+		return childCollsStyle;
+	}
+	
+	public boolean isInlineChildCollections()
+	{
+		return childCollsStyle == ChildCollectionsStyle.INLINE;
 	}
 	
 	public List<Field> getIncludedFields()
@@ -646,20 +667,44 @@ public class TableOutputSpec implements Cloneable {
 	///////////////////////////////////////////////////////////////////////////////////
 	
 	
+	///////////////////////////////////////////////////////////////////////////////////
+	// Child element collection style customization
+
+	public TableOutputSpec withChildCollectionsStyle(ChildCollectionsStyle child_colls_style)
+	{
+		try
+		{
+			TableOutputSpec copy = (TableOutputSpec)this.clone();
+			copy.childCollsStyle = child_colls_style;
+			
+			return copy;
+		}
+		catch(CloneNotSupportedException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	// Child element collection style customization
+	///////////////////////////////////////////////////////////////////////////////////
+	
+	
 	public int hashCode()
 	{
 		if ( hashCode == null )
 		{
 			hashCode = hashcode(relId)
+			         + hashcode(dbmd)
+			         + hashcode(factory)
+			         + hashcode(childCollsStyle)
+			         + hashcode(outputXmlNamespace)
 			         + hashcode(includedFields)
 			         + hashcode(childSpecsByFK)
 			         + hashcode(parentSpecsByFK)
 			         + hashcode(rowElementName)
 			         + hashcode(rowCollectionElementName)
 			         + hashcode(rowOrdering)
-				     + hashcode(dbmd)
-				     + hashcode(outputXmlNamespace)
-			         + hashcode(factory);
+				     ;
 
 		}
 		
@@ -682,16 +727,17 @@ public class TableOutputSpec implements Cloneable {
 						return false;
 				else
 					return eqOrNull(relId,tos.relId)
-					    && eqOrNull(includedFields,tos.includedFields)
-					    && eqOrNull(childSpecsByFK,tos.childSpecsByFK)
-					    && eqOrNull(parentSpecsByFK,tos.parentSpecsByFK)
-					    && eqOrNull(rowCollectionElementName,tos.rowCollectionElementName)
-					    && eqOrNull(rowElementName,tos.rowElementName)
-					    && eqOrNull(rowOrdering, tos.rowOrdering)
 					    && eqOrNull(dbmd, tos.dbmd)
+					    && eqOrNull(factory, tos.factory)
+					    && eqOrNull(childCollsStyle, tos.childCollsStyle)
 					    && eqOrNull(outputXmlNamespace, tos.outputXmlNamespace)
-					    && eqOrNull(factory,tos.factory);
-
+					    && eqOrNull(includedFields, tos.includedFields)
+					    && eqOrNull(childSpecsByFK, tos.childSpecsByFK)
+					    && eqOrNull(parentSpecsByFK, tos.parentSpecsByFK)
+					    && eqOrNull(rowCollectionElementName, tos.rowCollectionElementName)
+					    && eqOrNull(rowElementName, tos.rowElementName)
+					    && eqOrNull(rowOrdering, tos.rowOrdering)
+					    ;
 			}
 		}
 	}

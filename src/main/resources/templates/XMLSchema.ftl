@@ -27,7 +27,7 @@
       
       <!-- child elements -->
       <#list ospec.childOutputSpecs as c_ospec>
-        <#if inline_el_collections><#t>
+        <#if ospec.inlineChildCollections><#t>
       <element name="${c_ospec.rowElementName}" type="tns:${typeNamer.getRowElementTypeName(c_ospec.relationId)}" minOccurs="0" maxOccurs="unbounded"/>
         <#else><#t>
       <element name="${c_ospec.rowCollectionElementName}" type="tns:${typeNamer.getRowCollectionElementTypeName(c_ospec.relationId)}" minOccurs="${child_els_opt?string('0','1')}"/>

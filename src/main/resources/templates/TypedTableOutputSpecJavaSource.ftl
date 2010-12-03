@@ -202,4 +202,9 @@ public class ${class_name} extends TableOutputSpec {
       return (${class_name})super.withOutputXmlNamespace(ns);
   }
   
+  @Override
+  public ${class_name} withChildCollectionsStyle(TableOutputSpec.ChildCollectionsStyle child_colls_style)
+  {
+      return (${class_name})super.withChildElementCollectionStyle(child_colls_style);
+  }
 }

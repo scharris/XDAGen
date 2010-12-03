@@ -31,11 +31,7 @@ public class DatabaseXmlSchemaGenerator {
 
 	DBMD dbmd;
 	
-	XmlElementCollectionStyle xmlElementCollectionStyle;
-	
 	TypeNamer typeNamer;
-	
-	ElementNamer elNamer;
 	
 	Configuration templateConfig;
 	Template xsdTemplate;
@@ -47,17 +43,20 @@ public class DatabaseXmlSchemaGenerator {
 	private static final String XMLSCHEMA_TEMPLATE =  "XMLSchema.ftl";
 
 	
+	
+	public DatabaseXmlSchemaGenerator(DBMD dbmd)
+		throws IOException
+	{
+		this(dbmd, new DefaultTypeNamer(dbmd));
+	}
+
 	// Primary constructor.
 	public DatabaseXmlSchemaGenerator(DBMD dbmd,                                   // Required
-	                                  XmlElementCollectionStyle xml_el_coll_style, // Required
-	                                  TypeNamer type_namer,                        // Optional
-	                                  ElementNamer el_namer)                       // Optional
+	                                  TypeNamer type_namer)                        // Optional
 		throws IOException
 	{
 		this.dbmd = dbmd;
-		this.xmlElementCollectionStyle = xml_el_coll_style;
 		this.typeNamer = type_namer != null ? type_namer : new DefaultTypeNamer(dbmd);
-		this.elNamer = el_namer != null ? el_namer : new DefaultElementNamer(dbmd, xml_el_coll_style);
 		
 		// Configure template engine.
 		this.templateConfig = new Configuration();
@@ -71,17 +70,6 @@ public class DatabaseXmlSchemaGenerator {
 	}
 	
 	
-	public DatabaseXmlSchemaGenerator(DBMD dbmd,
-	                                  XmlElementCollectionStyle xml_el_coll_style)
-		throws IOException
-	{
-		this(dbmd,
-		     xml_el_coll_style,
-		     new DefaultTypeNamer(dbmd),
-		     new DefaultElementNamer(dbmd, xml_el_coll_style));
-	}
-	
-	
 	public TypeNamer getTypeNamer()
 	{
 		return typeNamer;
@@ -92,27 +80,6 @@ public class DatabaseXmlSchemaGenerator {
 		this.typeNamer = type_namer;
 	}
 	
-	public ElementNamer getElementNamer()
-	{
-		return elNamer;
-	}
-	
-	public void setElementNamer(ElementNamer el_namer)
-	{
-		this.elNamer = el_namer;
-	}
-	
-	
-	public XmlElementCollectionStyle getXmlElementCollectionStyle()
-	{
-		return xmlElementCollectionStyle;
-	}
-	
-	public void setXmlElementCollectionStyle(XmlElementCollectionStyle coll_style)
-	{
-		this.xmlElementCollectionStyle = coll_style;
-	}
-
 	public boolean getIncludeGenerationTimestamp()
 	{
 		return includeGenerationTimestamp;
@@ -125,11 +92,12 @@ public class DatabaseXmlSchemaGenerator {
 
 
 	
-	public String getStandardXMLSchema(Set<RelId> rels_getting_toplevel_el,      // define top level elements for these
-	                                   Set<RelId> rels_getting_toplevel_list_el, // define top level list elements for these
-	                                   String target_xml_namespace)              // 
+	public String getStandardXMLSchema(Set<RelId> rels_getting_toplevel_el,      // optional, define top level elements for these, defaults to all
+	                                   Set<RelId> rels_getting_toplevel_list_el, // optional, define top level list elements for these, defaults to all
+	                                   String target_xml_namespace,              // required
+	                                   ChildCollectionsStyle child_colls_style)    // required
 	{
-		return getXMLSchema(new DefaultTableOutputSpecFactory(dbmd, elNamer, target_xml_namespace),
+		return getXMLSchema(new DefaultTableOutputSpecFactory(dbmd, child_colls_style, target_xml_namespace),
 		                    rels_getting_toplevel_el,
 		                    rels_getting_toplevel_list_el);
 	}
@@ -169,7 +137,6 @@ public class DatabaseXmlSchemaGenerator {
 		Map<String,Object> template_model = new HashMap<String,Object>();
 		
 		template_model.put("qgen", this);
-		template_model.put("inline_el_collections", xmlElementCollectionStyle == XmlElementCollectionStyle.INLINE);
 		template_model.put("typeNamer", typeNamer);
 		template_model.put("target_namespace", xmlns);
 		template_model.put("ospecs", ospecs);
@@ -358,7 +325,7 @@ public class DatabaseXmlSchemaGenerator {
         int arg_ix = 0;
         String dbmd_xml_infile_path;
         String target_namespace;
-        XmlElementCollectionStyle xml_collection_style;
+        ChildCollectionsStyle child_colls_style;
         String toplevel_el_relids_strlist;
         Set<RelId> toplevel_el_relids;
         String toplevel_el_list_relids_strlist;
@@ -369,7 +336,7 @@ public class DatabaseXmlSchemaGenerator {
         {
         	dbmd_xml_infile_path = args[arg_ix++];
         	target_namespace = args[arg_ix++];
-        	xml_collection_style = XmlElementCollectionStyle.valueOf(args[arg_ix++].toUpperCase());
+        	child_colls_style = ChildCollectionsStyle.valueOf(args[arg_ix++].toUpperCase());
         	toplevel_el_relids_strlist = args[arg_ix++];
         	toplevel_el_list_relids_strlist = args[arg_ix++];
         	xmlschema_outfile_path = args[arg_ix++];
@@ -393,14 +360,15 @@ public class DatabaseXmlSchemaGenerator {
         DBMD dbmd = DBMD.readXML(dbmd_is);
         dbmd_is.close();
         
-        DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd, xml_collection_style);
+        DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd);
 
         toplevel_el_relids = toplevel_el_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_relids_strlist)) : null;
         toplevel_el_list_relids = toplevel_el_list_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_list_relids_strlist)) : null;
         
         String xsd = g.getStandardXMLSchema(toplevel_el_relids,
                                             toplevel_el_list_relids,
-                                            target_namespace);
+                                            target_namespace,
+                                            child_colls_style);
         
         OutputStream os = new FileOutputStream(xmlschema_outfile_path);
         os.write(xsd.getBytes());

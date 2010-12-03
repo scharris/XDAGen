@@ -3,11 +3,10 @@ package gov.fda.nctr.xdagen.tests;
 import static gov.fda.nctr.xdagen.TableOutputSpec.RowOrdering.fields;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.util.StringFuns;
-import gov.fda.nctr.xdagen.DefaultElementNamer;
+import gov.fda.nctr.xdagen.ChildCollectionsStyle;
 import gov.fda.nctr.xdagen.DefaultTableOutputSpecFactory;
 import gov.fda.nctr.xdagen.QueryGenerator;
 import gov.fda.nctr.xdagen.TableOutputSpec;
-import gov.fda.nctr.xdagen.XmlElementCollectionStyle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,11 +30,10 @@ public class TestQueries extends TestCase {
 	
 	Connection conn;
 	
-	QueryGenerator inlineCollElsQryGen;
-	QueryGenerator wrappedCollElsQryGen;
+	QueryGenerator qryGen;
 	
-	TableOutputSpec.Factory inlineCollElsTOSFactory;
-	TableOutputSpec.Factory wrappedCollElsTOSFactory;
+	TableOutputSpec.Factory tosFactoryWithInlineColls;
+	TableOutputSpec.Factory tosFactoryWithWrappedColls;
 	
 	TableOutputSpec drugInlineColls;
 	TableOutputSpec drugWrappedColls;
@@ -59,21 +57,20 @@ public class TestQueries extends TestCase {
 		this.conn = createConnection(Utils.loadProperties("jdbc.connect.properties"));
 
 		
-		inlineCollElsTOSFactory = new DefaultTableOutputSpecFactory(dbmd,
-		                                                            new DefaultElementNamer(dbmd, XmlElementCollectionStyle.INLINE),
-			                                                        "http://example/namespace");
-		wrappedCollElsTOSFactory = new DefaultTableOutputSpecFactory(dbmd,
-		                                                             new DefaultElementNamer(dbmd, XmlElementCollectionStyle.WRAPPED),
-			                                                         "http://example/namespace");
+		tosFactoryWithInlineColls = new DefaultTableOutputSpecFactory(dbmd,
+		                                                              ChildCollectionsStyle.INLINE,
+			                                                          "http://example/namespace");
+		tosFactoryWithWrappedColls = new DefaultTableOutputSpecFactory(dbmd,
+		                                                               ChildCollectionsStyle.WRAPPED,
+			                                                           "http://example/namespace");
 			
-		inlineCollElsQryGen = new QueryGenerator(dbmd);
-		wrappedCollElsQryGen = new QueryGenerator(dbmd, XmlElementCollectionStyle.WRAPPED);
+		qryGen = new QueryGenerator(dbmd);
 		                            		
-		this.drugInlineColls = inlineCollElsTOSFactory.table("drug").withAllChildTables()
-		                                                            .withAllParentTables();
+		this.drugInlineColls = tosFactoryWithInlineColls.table("drug").withAllChildTables()
+		                                                              .withAllParentTables();
 		                            		
-		this.drugWrappedColls = wrappedCollElsTOSFactory.table("drug").withAllChildTables()
-	    			         	                                      .withAllParentTables();
+		this.drugWrappedColls = tosFactoryWithWrappedColls.table("drug").withAllChildTables()
+	    			         	                                        .withAllParentTables();
 		
 		insertData();
     }
@@ -95,9 +92,9 @@ public class TestQueries extends TestCase {
 
 	public void testOneRowElementsQueryRowXmlWithInlineCollections() throws IOException, SQLException
 	{
-		String sql = inlineCollElsQryGen.getRowElementsQuery(drugInlineColls,
-		                                                     "d",
-		                                                     "d.id = 1");
+		String sql = qryGen.getRowElementsQuery(drugInlineColls,
+		                                        "d",
+		                                        "d.id = 1");
 
 		Clob row_xml_clob = (Clob)getOneResult("ROW_XML", sql);
 		assertNotNull(row_xml_clob);
@@ -118,9 +115,9 @@ public class TestQueries extends TestCase {
 	
 	public void testOneRowElementsQueryRowXmlWithWrappedCollections() throws IOException, SQLException
 	{
-		String sql = wrappedCollElsQryGen.getRowElementsQuery(drugWrappedColls,
-		                                                      "d",
-		                                                      "d.id = 1");
+		String sql = qryGen.getRowElementsQuery(drugWrappedColls,
+		                                        "d",
+		                                        "d.id = 1");
 
 		Clob row_xml_clob = (Clob)getOneResult("ROW_XML", sql);
 		assertNotNull(row_xml_clob);
@@ -143,9 +140,9 @@ public class TestQueries extends TestCase {
 	{
 		TableOutputSpec drug_desc_id_ospec = drugInlineColls.orderedBy(fields("id desc","name")); // name superfluous here but just checking multiple order-by expressions
 		
-		String sql = inlineCollElsQryGen.getRowElementsQuery(drug_desc_id_ospec,
-		                                                     "d",
-		                                                     "d.id >= 1 and d.id <= 5");
+		String sql = qryGen.getRowElementsQuery(drug_desc_id_ospec,
+		                                        "d",
+		                                        "d.id >= 1 and d.id <= 5");
 
 		Clob row_xml_clob = (Clob)getNthResult(2, "ROW_XML", sql); // 2nd row with this sorting and filtering should be drug with id = 4.
 		assertNotNull(row_xml_clob);
@@ -168,9 +165,9 @@ public class TestQueries extends TestCase {
 	{
 		TableOutputSpec drug_desc_id_ospec = drugWrappedColls.orderedBy(fields("id desc"));
 		
-		String sql = wrappedCollElsQryGen.getRowElementsQuery(drug_desc_id_ospec,
-		                                                      "d",
-		                                                      "d.id >= 1 and d.id <= 5");
+		String sql = qryGen.getRowElementsQuery(drug_desc_id_ospec,
+		                                        "d",
+		                                        "d.id >= 1 and d.id <= 5");
 
 		Clob row_xml_clob = (Clob)getNthResult(2, "ROW_XML", sql); // 2nd row with this sorting and filtering should be drug with id = 4.
 		assertNotNull(row_xml_clob);
@@ -193,7 +190,7 @@ public class TestQueries extends TestCase {
 	{
 		TableOutputSpec drug_id_ordered_ospec = drugInlineColls.orderedBy(fields("id"));
 		
-		String sql = inlineCollElsQryGen.getRowCollectionElementQuery(drug_id_ordered_ospec, null, null);
+		String sql = qryGen.getRowCollectionElementQuery(drug_id_ordered_ospec, null, null);
 		
 		Clob rowcoll_xml_clob = (Clob)getOneResult("ROWCOLL_XML", sql);
 		
@@ -214,7 +211,7 @@ public class TestQueries extends TestCase {
 	{
 		TableOutputSpec drug_id_ordered_ospec = drugWrappedColls.orderedBy(fields("id"));
 		
-		String sql = wrappedCollElsQryGen.getRowCollectionElementQuery(drug_id_ordered_ospec, null, null);
+		String sql = qryGen.getRowCollectionElementQuery(drug_id_ordered_ospec, null, null);
 		
 		Clob rowcoll_xml_clob = (Clob)getOneResult("ROWCOLL_XML", sql);
 		
@@ -267,7 +264,7 @@ public class TestQueries extends TestCase {
 
 	public void testInlineCollectionsDrugRowElementsQueryText() throws IOException
 	{
-		String sql = inlineCollElsQryGen.getRowElementsQuery(drugInlineColls, "d");
+		String sql = qryGen.getRowElementsQuery(drugInlineColls, "d");
 
 		if ( onlyWriteExpectedData )
 		{
@@ -283,7 +280,7 @@ public class TestQueries extends TestCase {
 	
 	public void testWrappedCollectionsDrugRowElementsQueryText() throws IOException
 	{
-		String sql = wrappedCollElsQryGen.getRowElementsQuery(drugWrappedColls, "d");
+		String sql = qryGen.getRowElementsQuery(drugWrappedColls, "d");
 		
 		if ( onlyWriteExpectedData )
 		{
@@ -299,7 +296,7 @@ public class TestQueries extends TestCase {
 	
 	public void testInlineCollectionsDrugRowCollectionElementQueryText() throws IOException
 	{
-		String sql = inlineCollElsQryGen.getRowCollectionElementQuery(drugInlineColls, null, null).replaceAll("\r","");
+		String sql = qryGen.getRowCollectionElementQuery(drugInlineColls, null, null).replaceAll("\r","");
 		
 		if ( onlyWriteExpectedData )
 		{
@@ -315,7 +312,7 @@ public class TestQueries extends TestCase {
 	
 	public void testWrappedCollectionsDrugRowCollectionElementQueryText() throws IOException
 	{
-		String sql = wrappedCollElsQryGen.getRowCollectionElementQuery(drugWrappedColls, null, null).replaceAll("\r","");
+		String sql = qryGen.getRowCollectionElementQuery(drugWrappedColls, null, null).replaceAll("\r","");
 		
 		if ( onlyWriteExpectedData )
 		{

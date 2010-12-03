@@ -3,8 +3,8 @@ package gov.fda.nctr.xdagen.tests;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.util.StringFuns;
+import gov.fda.nctr.xdagen.ChildCollectionsStyle;
 import gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator;
-import gov.fda.nctr.xdagen.XmlElementCollectionStyle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +34,7 @@ public class TestXmlSchemas extends TestCase {
 	
 	public void testInlineCollectionsXmlSchema() throws IOException
 	{
-		String xsd = getXmlSchema(XmlElementCollectionStyle.INLINE);
+		String xsd = getXmlSchema(ChildCollectionsStyle.INLINE);
 		
 		String expected_xsd = StringFuns.resourceAsString("expected_results/xmlschema_inline_el_colls.xsd");
 
@@ -43,7 +43,7 @@ public class TestXmlSchemas extends TestCase {
 	
 	public void testWrappedCollectionsXmlSchema() throws IOException
 	{
-		String xsd = getXmlSchema(XmlElementCollectionStyle.WRAPPED);
+		String xsd = getXmlSchema(ChildCollectionsStyle.WRAPPED);
 		
 		String expected_xsd = StringFuns.resourceAsString("expected_results/xmlschema_wrapped_el_colls.xsd");
 
@@ -51,9 +51,9 @@ public class TestXmlSchemas extends TestCase {
 	}
 	
 	
-	private String getXmlSchema(XmlElementCollectionStyle el_coll_style) throws IOException
+	private String getXmlSchema(ChildCollectionsStyle child_colls_style) throws IOException
 	{
-        DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd, el_coll_style);
+        DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd);
         
         g.setIncludeGenerationTimestamp(false);
         
@@ -62,7 +62,8 @@ public class TestXmlSchemas extends TestCase {
         
         String xsd = g.getStandardXMLSchema(toplevel_el_relids,
                                             toplevel_el_list_relids,
-                                            "http://example/namespace");
+                                            "http://example/namespace",
+                                            child_colls_style);
         
         return xsd;
 	}

@@ -34,8 +34,6 @@ public class QueryGenerator {
 
 	DBMD dbmd;
 	
-	XmlElementCollectionStyle xmlElementCollectionStyle;
-	
 	// Output templates
 	Configuration templateConfig;
 	Template rowElementsQueryTemplate;
@@ -60,20 +58,10 @@ public class QueryGenerator {
 	
 	
 	
-	public QueryGenerator(DBMD dbmd) throws IOException
-	{
-		this(dbmd, 
-		     XmlElementCollectionStyle.INLINE);
-	}
-	
-	
-	// Primary constructor.
-	public QueryGenerator(DBMD dbmd,                                       // Required
-	                      XmlElementCollectionStyle xml_collection_style)  // Required
+	public QueryGenerator(DBMD dbmd) // Required
 	  throws IOException
 	{
 		this.dbmd = requireArg(dbmd, "database metadata");
-		this.xmlElementCollectionStyle = requireArg(xml_collection_style, "xml element collection style");
 		
 		// Configure template engine.
 		templateConfig = new Configuration();
@@ -289,7 +277,7 @@ public class QueryGenerator {
 			
 			String child_coll_subqry;
 			
-			if ( xmlElementCollectionStyle == XmlElementCollectionStyle.INLINE )
+			if ( parent_ospec.getChildCollectionsStyle() == ChildCollectionsStyle.INLINE )
 			{
 				child_coll_subqry = getRowForestQuery(child_ospec,
 				                                      child_rowelemsquery_alias,
@@ -441,14 +429,14 @@ public class QueryGenerator {
         int arg_ix = 0;
         String table_name;
         String dbmd_xml_path = null;
-        XmlElementCollectionStyle xml_collection_style;
+        ChildCollectionsStyle child_collections_style;
         String query_outfile_path = null;
     	
         if ( args.length == 4 )
         {
         	table_name = args[arg_ix++];
         	dbmd_xml_path = args[arg_ix++];
-        	xml_collection_style = XmlElementCollectionStyle.valueOf(args[arg_ix++].toUpperCase());
+        	child_collections_style = ChildCollectionsStyle.valueOf(args[arg_ix++].toUpperCase());
         	query_outfile_path = args[arg_ix++];
         }
         else
@@ -463,11 +451,10 @@ public class QueryGenerator {
 
         System.out.println("Database metadata for " + dbmd.getRelationMetaDatas().size() + " relations read from file.");
         
-        QueryGenerator g = new QueryGenerator(dbmd,
-                                              xml_collection_style);
+        QueryGenerator g = new QueryGenerator(dbmd);
         
         TableOutputSpec.Factory tosf = new DefaultTableOutputSpecFactory(dbmd,
-                                                                         new DefaultElementNamer(dbmd, xml_collection_style),
+                                                                         child_collections_style,
                                                                          "http://example/namespace");
         
         TableOutputSpec ospec =
