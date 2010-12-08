@@ -4,8 +4,8 @@ select -- rows of ${relid}
 <#if include_table_field_columns>  ${table_alias}.*,${"\n"}</#if>  -- row_xml
   <#if convert_to_clob>xmlserialize(content </#if>xmlelement("${row_element_name}"<#if write_xmlns_attr>, xmlattributes('${xmlns!}' as "xmlns")</#if>
    ,xmlforest(
-     <#list output_field_el_names_by_field as pair><#assign f = pair.fst()/><#assign field_el_name = pair.snd()/>
-     ${field_prefix}${f.name} "${field_el_name}"${pair_has_next?string(',','')}
+     <#list output_fields as of>
+     ${field_prefix}${of.field.name} "${of.outputElementName}"${of_has_next?string(',','')}
      </#list>
     )
    -- <#if (child_subqueries!)?size == 0>No</#if> child tables for ${relid}

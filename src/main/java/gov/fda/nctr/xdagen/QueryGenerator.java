@@ -146,7 +146,7 @@ public class QueryGenerator {
 		template_model.put("relid", relid);
 		template_model.put("include_table_field_columns", include_leading_table_fields);
 		template_model.put("convert_to_clob", convert_to_clob);
-		template_model.put("output_field_el_names_by_field", ospec.getOutputFieldElementNamesByField());
+		template_model.put("output_fields", ospec.getOutputFields());
 		template_model.put("row_element_name", ospec.getRowElementName());
 		template_model.put("child_subqueries", getChildTableSubqueries(ospec, table_alias, "     "));
 		template_model.put("parent_subqueries", getParentTableSubqueries(ospec, table_alias, "     "));

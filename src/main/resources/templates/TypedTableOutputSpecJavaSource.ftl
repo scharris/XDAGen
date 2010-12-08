@@ -2,6 +2,7 @@ package ${target_package};
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
 
 import gov.fda.nctr.xdagen.TableOutputSpec;
 import gov.fda.nctr.xdagen.ChildCollectionsStyle;
@@ -179,6 +180,30 @@ public class ${class_name} extends TableOutputSpec {
     return (${class_name})super.withAllParentTables();
   }
   
+  @Override
+  public ${class_name} outputFields(List<TableOutputSpec.OutputField> output_fields)
+  {
+    return (${class_name})super.outputFields(output_fields);
+  }
+  
+  @Override
+  public ${class_name} suppressOutputForFields(Set<String> db_field_names)
+  {
+    return (${class_name})super.suppressOutputForFields(db_field_names);
+  }
+  
+  @Override
+  public ${class_name} suppressOutputForFieldsOtherThan(Set<String> db_field_names)
+  {
+    return (${class_name})super.suppressOutputForFieldsOtherThan(db_field_names);
+  }
+  
+  @Override
+  public ${class_name} outputFieldAs(String db_field_name, String output_el_name)
+  {
+    return (${class_name})super.outputFieldAs(db_field_name, output_el_name);
+  }
+  
 
   @Override
   public ${class_name} orderedBy(TableOutputSpec.RowOrdering row_ordering)
@@ -187,20 +212,20 @@ public class ${class_name} extends TableOutputSpec {
   }
 
   @Override
-  public ${class_name} withTableOutputSpecFactory(TableOutputSpec.Factory f)
+  public ${class_name} factory(TableOutputSpec.Factory f)
   {
-      return (${class_name})super.withTableOutputSpecFactory(f);
+      return (${class_name})super.factory(f);
   }
   
   @Override
-  public ${class_name} withOutputXmlNamespace(String ns)
+  public ${class_name} outputXmlNamespace(String ns)
   {
-      return (${class_name})super.withOutputXmlNamespace(ns);
+      return (${class_name})super.outputXmlNamespace(ns);
   }
   
   @Override
-  public ${class_name} withChildCollectionsStyle(ChildCollectionsStyle child_colls_style)
+  public ${class_name} childCollectionsStyle(ChildCollectionsStyle child_colls_style)
   {
-      return (${class_name})super.withChildCollectionsStyle(child_colls_style);
+      return (${class_name})super.childCollectionsStyle(child_colls_style);
   }
 }

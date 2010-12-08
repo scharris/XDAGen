@@ -20,18 +20,6 @@ import java.util.Set;
 public class TableOutputSpec implements Cloneable {
 
 	
-	public interface Factory {
-		
-		// These two functions are convenience methods intended for direct use by clients.
-		public TableOutputSpec table(RelId relid);
-		public TableOutputSpec table(String pq_table_name); // possibly qualified table name
-
-		// These methods are used internally by TableOutputSpec to create parent/child output specs when they aren't specified when adding parent or child tables.
-		public TableOutputSpec makeChildTableOutputSpec(ForeignKey fk_from_child, TableOutputSpec attached_to_ospec);
-		public TableOutputSpec makeParentTableOutputSpec(ForeignKey fk_to_parent, TableOutputSpec attached_to_ospec);
-		
-	}
-	
 	protected RelId relId;
 	
 	protected DBMD dbmd;
@@ -42,7 +30,7 @@ public class TableOutputSpec implements Cloneable {
 	
 	protected String outputXmlNamespace;
 	
-	protected List<Pair<Field,String>> outputFieldElementNamesByField;
+	protected List<OutputField> outputFields;
 	
 	protected List<Pair<ForeignKey,TableOutputSpec>> childSpecsByFK;
     
@@ -121,7 +109,7 @@ public class TableOutputSpec implements Cloneable {
                               DBMD dbmd,                                         // required
                               Factory ospec_factory,                             // required
                               ChildCollectionsStyle child_colls_style,           // required
-                              List<Pair<Field,String>> output_el_names_by_field, // optional
+                              List<OutputField> output_el_names_by_field, // optional
                               RowOrdering row_ordering,                          // optional
                               String output_xml_ns,                              // optional
                               String row_el_name,                                // optional
@@ -134,8 +122,8 @@ public class TableOutputSpec implements Cloneable {
 		this.dbmd = requireArg(dbmd, "database metadata");
 		this.factory = requireArg(ospec_factory, "table output spec factory");
 		this.childCollsStyle = child_colls_style;
-		this.outputFieldElementNamesByField = output_el_names_by_field != null ? new ArrayList<Pair<Field,String>>(output_el_names_by_field) 
-				                                                               : getDefaultOutputElementNamesByField(relId);
+		this.outputFields = output_el_names_by_field != null ? new ArrayList<OutputField>(output_el_names_by_field) 
+				                                             : getDefaultOutputFields(relId);
 		this.rowOrdering = row_ordering;
 		this.outputXmlNamespace = output_xml_ns;
 		this.rowElementName = row_el_name != null ? row_el_name : relid.getName().toLowerCase();
@@ -149,12 +137,12 @@ public class TableOutputSpec implements Cloneable {
 	}
     
 	
-	protected List<Pair<Field,String>> getDefaultOutputElementNamesByField(RelId relid)
+	protected List<OutputField> getDefaultOutputFields(RelId relid)
 	{
-		List<Pair<Field,String>> res = new ArrayList<Pair<Field,String>>();
+		List<OutputField> res = new ArrayList<OutputField>();
 		
 		for(Field f: dbmd.getRelationMetaData(relid).getFields())
-			res.add(Pair.make(f, f.getName().toLowerCase()));
+			res.add(new OutputField(f, f.getName().toLowerCase()));
 		
 		return res;
 	}
@@ -190,29 +178,9 @@ public class TableOutputSpec implements Cloneable {
 		return childCollsStyle == ChildCollectionsStyle.INLINE;
 	}
 	
-	public List<Field> getOutputFields()
+	public List<OutputField> getOutputFields()
 	{
-		ArrayList<Field> res = new ArrayList<Field>();
-		
-		for(Pair<Field,String> p: outputFieldElementNamesByField)
-			res.add(p.fst());
-		
-		return res;
-	}
-	
-	public List<String> getOutputFieldElementNames()
-	{
-		List<String> res = new ArrayList<String>();
-		
-		for(Pair<Field,String> p: outputFieldElementNamesByField)
-			res.add(p.snd());
-		
-		return res;
-	}
-	
-	public List<Pair<Field,String>> getOutputFieldElementNamesByField()
-	{
-		return outputFieldElementNamesByField;
+		return outputFields;
 	}
 	
 	public String getRowCollectionElementName()
@@ -602,28 +570,103 @@ public class TableOutputSpec implements Cloneable {
 	////////////////////////////////////////////////////////////////////////////////////
 
 	
-	
-    ////////////////////////////////////////////////////////////////////////////////////
-	// Row ordering
+	///////////////////////////////////////////////////////////////////////////////////
+	// Output fields customization
 
-	public static abstract class RowOrdering {
-		
-		// Get a list of expressions to order by, in terms of the table fields and the passed field qualifying alias.
-		public abstract List<String> getOrderByExpressions(String field_qualifying_alias);
-		
-		/** Convenience method for constructing order by expressions for field names.
-		 *  The field names may optionally including a trailing " asc" or " desc" to specify sort direction. */ 
-		public static RowOrdering fields(final String... field_names)
+	public TableOutputSpec outputFields(List<OutputField> output_fields)
+	{
+		try
 		{
-			return new RowOrdering() {
-				public List<String> getOrderByExpressions(String field_qualifying_alias)
-				{
-					return dotQualify(asList(field_names), field_qualifying_alias);
-				}
-			};
+			TableOutputSpec copy = (TableOutputSpec)this.clone();
+			copy.outputFields = output_fields;
+			
+			return copy;
+		}
+		catch(CloneNotSupportedException e)
+		{
+			throw new RuntimeException(e);
 		}
 	}
 	
+	
+	public TableOutputSpec suppressOutputForFields(Set<String> db_field_names)
+	{
+		List<OutputField> remaining = new ArrayList<OutputField>();
+		
+		for(OutputField of: outputFields)
+		{
+			if ( !db_field_names.contains(of.getField().getName()) )
+				remaining.add(of);
+		}
+		
+		try
+		{
+			TableOutputSpec copy = (TableOutputSpec)this.clone();
+			copy.outputFields = remaining;
+			
+			return copy;
+		}
+		catch(CloneNotSupportedException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public TableOutputSpec suppressOutputForFieldsOtherThan(Set<String> db_field_names)
+	{
+		List<OutputField> remaining = new ArrayList<OutputField>();
+		
+		for(OutputField of: outputFields)
+		{
+			if ( db_field_names.contains(of.getField().getName()) )
+				remaining.add(of);
+		}
+		
+		try
+		{
+			TableOutputSpec copy = (TableOutputSpec)this.clone();
+			copy.outputFields = remaining;
+			
+			return copy;
+		}
+		catch(CloneNotSupportedException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public TableOutputSpec outputFieldAs(String db_field_name, String output_el_name)
+	{
+		List<OutputField> l = new ArrayList<OutputField>();
+		
+		for(OutputField of: outputFields)
+		{
+			if ( of.getField().getName().equals(db_field_name) )
+				l.add(new OutputField(of.getField(), output_el_name));
+			else
+				l.add(of);
+		}
+		
+		try
+		{
+			TableOutputSpec copy = (TableOutputSpec)this.clone();
+			copy.outputFields = l;
+			
+			return copy;
+		}
+		catch(CloneNotSupportedException e)
+		{
+			throw new RuntimeException(e);
+		}	
+	}
+	
+	// Output fields customization
+	///////////////////////////////////////////////////////////////////////////////////
+	
+	
+    ////////////////////////////////////////////////////////////////////////////////////
+	// Row ordering customization
+
 	
 	public TableOutputSpec orderedBy(RowOrdering row_ordering)
 	{
@@ -640,14 +683,15 @@ public class TableOutputSpec implements Cloneable {
 		}
 	}
 
-	// Row ordering
+	// Row ordering customization
     ////////////////////////////////////////////////////////////////////////////////////
 
+	
 	
 	///////////////////////////////////////////////////////////////////////////////////
 	// Factory customization
 
-	public TableOutputSpec withTableOutputSpecFactory(Factory f)
+	public TableOutputSpec factory(Factory f)
 	{
 		try
 		{
@@ -670,7 +714,7 @@ public class TableOutputSpec implements Cloneable {
 	///////////////////////////////////////////////////////////////////////////////////
 	// Output XML Namespace customization
 
-	public TableOutputSpec withOutputXmlNamespace(String ns)
+	public TableOutputSpec outputXmlNamespace(String ns)
 	{
 		try
 		{
@@ -692,7 +736,7 @@ public class TableOutputSpec implements Cloneable {
 	///////////////////////////////////////////////////////////////////////////////////
 	// Child element collection style customization
 
-	public TableOutputSpec withChildCollectionsStyle(ChildCollectionsStyle child_colls_style)
+	public TableOutputSpec childCollectionsStyle(ChildCollectionsStyle child_colls_style)
 	{
 		try
 		{
@@ -720,7 +764,7 @@ public class TableOutputSpec implements Cloneable {
 			         + hashcode(factory)
 			         + hashcode(childCollsStyle)
 			         + hashcode(outputXmlNamespace)
-			         + hashcode(outputFieldElementNamesByField)
+			         + hashcode(outputFields)
 			         + hashcode(childSpecsByFK)
 			         + hashcode(parentSpecsByFK)
 			         + hashcode(rowElementName)
@@ -753,7 +797,7 @@ public class TableOutputSpec implements Cloneable {
 					    && eqOrNull(factory, tos.factory)
 					    && eqOrNull(childCollsStyle, tos.childCollsStyle)
 					    && eqOrNull(outputXmlNamespace, tos.outputXmlNamespace)
-					    && eqOrNull(outputFieldElementNamesByField, tos.outputFieldElementNamesByField)
+					    && eqOrNull(outputFields, tos.outputFields)
 					    && eqOrNull(childSpecsByFK, tos.childSpecsByFK)
 					    && eqOrNull(parentSpecsByFK, tos.parentSpecsByFK)
 					    && eqOrNull(rowCollectionElementName, tos.rowCollectionElementName)
@@ -763,5 +807,82 @@ public class TableOutputSpec implements Cloneable {
 			}
 		}
 	}
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// Inner classes and interfaces
+ 
+	public static class OutputField {
+		
+		Field field;
+		String outputElementName;
+		
+		public OutputField(Field field, String output_element_name)
+		{
+			this.field = requireArg(field, "field");
+			this.outputElementName = requireArg(output_element_name, "output element name");
+		}
+		
+		public Field getField()
+		{
+			return field;
+		}
+
+		
+		public String getOutputElementName()
+		{
+			return outputElementName;
+		}
+
+
+		@Override
+		public int hashCode()
+		{
+			return field.hashCode() + 31*outputElementName.hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o)
+		{
+			if ( !(o instanceof OutputField) )
+				return false;
+			OutputField other = (OutputField)o;
+			return this.field.equals(other.field) && this.outputElementName.equals(other.outputElementName);
+		}
+	}
+	
+	
+	public static abstract class RowOrdering {
+		
+		// Get a list of expressions to order by, in terms of the table fields and the passed field qualifying alias.
+		public abstract List<String> getOrderByExpressions(String field_qualifying_alias);
+		
+		/** Convenience method for constructing order by expressions for field names.
+		 *  The field names may optionally including a trailing " asc" or " desc" to specify sort direction. */ 
+		public static RowOrdering fields(final String... field_names)
+		{
+			return new RowOrdering() {
+				public List<String> getOrderByExpressions(String field_qualifying_alias)
+				{
+					return dotQualify(asList(field_names), field_qualifying_alias);
+				}
+			};
+		}
+	}
+	
+	public interface Factory {
+		
+		// These two functions are convenience methods intended for direct use by clients.
+		public TableOutputSpec table(RelId relid);
+		public TableOutputSpec table(String pq_table_name); // possibly qualified table name
+
+		// These methods are used internally by TableOutputSpec to create parent/child output specs when they aren't specified when adding parent or child tables.
+		public TableOutputSpec makeChildTableOutputSpec(ForeignKey fk_from_child, TableOutputSpec attached_to_ospec);
+		public TableOutputSpec makeParentTableOutputSpec(ForeignKey fk_to_parent, TableOutputSpec attached_to_ospec);
+		
+	}
+	
+	// Inner classes and interfaces
+	////////////////////////////////////////////////////////////////////////////////////////////////
 
 }

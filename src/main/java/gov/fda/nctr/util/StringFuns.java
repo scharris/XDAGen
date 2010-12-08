@@ -40,9 +40,27 @@ public class StringFuns {
 		return sb.toString().toLowerCase();
 	}
 	
+	public static String splitAndCapitalized(String name, String seperator)
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		for(String word: name.split(seperator))
+		{
+			if ( word.length() > 0 )
+			{
+				if ( sb.length() > 0 )
+					sb.append(' ');
+				sb.append(capitalize(word.toLowerCase()));
+			}
+		}
+		
+		return sb.toString();
+	}
+
+	
 	public static String capitalize(String s)
 	{
-		return s.substring(0,1).toUpperCase() + s.substring(1);
+		return s.substring(0,1).toUpperCase() + s.substring(1).toLowerCase();
 	}
 	
 	public static String camelCase(String name)
