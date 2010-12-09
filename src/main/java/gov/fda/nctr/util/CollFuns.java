@@ -1,7 +1,12 @@
 package gov.fda.nctr.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 public class CollFuns {
@@ -37,4 +42,40 @@ public class CollFuns {
 	    return cl;
 	}
 
+    
+    public static <X> List<X> sorted(Collection<X> xs, Comparator<X> c)
+    {
+        List<X> sorted_xs = new ArrayList<X>(xs);
+        Collections.sort(sorted_xs, c);
+        return sorted_xs;
+    }
+    
+
+    public static <X> List<List<X>> partitionBy(Collection<X> xs, Comparator<X> c)
+    {
+    	List<List<X>> parts = new ArrayList<List<X>>();
+        
+    	List<X> part = new ArrayList<X>();
+        
+        for(X x: sorted(xs,c))
+        {
+        	if ( part.size() == 0 || c.compare(x, part.get(0)) == 0 )
+        		part.add(x);
+        	else
+        	{
+        		parts.add(part);
+        		part = new ArrayList<X>();
+        		part.add(x);
+        	}
+        }
+        
+        return parts;
+    }
+    
+    public static <X> Set<X> setMinus(Set<X> xs1, Set<X> xs2)
+    {
+    	Set<X> xs = new HashSet<X>(xs1);
+    	xs.removeAll(xs2);
+    	return xs;
+    }
 }
