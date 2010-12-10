@@ -232,7 +232,7 @@ public class DatabaseXmlSchemaGenerator {
     		return "base64Binary";
 
     	default:
-    		return "unknown[jdbctype=" + DatabaseMetaDataFetcher.jdbcTypeToString(jdbc_type) + "]";
+    		return null;
     	}
 	}
     

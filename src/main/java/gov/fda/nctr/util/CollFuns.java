@@ -50,6 +50,12 @@ public class CollFuns {
         return sorted_xs;
     }
     
+    public static <X extends Comparable<X>> List<X> sorted(Collection<X> xs)
+    {
+    	List<X> sorted_xs = new ArrayList<X>(xs);
+    	Collections.sort(sorted_xs);
+    	return sorted_xs;
+    }
 
     public static <X> List<List<X>> partitionBy(Collection<X> xs, Comparator<X> c)
     {
