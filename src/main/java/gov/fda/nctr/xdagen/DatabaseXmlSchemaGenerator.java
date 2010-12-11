@@ -22,7 +22,6 @@ import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 
 import gov.fda.nctr.dbmd.DBMD;
-import gov.fda.nctr.dbmd.DatabaseMetaDataFetcher;
 import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.dbmd.RelMetaData;
 

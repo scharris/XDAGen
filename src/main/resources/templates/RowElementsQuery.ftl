@@ -5,7 +5,7 @@ select -- rows of ${relid}
   <#if convert_to_clob>xmlserialize(content </#if>xmlelement("${row_element_name}"<#if write_xmlns_attr>, xmlattributes('${xmlns!}' as "xmlns")</#if>
    ,xmlforest(
      <#list output_fields as of>
-     ${field_prefix}${of.field.name} "${of.outputElementName}"${of_has_next?string(',','')}
+     ${field_el_content_expr_gen.getFieldElementContentExpression(table_alias,of.field)} "${of.outputElementName}"${of_has_next?string(',','')}
      </#list>
     )
    -- <#if (child_subqueries!)?size == 0>No</#if> child tables for ${relid}

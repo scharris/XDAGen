@@ -12,6 +12,7 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import gov.fda.nctr.dbmd.DBMD;
+import gov.fda.nctr.dbmd.Field;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.ForeignKey.EquationStyle;
 import gov.fda.nctr.dbmd.RelId;
@@ -24,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,6 +41,8 @@ public class QueryGenerator {
 	Template rowElementsQueryTemplate;
 	Template rowCollectionElementQueryTemplate;
 	Template rowForestQueryTemplate;
+
+	FieldElementContentExpressionGenerator fieldElementContentExpressionGenerator;
 
 	
 	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
@@ -57,7 +61,6 @@ public class QueryGenerator {
 	public enum XmlNamespaceOption { INCLUDE_IF_SET, SUPPRESS }
 	
 	
-	
 	public QueryGenerator(DBMD dbmd) // Required
 	  throws IOException
 	{
@@ -72,6 +75,8 @@ public class QueryGenerator {
 		rowElementsQueryTemplate = templateConfig.getTemplate(ROWELEMENTSSQUERY_TEMPLATE_NAME);
 		rowCollectionElementQueryTemplate = templateConfig.getTemplate(ROWCOLLECTIONELEMENT_QUERY_TEMPLATE);
 		rowForestQueryTemplate = templateConfig.getTemplate(ROWFOREST_QUERY_TEMPLATE);
+		
+		fieldElementContentExpressionGenerator = new DefaultFieldElementContentExpressionGenerator();
 	}
 	
 	public String getSql(XdaQuery xda_qry)
@@ -145,6 +150,7 @@ public class QueryGenerator {
 		template_model.put("xmlns_is_default", eqOrNull(xmlns, default_xmlns_in_effect));
 		template_model.put("relid", relid);
 		template_model.put("include_table_field_columns", include_leading_table_fields);
+		template_model.put("field_el_content_expr_gen", fieldElementContentExpressionGenerator);
 		template_model.put("convert_to_clob", convert_to_clob);
 		template_model.put("output_fields", ospec.getOutputFields());
 		template_model.put("row_element_name", ospec.getRowElementName());
@@ -342,7 +348,41 @@ public class QueryGenerator {
 		return dbmd;
 	}
 	
+	public FieldElementContentExpressionGenerator getFieldElementContentExpressionGenerator()
+	{
+		return fieldElementContentExpressionGenerator;
+	}
+	
+	public void setFieldElementContentExpressionGenerator(FieldElementContentExpressionGenerator g)
+	{
+		this.fieldElementContentExpressionGenerator = g;
+	}
+	
+	
+	public interface FieldElementContentExpressionGenerator {
+		
+		public String getFieldElementContentExpression(String table_alias, Field f);
+		
+	}
+	
+	public static class DefaultFieldElementContentExpressionGenerator implements FieldElementContentExpressionGenerator {
+		
+		public String getFieldElementContentExpression(String table_alias, Field f)
+		{
+			String qfieldname = table_alias != null ? table_alias + "."  + f.getName() : f.getName();
 
+			switch(f.getJdbcTypeCode())
+			{
+				case Types.DATE:
+					return "TO_CHAR(" + qfieldname + ",'YYYY-MM-DD')";
+				case Types.TIMESTAMP:
+					return "TO_CHAR(" + qfieldname + ",'YYYY-MM-DD\"T\"HH:MI:SS')";
+				default:
+					return qfieldname;
+			}
+		}
+	}
+	
 	public static class XdaQuery {
 		
 		public enum QueryStyle { SINGLE_ROW_COLLECTION_ELEMENT_RESULT,
