@@ -3,16 +3,16 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>gov.fda.nctr</groupId>
 	<artifactId>xdagen</artifactId>
-	<version>0.9.4-SNAPSHOT</version>
+	<version>0.9.5-SNAPSHOT</version>
 	<name>Xml Data Access Generator</name>
 	<description>Generates hierarchical SQL/XML queries and matching XML Schemas from simple table output specifications.</description>
 	
 
 	<distributionManagement>
-	  <snapshotRepository>
+	  <repository>
     	<id>nctr-maven-repo-server</id>
     	<url>http://ncsvmweb01.nctr.fda.gov:8080/mvnrepo/content/repositories/snapshots</url>
-  	</snapshotRepository>
+  	</repository>
 	</distributionManagement>
 	
   <properties>
@@ -28,7 +28,7 @@
 		<dependency>
 			<groupId>gov.fda.nctr</groupId>
 			<artifactId>dbmd</artifactId>
-			<version>1.0.5-SNAPSHOT</version>
+			<version>1.0.6-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -63,6 +63,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
+        <version>2.1.2</version>
         <executions>
 	        <execution>
     	      <goals>
@@ -81,17 +82,15 @@
           <execution>
             <id>generate-db-metadata-test-resources</id>
             <phase>generate-test-resources</phase>
+            <goals><goal>run</goal></goals>
             <configuration>
               <target>
                 <property name="classpath_from_maven" refid="maven.test.classpath"/>
-                <ant antfile="${basedir}/src/test/resources/build.xml">
+                <ant antfile="${basedir}/src/test/resources/gen_metadata_resources.antbuild.xml">
                   <target name="generate-all-metadata-resources"/>
                 </ant>
               </target>
             </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>

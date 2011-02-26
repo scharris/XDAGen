@@ -197,6 +197,14 @@
       <element name="cid" type="decimal" minOccurs="0" nillable="true"/>
  
       <element name="therapeutic_indications" type="string" minOccurs="0" nillable="true"/>
+ 
+      <element name="spl_xml">
+        <complexType>
+            <sequence>
+                <any processContents="lax" minOccurs="0" maxOccurs="1"/>
+            </sequence>
+        </complexType>
+      </element>
       
       <!-- child elements -->
       <element name="drug_functional_category-listing" type="tns:drug_functional_category-listing" minOccurs="0"/>

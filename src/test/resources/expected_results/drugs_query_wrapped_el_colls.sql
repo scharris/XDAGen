@@ -1,4 +1,4 @@
-select -- rows of xdagentest.drug
+select -- rows of XDAGENTEST.DRUG
   -- row_xml
   xmlserialize(content xmlelement("drug", xmlattributes('http://example/namespace' as "xmlns")
    ,xmlforest(
@@ -8,13 +8,14 @@ select -- rows of xdagentest.drug
      d.MESH_ID "mesh_id",
      d.DRUGBANK_ID "drugbank_id",
      d.CID "cid",
-     d.THERAPEUTIC_INDICATIONS "therapeutic_indications"
+     d.THERAPEUTIC_INDICATIONS "therapeutic_indications",
+     d.SPL_XML "spl_xml"
     )
-   --  child tables for xdagentest.drug
+   --  child tables for XDAGENTEST.DRUG
    ,(select xmlelement("drug_functional_category-listing", 
               xmlagg(row_els_q.row_xml)) "rowcoll_xml"
      from
-      ( select -- rows of xdagentest.drug_functional_category
+      ( select -- rows of XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY
           dfc.*,
           -- row_xml
           xmlelement("drug_functional_category"
@@ -24,10 +25,10 @@ select -- rows of xdagentest.drug
              dfc.AUTHORITY_ID "authority_id",
              dfc.SEQ "seq"
             )
-           -- No child tables for xdagentest.drug_functional_category
-           -- No parent tables for xdagentest.drug_functional_category
+           -- No child tables for XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY
+           -- No parent tables for XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY
           ) row_xml
-        from xdagentest.drug_functional_category dfc
+        from XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY dfc
       ) row_els_q
      where
        row_els_q.DRUG_ID = d.ID
@@ -35,7 +36,7 @@ select -- rows of xdagentest.drug
    ,(select xmlelement("advisory-listing", 
               xmlagg(row_els_q.row_xml)) "rowcoll_xml"
      from
-      ( select -- rows of xdagentest.advisory
+      ( select -- rows of XDAGENTEST.ADVISORY
           a.*,
           -- row_xml
           xmlelement("advisory"
@@ -45,10 +46,10 @@ select -- rows of xdagentest.drug
              a.ADVISORY_TYPE_ID "advisory_type_id",
              a.TEXT "text"
             )
-           -- No child tables for xdagentest.advisory
-           -- No parent tables for xdagentest.advisory
+           -- No child tables for XDAGENTEST.ADVISORY
+           -- No parent tables for XDAGENTEST.ADVISORY
           ) row_xml
-        from xdagentest.advisory a
+        from XDAGENTEST.ADVISORY a
       ) row_els_q
      where
        row_els_q.DRUG_ID = d.ID
@@ -56,7 +57,7 @@ select -- rows of xdagentest.drug
    ,(select xmlelement("drug_reference-listing", 
               xmlagg(row_els_q.row_xml)) "rowcoll_xml"
      from
-      ( select -- rows of xdagentest.drug_reference
+      ( select -- rows of XDAGENTEST.DRUG_REFERENCE
           dr.*,
           -- row_xml
           xmlelement("drug_reference"
@@ -65,10 +66,10 @@ select -- rows of xdagentest.drug
              dr.REFERENCE_ID "reference_id",
              dr.PRIORITY "priority"
             )
-           -- No child tables for xdagentest.drug_reference
-           -- No parent tables for xdagentest.drug_reference
+           -- No child tables for XDAGENTEST.DRUG_REFERENCE
+           -- No parent tables for XDAGENTEST.DRUG_REFERENCE
           ) row_xml
-        from xdagentest.drug_reference dr
+        from XDAGENTEST.DRUG_REFERENCE dr
       ) row_els_q
      where
        row_els_q.DRUG_ID = d.ID
@@ -76,7 +77,7 @@ select -- rows of xdagentest.drug
    ,(select xmlelement("brand-listing", 
               xmlagg(row_els_q.row_xml)) "rowcoll_xml"
      from
-      ( select -- rows of xdagentest.brand
+      ( select -- rows of XDAGENTEST.BRAND
           b.*,
           -- row_xml
           xmlelement("brand"
@@ -86,16 +87,16 @@ select -- rows of xdagentest.drug
              b.LANGUAGE_CODE "language_code",
              b.MANUFACTURER_ID "manufacturer_id"
             )
-           -- No child tables for xdagentest.brand
-           -- No parent tables for xdagentest.brand
+           -- No child tables for XDAGENTEST.BRAND
+           -- No parent tables for XDAGENTEST.BRAND
           ) row_xml
-        from xdagentest.brand b
+        from XDAGENTEST.BRAND b
       ) row_els_q
      where
        row_els_q.DRUG_ID = d.ID
     ) -- child subquery
-   --  parent tables for xdagentest.drug
-   ,(select -- rows of xdagentest.compound
+   --  parent tables for XDAGENTEST.DRUG
+   ,(select -- rows of XDAGENTEST.COMPOUND
        -- row_xml
        xmlelement("compound"
         ,xmlforest(
@@ -113,12 +114,12 @@ select -- rows of xdagentest.drug
           c.STANDARD_INCHI "standard_inchi",
           c.STANDARD_INCHI_KEY "standard_inchi_key"
          )
-        -- No child tables for xdagentest.compound
-        -- No parent tables for xdagentest.compound
+        -- No child tables for XDAGENTEST.COMPOUND
+        -- No parent tables for XDAGENTEST.COMPOUND
        ) row_xml
-     from xdagentest.compound c
+     from XDAGENTEST.COMPOUND c
      where
        c.ID = d.COMPOUND_ID
     ) -- parent subquery
   ) as clob) row_xml
-from xdagentest.drug d
+from XDAGENTEST.DRUG d

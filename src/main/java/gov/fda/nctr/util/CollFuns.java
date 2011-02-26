@@ -75,6 +75,9 @@ public class CollFuns {
         	}
         }
         
+        if ( part.size() > 0 )
+        	parts.add(part);
+        
         return parts;
     }
     

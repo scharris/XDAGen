@@ -27,8 +27,8 @@ begin
 	insert all
 	 into compound(id, display_name, nctr_isis_id)
 	   values(n, 'Test Compound ' || n, 'DUMMY' || n)
-	 into drug(id, name, compound_id, therapeutic_indications)
-	   values(n, 'Test Drug ' || n, n, 'Indication ' || n)
+	 into drug(id, name, compound_id, therapeutic_indications, spl_xml)
+	   values(n, 'Test Drug ' || n, n, 'Indication ' || n, xmltype('<document><gen-name>drug ' || n || '</gen-name></document>'))
 	 into reference(id, publication)
 	   values(100*n + 1, 'Publication 1 about drug # ' || n)
 	 into reference(id, publication)

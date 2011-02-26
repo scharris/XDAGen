@@ -181,8 +181,8 @@ public class DatabaseXmlSchemaGenerator {
 		return dbmd;
 	}
 	
-	
-    public String getXmlSchemaTypeForJdbcTypeCode(int jdbc_type)
+	// Returns the XML Schema simple type if any for the passed jdbc type code.  Will return null for complex types such as SQLXML (XMLTYPE) fields.
+    public String getXmlSchemaSimpleTypeForJdbcTypeCode(int jdbc_type)
 	{
     	// http://sqltech.cl/doc/oas10gR31/integrate.1013/b28994/adptr_db.htm#CHDBBIEB
     	switch (jdbc_type)

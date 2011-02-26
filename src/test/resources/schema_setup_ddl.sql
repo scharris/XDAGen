@@ -14,7 +14,8 @@ CREATE TABLE Drug
 	     mesh_id VARCHAR2 (7) , 
 	     drugbank_id VARCHAR2 (7) , 
 	     cid INTEGER , 
-	     therapeutic_indications VARCHAR2 (4000)
+	     therapeutic_indications VARCHAR2 (4000),
+	     spl_xml xmltype
 	     )
 ;
 	
