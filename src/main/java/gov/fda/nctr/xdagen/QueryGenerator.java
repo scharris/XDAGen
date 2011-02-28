@@ -44,6 +44,9 @@ public class QueryGenerator {
 
 	FieldElementContentExpressionGenerator fieldElementContentExpressionGenerator;
 
+	// SQL caching
+	boolean cacheGeneratedSQLs;
+    final Map<XdaQuery,String> cachedSQLsByXdaQuery;
 	
 	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
 	private static final String ROWELEMENTSSQUERY_TEMPLATE_NAME = "RowElementsQuery.ftl";
@@ -66,6 +69,8 @@ public class QueryGenerator {
 	{
 		this.dbmd = requireArg(dbmd, "database metadata");
 		
+    	cachedSQLsByXdaQuery = new HashMap<XdaQuery,String>();
+    	
 		// Configure template engine.
 		templateConfig = new Configuration();
 		templateConfig.setTemplateLoader(new ClassTemplateLoader(getClass(), CLASSPATH_TEMPLATES_DIR_PATH));
@@ -79,16 +84,39 @@ public class QueryGenerator {
 		fieldElementContentExpressionGenerator = new DefaultFieldElementContentExpressionGenerator();
 	}
 	
+	public void setCacheGeneratedSQL(boolean cache)
+	{
+		cacheGeneratedSQLs = cache;
+	}
+	
+	public void clearGeneratedSQLCache()
+	{
+		cachedSQLsByXdaQuery.clear();
+	}
+	
+	
 	public String getSql(XdaQuery xda_qry)
 	{
-		if ( xda_qry.getQueryStyle() == XdaQuery.QueryStyle.MULTIPLE_ROW_ELEMENT_RESULTS )
-			return getRowElementsQuery(xda_qry.getTableOutputSpec(),
-			                           xda_qry.getTableAlias(),
-			                           xda_qry.getFilterCondition());
+		String sql = cachedSQLsByXdaQuery.get(xda_qry);
+    	
+		if ( sql != null )
+			return sql;
 		else
-			return getRowCollectionElementQuery(xda_qry.getTableOutputSpec(),
-			                                    xda_qry.getTableAlias(),
-			                                    xda_qry.getFilterCondition());
+    	{
+			if ( xda_qry.getQueryStyle() == XdaQuery.QueryStyle.MULTIPLE_ROW_ELEMENT_RESULTS )
+				sql = getRowElementsQuery(xda_qry.getTableOutputSpec(),
+				                          xda_qry.getTableAlias(),
+				                          xda_qry.getFilterCondition());
+			else
+				sql = getRowCollectionElementQuery(xda_qry.getTableOutputSpec(),
+				                                   xda_qry.getTableAlias(),
+				                                   xda_qry.getFilterCondition());
+
+			if ( cacheGeneratedSQLs )
+				cachedSQLsByXdaQuery.put(xda_qry, sql);
+			
+			return sql;
+    	}
 	}
 	
 	
