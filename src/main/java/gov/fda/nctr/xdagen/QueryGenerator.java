@@ -45,31 +45,29 @@ public class QueryGenerator {
 	FieldElementContentExpressionGenerator fieldElementContentExpressionGenerator;
 
 	// SQL caching
-	boolean cacheGeneratedSQLs;
-    final Map<XdaQuery,String> cachedSQLsByXdaQuery;
+	boolean cacheGeneratedSqls;
+    final Map<XdaQuery,String> cachedSqlsByXdaQuery;
 	
 	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
 	private static final String ROWELEMENTSSQUERY_TEMPLATE_NAME = "RowElementsQuery.ftl";
 	private static final String ROWCOLLECTIONELEMENT_QUERY_TEMPLATE = "RowCollectionElementQuery.ftl";
 	private static final String ROWFOREST_QUERY_TEMPLATE = "RowForestQuery.ftl";
 
-	public enum XmlOutputType { XMLTYPE, CLOB }
-
-	public enum RowOutputType { XMLTYPE_ROW_XML_ONLY,
-								CLOB_ROW_XML_ONLY,
-		                        ALL_FIELDS_THEN_XMLTYPE_ROW_XML,
-		                        ALL_FIELDS_THEN_CLOB_ROW_XML }
 	
+	public enum XmlOutputColumnType { XMLTYPE, CLOB }
+
+	public enum OutputColumnsOption { XML_COLUMN_ONLY, ALL_FIELDS_THEN_ROW_XML };
 	
 	public enum XmlNamespaceOption { INCLUDE_IF_SET, SUPPRESS }
 	
 	
+
 	public QueryGenerator(DBMD dbmd) // Required
 	  throws IOException
 	{
 		this.dbmd = requireArg(dbmd, "database metadata");
 		
-    	cachedSQLsByXdaQuery = new HashMap<XdaQuery,String>();
+    	cachedSqlsByXdaQuery = new HashMap<XdaQuery,String>();
     	
 		// Configure template engine.
 		templateConfig = new Configuration();
@@ -84,39 +82,41 @@ public class QueryGenerator {
 		fieldElementContentExpressionGenerator = new DefaultFieldElementContentExpressionGenerator();
 	}
 	
-	public void setCacheGeneratedSQL(boolean cache)
+	public void setCacheGeneratedSql(boolean cache)
 	{
-		cacheGeneratedSQLs = cache;
+		cacheGeneratedSqls = cache;
 	}
 	
-	public void clearGeneratedSQLCache()
+	public void clearGeneratedSqlCache()
 	{
-		cachedSQLsByXdaQuery.clear();
+		cachedSqlsByXdaQuery.clear();
 	}
-	
 	
 	public String getSql(XdaQuery xda_qry)
 	{
-		String sql = cachedSQLsByXdaQuery.get(xda_qry);
-    	
-		if ( sql != null )
-			return sql;
-		else
-    	{
-			if ( xda_qry.getQueryStyle() == XdaQuery.QueryStyle.MULTIPLE_ROW_ELEMENT_RESULTS )
-				sql = getRowElementsQuery(xda_qry.getTableOutputSpec(),
-				                          xda_qry.getTableAlias(),
-				                          xda_qry.getFilterCondition());
-			else
-				sql = getRowCollectionElementQuery(xda_qry.getTableOutputSpec(),
-				                                   xda_qry.getTableAlias(),
-				                                   xda_qry.getFilterCondition());
-
-			if ( cacheGeneratedSQLs )
-				cachedSQLsByXdaQuery.put(xda_qry, sql);
-			
-			return sql;
-    	}
+		if ( xda_qry.getQueryResultStyle() == XdaQuery.QueryResultStyle.MULTIPLE_ROW_ELEMENT_RESULTS )
+			return getRowElementsQuery(xda_qry.getTableOutputSpec(),
+			                           xda_qry.getTableAlias(),
+			                           xda_qry.getFilterCondition(),
+			                           xda_qry.getXmlOutputColumnType(),
+			                           xda_qry.getOutputColumnsOption(),
+			                           xda_qry.getDefaultXmlnsInEffect());
+		
+		else if ( xda_qry.getQueryResultStyle() == XdaQuery.QueryResultStyle.SINGLE_ROW_COLLECTION_ELEMENT_RESULT )
+			return getRowCollectionElementQuery(xda_qry.getTableOutputSpec(),
+			                                    xda_qry.getTableAlias(),
+			                                    xda_qry.getFilterCondition(),
+			                                    xda_qry.getXmlOutputColumnType(),
+			                                    xda_qry.getDefaultXmlnsInEffect());
+		
+		else if ( xda_qry.getQueryResultStyle() == XdaQuery.QueryResultStyle.SINGLE_ROW_ELEMENT_FOREST_RESULT )
+			return getRowForestQuery(xda_qry.getTableOutputSpec(),
+			                         xda_qry.getTableAlias(),
+			                         xda_qry.getFilterCondition(),
+			                         xda_qry.getDefaultXmlnsInEffect());
+		
+		else 
+			throw new IllegalArgumentException("Invalid or unsupported query style in XdaQuery:" + xda_qry.getQueryResultStyle());
 	}
 	
 	
@@ -125,7 +125,8 @@ public class QueryGenerator {
 		return getRowElementsQuery(ospec,
 		                           lowercaseInitials(ospec.getRelationId().getName(),"_"),
 		                           null,  // no WHERE clause condition
-		                           RowOutputType.CLOB_ROW_XML_ONLY,
+		                           XmlOutputColumnType.CLOB,
+		                           OutputColumnsOption.XML_COLUMN_ONLY,
 		                           null); // no default xml namespace in effect yet
 		
 	}
@@ -136,7 +137,8 @@ public class QueryGenerator {
 		return getRowElementsQuery(ospec,
 		                           table_alias,
 		                           null, // no WHERE clause condition
-		                           RowOutputType.CLOB_ROW_XML_ONLY,
+		                           XmlOutputColumnType.CLOB,
+		                           OutputColumnsOption.XML_COLUMN_ONLY,
 		                           null); // no default xml namespace in effect yet
 	}
 	
@@ -147,61 +149,73 @@ public class QueryGenerator {
 		return getRowElementsQuery(ospec,
 		                           table_alias,
 		                           filter_condition,
-		                           RowOutputType.CLOB_ROW_XML_ONLY,
+		                           XmlOutputColumnType.CLOB,
+		                           OutputColumnsOption.XML_COLUMN_ONLY,
 		                           null); // no default xml namespace in effect yet
 	}
 
 
-	
-	public String getRowElementsQuery(TableOutputSpec ospec,          // Required
-	                                  String table_alias,             // Required
-	                                  String filter_condition,        // Optional. Any includedFields referenced should be qualified with table_alias.
-	                                  RowOutputType row_output_type,  // Required
-	                                  String default_xmlns_in_effect) // Optional, the xmlns uri which can be assumed to be in effect where this query's output will be embedded, if any.
+	// MULTIPLE_ROW_ELEMENT_RESULTS implementation
+	public String getRowElementsQuery(TableOutputSpec ospec,               // Required
+	                                  String table_alias,                  // Required
+	                                  String filter_condition,             // Optional. Any fields referenced should be qualified with table_alias.
+	                                  XmlOutputColumnType xml_col_type,    // Required
+	                                  OutputColumnsOption output_cols_opt, // Required
+	                                  String default_xmlns_in_effect)      // Optional, the xmlns uri which can be assumed to be in effect where this query's output will be embedded, if any.
 	{
-		requireArg(ospec, "output spec");
-		if ( table_alias == null || table_alias.trim().length() == 0 )
-			throw new IllegalArgumentException("Table alias cannot be null or an empty string.");
+		XdaQuery xda_qry = new XdaQuery(ospec,
+                                        XdaQuery.QueryResultStyle.MULTIPLE_ROW_ELEMENT_RESULTS,
+                                        table_alias,
+                                        filter_condition,
+                                        xml_col_type,
+                                        output_cols_opt,
+                                        default_xmlns_in_effect);
 		
-		String xmlns = ospec.getOutputXmlNamespace();
+		String sql = cachedSql(xda_qry);
 		
-		final RelId relid = ospec.getRelationId();
+		if ( sql != null )
+			return sql;
+		else
+    	{
+			String xmlns = ospec.getOutputXmlNamespace();
 		
-		boolean convert_to_clob = row_output_type == RowOutputType.CLOB_ROW_XML_ONLY ||
-		                          row_output_type == RowOutputType.ALL_FIELDS_THEN_CLOB_ROW_XML;
+			final RelId relid = ospec.getRelationId();
 		
-		boolean include_leading_table_fields = row_output_type == RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML ||
-                                    	       row_output_type == RowOutputType.ALL_FIELDS_THEN_CLOB_ROW_XML;
-		
-		Map<String,Object> template_model = new HashMap<String,Object>();
-		template_model.put("xmlns", xmlns);
-		template_model.put("xmlns_is_default", eqOrNull(xmlns, default_xmlns_in_effect));
-		template_model.put("relid", relid);
-		template_model.put("include_table_field_columns", include_leading_table_fields);
-		template_model.put("field_el_content_expr_gen", fieldElementContentExpressionGenerator);
-		template_model.put("convert_to_clob", convert_to_clob);
-		template_model.put("output_fields", ospec.getOutputFields());
-		template_model.put("row_element_name", ospec.getRowElementName());
-		template_model.put("child_subqueries", getChildTableSubqueries(ospec, table_alias, "     "));
-		template_model.put("parent_subqueries", getParentTableSubqueries(ospec, table_alias, "     "));
-		template_model.put("table_alias", table_alias);
-		template_model.put("filter_condition", filter_condition);
-		if ( ospec.getRowOrdering() != null )
-			template_model.put("order_by_exprs", ospec.getRowOrdering().getOrderByExpressions(table_alias));
-
-		try
-		{
-			Writer sw = new StringWriter();
+			Map<String,Object> template_model = new HashMap<String,Object>();
+			template_model.put("xmlns", xmlns);
+			template_model.put("xmlns_is_default", eqOrNull(xmlns, default_xmlns_in_effect));
+			template_model.put("relid", relid);
+			template_model.put("include_table_field_columns", output_cols_opt == OutputColumnsOption.ALL_FIELDS_THEN_ROW_XML);
+			template_model.put("field_el_content_expr_gen", fieldElementContentExpressionGenerator);
+			template_model.put("convert_to_clob", xml_col_type == XmlOutputColumnType.CLOB);
+			template_model.put("output_fields", ospec.getOutputFields());
+			template_model.put("row_element_name", ospec.getRowElementName());
+			template_model.put("child_subqueries", getChildTableSubqueries(ospec, table_alias, "     "));
+			template_model.put("parent_subqueries", getParentTableSubqueries(ospec, table_alias, "     "));
+			template_model.put("table_alias", table_alias);
+			template_model.put("filter_condition", filter_condition);
+			if ( ospec.getRowOrdering() != null )
+				template_model.put("order_by_exprs", ospec.getRowOrdering().getOrderByExpressions(table_alias));
+	
+			try
+			{
+				Writer sw = new StringWriter();
+				
+				rowElementsQueryTemplate.process(template_model, sw);
 			
-			rowElementsQueryTemplate.process(template_model, sw);
-		
-			return sw.toString();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			throw new RuntimeException("Failed to produce row collection query from template: " + e.getMessage());
-		}
+				sql = sw.toString();
+	
+				if ( cacheGeneratedSqls )
+					cachedSqlsByXdaQuery.put(xda_qry, sql);
+				
+				return sql;
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				throw new RuntimeException("Failed to produce row collection query from template: " + e.getMessage());
+			}
+    	}
 	}
 	
 	public String getRowCollectionElementQuery(TableOutputSpec ospec,              // Required
@@ -211,48 +225,67 @@ public class QueryGenerator {
 		return getRowCollectionElementQuery(ospec,
 		                                    rows_query_alias,
 		                                    filter_cond_over_rows_query,
-		                                    XmlOutputType.CLOB,
+		                                    XmlOutputColumnType.CLOB,
 		                                    null); // no default xml namespace in effect yet
 	}
 	
 	public String getRowCollectionElementQuery(TableOutputSpec ospec,              // Required
 	                                           String rows_query_alias,            // Optional
 	                                           String filter_cond_over_rows_query, // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
-	                                           XmlOutputType xml_output_type,      // Required
+	                                           XmlOutputColumnType xml_col_type,   // Required
 	                                           String default_xmlns_in_effect)     // Optional, the xmlns uri which can be assumed to be in effect where this query's output will be embedded, if any.
 	{
-		String rows_query = getRowElementsQuery(ospec,
-		                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
-		                                        null,  // no WHERE clause condition
-		                                        RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML, // Export all includedFields for possible use in WHERE condition over the rows query.
-		                                        ospec.getOutputXmlNamespace()); // Row elements will be embedded in the collection produced here in which the ospec's xmlns will be the default.
+		XdaQuery xda_qry = new XdaQuery(ospec,
+                                        XdaQuery.QueryResultStyle.SINGLE_ROW_COLLECTION_ELEMENT_RESULT,
+                                        rows_query_alias,
+                                        filter_cond_over_rows_query,
+                                        xml_col_type,
+                                        OutputColumnsOption.XML_COLUMN_ONLY,
+                                        default_xmlns_in_effect);
 		
-		boolean convert_to_clob = xml_output_type == XmlOutputType.CLOB;
+		String sql = cachedSql(xda_qry);
 		
-		Map<String,Object> template_model = new HashMap<String,Object>();
-		template_model.put("row_collection_element_name", ospec.getRowCollectionElementName());
-		template_model.put("xmlns", ospec.getOutputXmlNamespace());
-		template_model.put("xmlns_is_default", eqOrNull(ospec.getOutputXmlNamespace(), default_xmlns_in_effect));
-		template_model.put("convert_to_clob", convert_to_clob);
-		template_model.put("rows_query", indent(rows_query, "   ", false));
-		template_model.put("rows_query_alias", rows_query_alias);
-		template_model.put("where_cond", filter_cond_over_rows_query != null ? "where\n" + indent(filter_cond_over_rows_query, "  ") : "");
-		if ( ospec.getRowOrdering() != null )
-			template_model.put("order_by_exprs", ospec.getRowOrdering().getOrderByExpressions(rows_query_alias));
-
-		try
-		{
-			Writer sw = new StringWriter();
+		if ( sql != null )
+			return sql;
+		else
+    	{
+			String rows_query = getRowElementsQuery(ospec,
+			                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
+			                                        null,  // no WHERE clause condition
+			                                        XmlOutputColumnType.XMLTYPE,
+			                                        OutputColumnsOption.ALL_FIELDS_THEN_ROW_XML, // Export all TOS-included fields for possible use in WHERE condition over the rows query.
+			                                        ospec.getOutputXmlNamespace()); // Row elements will be embedded in the collection produced here in which the ospec's xmlns will be the default.
 			
-			rowCollectionElementQueryTemplate.process(template_model, sw);
-		
-			return sw.toString();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			throw new RuntimeException("Failed to produce row collection query from template: " + e.getMessage());
-		}	
+			Map<String,Object> template_model = new HashMap<String,Object>();
+			template_model.put("row_collection_element_name", ospec.getRowCollectionElementName());
+			template_model.put("xmlns", ospec.getOutputXmlNamespace());
+			template_model.put("xmlns_is_default", eqOrNull(ospec.getOutputXmlNamespace(), default_xmlns_in_effect));
+			template_model.put("convert_to_clob", xml_col_type == XmlOutputColumnType.CLOB);
+			template_model.put("rows_query", indent(rows_query, "   ", false));
+			template_model.put("rows_query_alias", rows_query_alias);
+			template_model.put("where_cond", filter_cond_over_rows_query != null ? "where\n" + indent(filter_cond_over_rows_query, "  ") : "");
+			if ( ospec.getRowOrdering() != null )
+				template_model.put("order_by_exprs", ospec.getRowOrdering().getOrderByExpressions(rows_query_alias));
+	
+			try
+			{
+				Writer sw = new StringWriter();
+				
+				rowCollectionElementQueryTemplate.process(template_model, sw);
+				
+				sql = sw.toString();
+				
+				if ( cacheGeneratedSqls )
+					cachedSqlsByXdaQuery.put(xda_qry, sql);
+				
+				return sql;
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				throw new RuntimeException("Failed to produce row collection query from template: " + e.getMessage());
+			}
+    	}
 	}
 
 	/** Return a single row whose rowcoll_xml column contains a forest of xml elements representing the rows of the indicated table for
@@ -263,32 +296,53 @@ public class QueryGenerator {
 	                                String filter_cond_over_rows_query, // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
 	                                String default_xmlns_in_effect)     // Optional, the xmlns uri which can be assumed to be in effect where this query's output will be embedded, if any.
 	{
-		String rows_query = getRowElementsQuery(ospec, 
-		                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
-		                                        null,  // no WHERE clause condition
-		                                        RowOutputType.ALL_FIELDS_THEN_XMLTYPE_ROW_XML, // Export all includedFields for possible use in WHERE condition over the rows query.
-		                                        default_xmlns_in_effect);  // Row elements will be embedded directly in the surrounding context, in which default_xmlns_in_effect is the default xml ns.
+		XdaQuery xda_qry = new XdaQuery(ospec,
+                                        XdaQuery.QueryResultStyle.SINGLE_ROW_ELEMENT_FOREST_RESULT,
+                                        rows_query_alias,
+                                        filter_cond_over_rows_query,
+                                        XmlOutputColumnType.XMLTYPE,
+                                        OutputColumnsOption.XML_COLUMN_ONLY,
+                                        default_xmlns_in_effect);
 		
-		Map<String,Object> template_model = new HashMap<String,Object>();
-		template_model.put("rows_query", indent(rows_query, "   ", false));
-		template_model.put("rows_query_alias", rows_query_alias);
-		template_model.put("where_cond", filter_cond_over_rows_query != null ? "where\n" + indent(filter_cond_over_rows_query, "  ") : "");
-		if ( ospec.getRowOrdering() != null )
-			template_model.put("order_by_exprs", ospec.getRowOrdering().getOrderByExpressions(rows_query_alias));
+		String sql = cachedSql(xda_qry);
 		
-		try
-		{
-			Writer sw = new StringWriter();
+		if ( sql != null )
+			return sql;
+		else
+    	{
+			String rows_query = getRowElementsQuery(ospec, 
+			                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
+			                                        null,  // no WHERE clause condition
+			                                        XmlOutputColumnType.XMLTYPE,
+			                                        OutputColumnsOption.ALL_FIELDS_THEN_ROW_XML, // Export all TOS-included fields for possible use in WHERE condition over the rows query.
+			                                        default_xmlns_in_effect);  // Row elements will be embedded directly in the surrounding context, in which default_xmlns_in_effect is the default xml ns.
 			
-			rowForestQueryTemplate.process(template_model, sw);
-		
-			return sw.toString();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			throw new RuntimeException("Failed to produce row collection query from template: " + e.getMessage());
-		}	
+			Map<String,Object> template_model = new HashMap<String,Object>();
+			template_model.put("rows_query", indent(rows_query, "   ", false));
+			template_model.put("rows_query_alias", rows_query_alias);
+			template_model.put("where_cond", filter_cond_over_rows_query != null ? "where\n" + indent(filter_cond_over_rows_query, "  ") : "");
+			if ( ospec.getRowOrdering() != null )
+				template_model.put("order_by_exprs", ospec.getRowOrdering().getOrderByExpressions(rows_query_alias));
+			
+			try
+			{
+				Writer sw = new StringWriter();
+				
+				rowForestQueryTemplate.process(template_model, sw);
+			
+				sql = sw.toString();
+				
+				if ( cacheGeneratedSqls )
+					cachedSqlsByXdaQuery.put(xda_qry, sql);
+				
+				return sql;
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				throw new RuntimeException("Failed to produce row collection query from template: " + e.getMessage());
+			}
+    	}
 	}
 
 	
@@ -323,7 +377,7 @@ public class QueryGenerator {
 				child_coll_subqry = getRowCollectionElementQuery(child_ospec,
 				                                                 child_rowelemsquery_alias,
 				                                                 child_rowelemsquery_cond,
-				                                                 XmlOutputType.XMLTYPE,
+				                                                 XmlOutputColumnType.XMLTYPE,
 				                                                 parent_ospec.getOutputXmlNamespace()); // Parent's xml namespace will be the default where this query output is embedded.
 			}
 			
@@ -359,7 +413,8 @@ public class QueryGenerator {
 			String parent_rowels_query = getRowElementsQuery(parent_ospec,
 			                                                 parent_table_alias,
 			                                                 parent_rows_cond,
-			                                                 RowOutputType.XMLTYPE_ROW_XML_ONLY,
+			                                                 XmlOutputColumnType.XMLTYPE,
+			                                                 OutputColumnsOption.XML_COLUMN_ONLY,
 			                                                 child_ospec.getOutputXmlNamespace()); // Child's xml namespace will be the default where this query output is embedded.
 			
 			if ( trailing_lines_prefix != null )
@@ -369,6 +424,14 @@ public class QueryGenerator {
 		}
 		
 		return parent_table_subqueries;
+	}
+	
+	private final String cachedSql(XdaQuery xda_qry)
+	{
+		if ( cachedSqlsByXdaQuery.size() == 0 ) // Avoid potentially expensive hash code generation (due to TableOutputSpec) when cache is empty.
+			return null;
+		else
+			return cachedSqlsByXdaQuery.get(xda_qry);
 	}
 	
 	public DBMD getDatabaseMetaData()
@@ -411,48 +474,82 @@ public class QueryGenerator {
 		}
 	}
 	
+	/** A class used to store the complete set of information necessary to generate any of the SQL queries generated by the QueryGenerator.
+		This class is mainly used internally by the QueryGenerator for caching and for argument checking, but could be useful to clients 
+		wanting to store query variations in some cases.
+	*/ 
 	public static class XdaQuery {
 		
-		public enum QueryStyle { SINGLE_ROW_COLLECTION_ELEMENT_RESULT,
-			                     MULTIPLE_ROW_ELEMENT_RESULTS }
+		public enum QueryResultStyle { SINGLE_ROW_COLLECTION_ELEMENT_RESULT,
+									   MULTIPLE_ROW_ELEMENT_RESULTS,
+									   SINGLE_ROW_ELEMENT_FOREST_RESULT }
 		
 		TableOutputSpec ospec;
-		QueryStyle queryStyle;
+		QueryResultStyle queryResultStyle;
 		String tableAlias;
 		String filterCondition;
-		
+		XmlOutputColumnType xmlOutputColumnType;
+		OutputColumnsOption outputColumnsOption;
+        String defaultXmlnsInEffect;
 		
 		public XdaQuery(TableOutputSpec ospec,
-		                QueryStyle query_style,
-		                String table_alias)
+		                QueryResultStyle query_style,
+		                String table_alias,
+		                String filter_cond)
 		{
 			this(ospec,
 			     query_style,
 			     table_alias,
+			     filter_cond,
+			     XmlOutputColumnType.CLOB,
+			     OutputColumnsOption.XML_COLUMN_ONLY,
 			     null);
 		}
 		
 		public XdaQuery(TableOutputSpec ospec,
-		                QueryStyle query_style,
+		                QueryResultStyle query_style,
 		                String table_alias,
-		                String filter_condition)
+		                String filter_condition,
+		                XmlOutputColumnType xml_output_col_type,
+		                OutputColumnsOption output_cols_opt,
+                        String default_xmlns_in_effect)
 		{
 			super();
 			
 			this.ospec = requireArg(ospec, "table output spec");
-			this.queryStyle = query_style;
+			this.queryResultStyle = requireArg(query_style, "query result style");
 			this.tableAlias = table_alias;
 			this.filterCondition = filter_condition;
+			this.xmlOutputColumnType = requireArg(xml_output_col_type, "xml output column type");
+			this.outputColumnsOption = requireArg(output_cols_opt, "output columns option");
+			this.defaultXmlnsInEffect = default_xmlns_in_effect;
+			
+			// Check input arguments for compatibility.
+			
+			if ( query_style == QueryResultStyle.MULTIPLE_ROW_ELEMENT_RESULTS )
+			{
+				if ( table_alias == null || table_alias.trim().length() == 0 )
+					throw new IllegalArgumentException("Queries of result style MULTIPLE_ROW_ELEMENT_RESULTS require a table alias.");
+			}
+			else // single result collection or forest style query
+			{
+				if ( query_style == QueryResultStyle.SINGLE_ROW_ELEMENT_FOREST_RESULT && xmlOutputColumnType == XmlOutputColumnType.CLOB )
+					throw new IllegalArgumentException("Queries of SINGLE_ROW_ELEMENT_FOREST_RESULT style cannot have a CLOB output column type.");
+
+				if ( outputColumnsOption != OutputColumnsOption.XML_COLUMN_ONLY )
+					throw new IllegalArgumentException("Single-row collection and forest style queries require an output columns option of OutputColumnsOption.XML_COLUMN_ONLY");
+			}
 		}
 
+		
 		public TableOutputSpec getTableOutputSpec()
 		{
 			return ospec;
 		}
 		
-		public QueryStyle getQueryStyle()
+		public QueryResultStyle getQueryResultStyle()
 		{
-			return queryStyle;
+			return queryResultStyle;
 		}
 		
 		public String getTableAlias()
@@ -464,6 +561,23 @@ public class QueryGenerator {
 		{
 			return filterCondition;
 		}
+		
+		public XmlOutputColumnType getXmlOutputColumnType()
+		{
+			return xmlOutputColumnType;
+		}
+
+		
+		public OutputColumnsOption getOutputColumnsOption()
+		{
+			return outputColumnsOption;
+		}
+
+		
+		public String getDefaultXmlnsInEffect()
+		{
+			return defaultXmlnsInEffect;
+		}
 
 		
 		public int hashCode()
@@ -471,7 +585,10 @@ public class QueryGenerator {
 			return ospec.hashCode()
 			     + hashcode(tableAlias)
 			     + hashcode(filterCondition)
-			     + queryStyle.hashCode();
+			     + queryResultStyle.hashCode()
+			     + xmlOutputColumnType.hashCode()
+			     + outputColumnsOption.hashCode()
+			     + hashcode(defaultXmlnsInEffect);
 		}
 		
 		public boolean equals(Object o)
@@ -487,7 +604,10 @@ public class QueryGenerator {
 				return ospec.equals(q.ospec)
 				    && eqOrNull(tableAlias, q.tableAlias)
 				    && eqOrNull(filterCondition, q.filterCondition)
-				    && queryStyle.equals(q.queryStyle);
+				    && queryResultStyle == q.queryResultStyle
+					&& xmlOutputColumnType == q.xmlOutputColumnType
+					&& outputColumnsOption == q.outputColumnsOption
+					&& eqOrNull(defaultXmlnsInEffect, q.defaultXmlnsInEffect);
 		}
 	}
 

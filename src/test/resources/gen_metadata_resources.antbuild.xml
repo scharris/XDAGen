@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="" name="Generate-Database-Metadata">
+
+	<property name="test.resources.dir" location="src/test/resources"/>
+	<property name="connect.props.file" location="${test.resources.dir}/jdbc.connect.properties"/>
+	<property name="dbmd.file" location="${test.resources.dir}/dbmd.xml"/>
+	<property name="xsd.inline_collections.file" location="${test.resources.dir}/expected_results/xmlschema_inline_el_colls.xsd"/>
+	<property name="xsd.wrapped_collections.file" location="${test.resources.dir}/expected_results/xmlschema_wrapped_el_colls.xsd"/>
+
+	<property name="db.objects.owner" value="XDAGENTEST"/> <!-- Only generate metadata for database objects owned by this schema. -->
+	<property name="xsd.target.namespace" value="http://example/namespace"/>
+	
+	<path id="classpath.from.maven">
+    <pathelement path="${classpath_from_maven}/"/>
+  </path>
+
+	
+	<target name="generate-all-metadata-resources">
+		<antcall target="generate-database-metadata"/>
+		<antcall target="generate-xmlschema-with-inline-collections"/>
+		<antcall target="generate-xmlschema-with-wrapped-collections"/>
+	</target>
+	
+	
+	<target name="generate-database-metadata">
+		<echo>Generating database metadata.</echo>
+		<echo>Fetching metadata for schema.</echo>
+
+		<java classname="gov.fda.nctr.dbmd.DatabaseMetaDataFetcher" failonerror="true" fork="true">
+			<classpath refid="classpath.from.maven"/>
+			<arg value="${db.objects.owner}"/>
+			<arg value="${connect.props.file}"/>
+			<arg value="${dbmd.file}"/>
+		</java>
+
+		<echo message="Wrote metadata to file ${dbmd.file}."/>
+	</target>
+
+	
+	<target name="generate-xmlschema-with-inline-collections" depends="">
+		<java classname="gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator" fork="true">
+			<classpath refid="classpath.from.maven"/>
+			<arg value="${dbmd.file}"/>
+	    <arg value="${xsd.target.namespace}"/>
+			<arg value="INLINE"/> <!-- inline element collections (no wrapping element) -->
+			<arg value="*all*" /> <!-- define top-level elements for these tables/views-->
+			<arg value="*all*" />	<!-- define top-level list-type elements for these tables/views-->
+			<arg value="${xsd.inline_collections.file}" />
+		</java>
+		<echo message="Wrote XML Schema file ${xsd.inline_collections.file}."/>
+	</target>
+
+	
+	<target name="generate-xmlschema-with-wrapped-collections" depends="">
+		<java classname="gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator" fork="true">
+			<classpath refid="classpath.from.maven"/>
+			<arg value="${dbmd.file}"/>
+	    <arg value="${xsd.target.namespace}"/>
+			<arg value="WRAPPED"/> <!-- wrapped element collections -->
+			<arg value="*all*" />  <!-- define top-level elements for these tables/views-->
+			<arg value="*all*" />	 <!-- define top-level list-type elements for these tables/views-->
+			<arg value="${xsd.wrapped_collections.file}" />
+		</java>
+		<echo message="Wrote XML Schema file ${xsd.wrapped_collections.file}."/>
+	</target>
+
+
+</project>

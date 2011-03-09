@@ -22,7 +22,7 @@
       <!-- fields -->
       <#list ospec.getOutputFields() as of> <#assign f = of.field/> <#assign field_el_name = of.outputElementName/> <#assign field_xs_simpletype = qgen.getXmlSchemaSimpleTypeForJdbcTypeCode(f.jdbcTypeCode)!>
       <#if field_xs_simpletype?has_content>
-      <element name="${field_el_name}" type="${field_xs_simpletype}" minOccurs="<#if f.nullable>0<#else>1</#if>"<#if f.nullable> nillable="true"</#if>/>
+      <element name="${field_el_name}" type="${field_xs_simpletype}" minOccurs="<#if f.nullable>0<#else>1</#if>"/>
       <#else>
       <#if f.jdbcTypeCode == 2009>
       <element name="${field_el_name}">
