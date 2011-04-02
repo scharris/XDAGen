@@ -193,7 +193,20 @@ public class ${class_name} extends TableOutputSpec {
   }
   
   @Override
+  public ${class_name} suppressOutputForFields(String... db_field_names)
+  {
+    return (${class_name})super.suppressOutputForFields(db_field_names);
+  }
+  
+  
+  @Override
   public ${class_name} suppressOutputForFieldsOtherThan(Set<String> db_field_names)
+  {
+    return (${class_name})super.suppressOutputForFieldsOtherThan(db_field_names);
+  }
+  
+  @Override
+  public ${class_name} suppressOutputForFieldsOtherThan(String... db_field_names)
   {
     return (${class_name})super.suppressOutputForFieldsOtherThan(db_field_names);
   }

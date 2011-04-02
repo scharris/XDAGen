@@ -2,7 +2,7 @@
 <#assign write_xmlns_attr = !xmlns_is_default/>
 select -- rows of ${relid}
 <#if include_table_field_columns>  ${table_alias}.*,${"\n"}</#if>  -- row_xml
-  <#if convert_to_clob>xmlserialize(content </#if>xmlelement("${row_element_name}"<#if write_xmlns_attr>, xmlattributes('${xmlns!}' as "xmlns")</#if>
+  <#if convert_to_clob>xmlserialize(content </#if>xmlelement(name "${row_element_name}"<#if write_xmlns_attr>, xmlattributes('${xmlns!}' as "xmlns")</#if>
    ,xmlforest(
      <#list output_fields as of>
      ${field_el_content_expr_gen.getFieldElementContentExpression(table_alias,of.field)} "${of.outputElementName}"${of_has_next?string(',','')}

@@ -218,6 +218,11 @@ public class QueryGenerator {
     	}
 	}
 	
+	public String getRowCollectionElementQuery(TableOutputSpec ospec) // Required
+	{
+		return getRowCollectionElementQuery(ospec, null, null, XmlOutputColumnType.CLOB, null);
+	}
+	
 	public String getRowCollectionElementQuery(TableOutputSpec ospec,              // Required
 	                                           String rows_query_alias,            // Optional
 	                                           String filter_cond_over_rows_query) // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
@@ -492,6 +497,31 @@ public class QueryGenerator {
 		OutputColumnsOption outputColumnsOption;
         String defaultXmlnsInEffect;
 		
+        public XdaQuery(TableOutputSpec ospec)
+		{
+			this(ospec,
+			     QueryResultStyle.SINGLE_ROW_COLLECTION_ELEMENT_RESULT,
+			     null, // table_alias
+			     null, // filter_cond
+			     XmlOutputColumnType.CLOB,
+			     OutputColumnsOption.XML_COLUMN_ONLY,
+			     null);
+		}
+        
+		public XdaQuery(TableOutputSpec ospec,
+		                String table_alias,
+		                String filter_cond)
+		{
+			this(ospec,
+			     QueryResultStyle.SINGLE_ROW_COLLECTION_ELEMENT_RESULT,
+			     table_alias,
+			     filter_cond,
+			     XmlOutputColumnType.CLOB,
+			     OutputColumnsOption.XML_COLUMN_ONLY,
+			     null);
+		}
+
+        
 		public XdaQuery(TableOutputSpec ospec,
 		                QueryResultStyle query_style,
 		                String table_alias,
@@ -541,6 +571,16 @@ public class QueryGenerator {
 			}
 		}
 
+		public static XdaQuery xdaquery(TableOutputSpec tos)
+		{
+			return new XdaQuery(tos);
+		}
+		
+		public static XdaQuery xdaquery(TableOutputSpec tos, String table_alias, String filter_cond)
+		{
+			return new XdaQuery(tos, table_alias, filter_cond);
+		}
+		
 		
 		public TableOutputSpec getTableOutputSpec()
 		{

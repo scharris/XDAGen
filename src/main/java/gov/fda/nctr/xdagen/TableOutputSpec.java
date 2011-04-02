@@ -13,6 +13,8 @@ import gov.fda.nctr.util.CollFuns;
 import gov.fda.nctr.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -588,6 +590,10 @@ public class TableOutputSpec implements Cloneable {
 		}
 	}
 	
+	public TableOutputSpec suppressOutputForFields(String... db_field_names)
+	{
+		return suppressOutputForFields(new HashSet<String>(Arrays.asList(db_field_names)));
+	}
 	
 	public TableOutputSpec suppressOutputForFields(Set<String> db_field_names)
 	{
@@ -611,6 +617,12 @@ public class TableOutputSpec implements Cloneable {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public TableOutputSpec suppressOutputForFieldsOtherThan(String... db_field_names)
+	{
+		return suppressOutputForFieldsOtherThan(new HashSet<String>(Arrays.asList(db_field_names)));
+	}
+
 	
 	public TableOutputSpec suppressOutputForFieldsOtherThan(Set<String> db_field_names)
 	{
