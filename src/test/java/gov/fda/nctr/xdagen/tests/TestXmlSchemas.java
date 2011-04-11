@@ -1,53 +1,53 @@
 package gov.fda.nctr.xdagen.tests;
 
+import static gov.fda.nctr.util.StringFuns.resourceAsString;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.RelId;
-import gov.fda.nctr.util.StringFuns;
 import gov.fda.nctr.xdagen.ChildCollectionsStyle;
 import gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
-
 import javax.xml.bind.JAXBException;
 
-import junit.framework.TestCase;
+import org.custommonkey.xmlunit.Diff;
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeClass;
 
 
-public class TestXmlSchemas extends TestCase {
+public class TestXmlSchemas {
 
 	DBMD dbmd;
-	
-    
+
+	@BeforeClass
 	protected void setUp() throws JAXBException, IOException
     {
 		InputStream dbmd_xml_is = getClass().getClassLoader().getResourceAsStream("dbmd.xml");
 
 		dbmd = DBMD.readXML(dbmd_xml_is);
+	
+		assert dbmd != null : "Could not load metadata from file dbmd.xml file, DBMD.readXML() returned null."; 
 		
-		assertNotNull("Could not load metadata from file dbmd.xml file, DBMD.readXML() returned null.", dbmd);
-		
-		assertTrue("Multiple relation metadatas expected.", dbmd.getRelationMetaDatas().size() > 1);
+		assert dbmd.getRelationMetaDatas().size() > 1 : "Multiple relation metadatas expected."; 
     }
     
-	
-	public void testInlineCollectionsXmlSchema() throws IOException
+	@Test
+	public void testInlineCollectionsXmlSchema() throws Exception
 	{
-		String xsd = getXmlSchema(ChildCollectionsStyle.INLINE);
+		Diff xml_diff = new Diff(resourceAsString("expected_results/xmlschema_inline_el_colls.xsd"),
+								 getXmlSchema(ChildCollectionsStyle.INLINE));
 		
-		String expected_xsd = StringFuns.resourceAsString("expected_results/xmlschema_inline_el_colls.xsd");
-
-		assertEquals("Inline collections XML Schema not as expected.", expected_xsd, xsd);
+		assert xml_diff.identical() : "Inline collections XML Schema not as expected: " + xml_diff;		
 	}
 	
-	public void testWrappedCollectionsXmlSchema() throws IOException
+	@Test
+	public void testWrappedCollectionsXmlSchema() throws Exception
 	{
-		String xsd = getXmlSchema(ChildCollectionsStyle.WRAPPED);
+		Diff xml_diff = new Diff(resourceAsString("expected_results/xmlschema_wrapped_el_colls.xsd"),
+								 getXmlSchema(ChildCollectionsStyle.WRAPPED));
 		
-		String expected_xsd = StringFuns.resourceAsString("expected_results/xmlschema_wrapped_el_colls.xsd");
-
-		assertEquals("Wrapped collections XML Schema not as expected.", expected_xsd, xsd);
+		assert xml_diff.identical() : "Wrapped collections XML Schema not as expected: " + xml_diff;		
 	}
 	
 	
@@ -67,5 +67,4 @@ public class TestXmlSchemas extends TestCase {
         
         return xsd;
 	}
-	
 }

@@ -234,12 +234,19 @@ public class QueryGenerator {
 		                                    null); // no default xml namespace in effect yet
 	}
 	
+
 	public String getRowCollectionElementQuery(TableOutputSpec ospec,              // Required
 	                                           String rows_query_alias,            // Optional
 	                                           String filter_cond_over_rows_query, // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
 	                                           XmlOutputColumnType xml_col_type,   // Required
 	                                           String default_xmlns_in_effect)     // Optional, the xmlns uri which can be assumed to be in effect where this query's output will be embedded, if any.
 	{
+		String table_alias = lowercaseInitials(ospec.getRelationId().getName(),"_");
+		
+		// Provide an alias for the FROM-clause row-elements subquery, as some databases such as Postgres require an alias.
+		if ( rows_query_alias == null )
+			rows_query_alias = table_alias + "_rows";
+			
 		XdaQuery xda_qry = new XdaQuery(ospec,
                                         XdaQuery.QueryResultStyle.SINGLE_ROW_COLLECTION_ELEMENT_RESULT,
                                         rows_query_alias,
@@ -255,7 +262,7 @@ public class QueryGenerator {
 		else
     	{
 			String rows_query = getRowElementsQuery(ospec,
-			                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
+			                                        table_alias,
 			                                        null,  // no WHERE clause condition
 			                                        XmlOutputColumnType.XMLTYPE,
 			                                        OutputColumnsOption.ALL_FIELDS_THEN_ROW_XML, // Export all TOS-included fields for possible use in WHERE condition over the rows query.
@@ -301,6 +308,12 @@ public class QueryGenerator {
 	                                String filter_cond_over_rows_query, // Optional, should use rows_query_alias on any table field references in this condition, if alias is also supplied.
 	                                String default_xmlns_in_effect)     // Optional, the xmlns uri which can be assumed to be in effect where this query's output will be embedded, if any.
 	{
+		String table_alias = lowercaseInitials(ospec.getRelationId().getName(),"_");
+		
+		// Provide an alias for the FROM-clause row-elements subquery, as some databases such as Postgres require an alias.
+		if ( rows_query_alias == null )
+			rows_query_alias = table_alias + "_rows";
+		
 		XdaQuery xda_qry = new XdaQuery(ospec,
                                         XdaQuery.QueryResultStyle.SINGLE_ROW_ELEMENT_FOREST_RESULT,
                                         rows_query_alias,
@@ -316,7 +329,7 @@ public class QueryGenerator {
 		else
     	{
 			String rows_query = getRowElementsQuery(ospec, 
-			                                        lowercaseInitials(ospec.getRelationId().getName(),"_"),
+			                                        table_alias,
 			                                        null,  // no WHERE clause condition
 			                                        XmlOutputColumnType.XMLTYPE,
 			                                        OutputColumnsOption.ALL_FIELDS_THEN_ROW_XML, // Export all TOS-included fields for possible use in WHERE condition over the rows query.
@@ -363,7 +376,7 @@ public class QueryGenerator {
 			ForeignKey fk = p.fst();
 			TableOutputSpec child_ospec = p.snd();
 			
-			String child_rowelemsquery_alias = makeNameNotInSet("row_els_q", Collections.singleton(parent_table_alias));
+			String child_rowelemsquery_alias = makeNameNotInSet(lowercaseInitials(child_ospec.getRelationId().getName(),"_") + "_rows", Collections.singleton(parent_table_alias));
 			String child_rowelemsquery_cond = fk.asEquation(child_rowelemsquery_alias,
 			                                                parent_table_alias,
 			                                                EquationStyle.SOURCE_ON_LEFTHAND_SIDE);

@@ -6,18 +6,17 @@
 	<version>0.9.6-SNAPSHOT</version>
 	<name>Xml Data Access Generator</name>
 	<description>Generates hierarchical SQL/XML queries and matching XML Schemas from simple table output specifications.</description>
-	
 
 	<distributionManagement>
-	  <repository>
-    	<id>nctr-maven-repo-server</id>
-    	<url>http://ncsvmweb01.nctr.fda.gov/mvnrepo/content/repositories/snapshots</url>
-  	</repository>
+		<repository>
+			<id>nctr-maven-repo-server</id>
+			<url>http://ncsvmweb01.nctr.fda.gov/mvnrepo/content/repositories/snapshots</url>
+		</repository>
 	</distributionManagement>
-	
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -31,25 +30,44 @@
 			<version>1.0.6-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+  			<groupId>org.testng</groupId>
+  			<artifactId>testng</artifactId>
+  			<version>5.14</version>
+  			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>xmlunit</groupId>
+    		<artifactId>xmlunit</artifactId>
+    		<version>1.3</version>
+		</dependency>
+		<!-- 
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.2</version>
 			<type>jar</type>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
+		-->
+		<!-- Oracle driver must be downloaded and manually installed in the maven repo:
+		     mvn install:install-file -Dfile=ojdbc6.jar -Dpackaging=jar -DgroupId=com.oracle -DartifactId=ojdbc6 -Dversion=11.2.0.2.0 -->
+		<dependency> 
 			<groupId>com.oracle</groupId>
 			<artifactId>ojdbc6</artifactId>
 			<version>11.2.0.2.0</version>
 			<type>jar</type>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.0-801.jdbc4</version>
+		</dependency>
 	</dependencies>
 
-	<build>
 
+	<build>
 		<plugins>
-		
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -59,80 +77,84 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>2.1.2</version>
-        <executions>
-	        <execution>
-    	      <goals>
-      		    <goal>jar</goal>
-       	   </goals>
-		      </execution>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.1.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.8</version>
+				<executions>
+					<execution>
+						<id>integration-test</id>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>verify</id>
+						<goals>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<!-- Generate database metadata resources for testing. This shouldn't 
+				usually be run except to initially generate the expected xsd's and dbmd.xml. 
+				<plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-antrun-plugin</artifactId> 
+				<version>1.6</version> <executions> <execution> <id>generate-db-metadata-test-resources</id> 
+				<phase>generate-test-resources</phase> <goals><goal>run</goal></goals> <configuration> 
+				<target> <property name="classpath_from_maven" refid="maven.test.classpath"/> 
+				<ant antfile="${basedir}/src/test/resources/gen_metadata_resources.antbuild.xml"> 
+				<target name="generate-all-metadata-resources"/> </ant> </target> </configuration> 
+				</execution> </executions> </plugin> -->
 
-      <!-- Generate database metadata resources for testing.  This shouldn't usually be run except to initially generate the expected xsd's and dbmd.xml.
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.6</version>
-        <executions>
-          <execution>
-            <id>generate-db-metadata-test-resources</id>
-            <phase>generate-test-resources</phase>
-            <goals><goal>run</goal></goals>
-            <configuration>
-              <target>
-                <property name="classpath_from_maven" refid="maven.test.classpath"/>
-                <ant antfile="${basedir}/src/test/resources/gen_metadata_resources.antbuild.xml">
-                  <target name="generate-all-metadata-resources"/>
-                </ant>
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      -->
-      
-      <!--  Validate expected xml query results against the expected xml schemas.
-            Other tests will guarantee that actual query results are the same as these expected ones. -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>xml-maven-plugin</artifactId>
-        <version>1.0-beta-3</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>validate</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <validationSets>
-            <validationSet>
-              <dir>src/test/resources/expected_results</dir>
-              <includes>
-              	<include>drug_1_rowxml_inline_el_colls.xml</include>
-              	<include>drugs_listing_inline_el_colls.xml</include>
-              </includes>
-              <systemId>src/test/resources/expected_results/xmlschema_inline_el_colls.xsd</systemId>
-            </validationSet>
-            <validationSet>
-              <dir>src/test/resources/expected_results</dir>
-              <includes>
-              	<include>drug_1_rowxml_wrapped_el_colls.xml</include>
-              	<include>drugs_listing_wrapped_el_colls.xml</include>
-              </includes>
-              <systemId>src/test/resources/expected_results/xmlschema_wrapped_el_colls.xsd</systemId>
-            </validationSet>
-          </validationSets>
-        </configuration>
-      </plugin>
-      
+			<!-- Validate expected xml query results against the expected xml schemas. 
+				Other tests will guarantee that actual query results are the same as these 
+				expected ones. -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>xml-maven-plugin</artifactId>
+				<version>1.0-beta-3</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>validate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<validationSets>
+						<validationSet>
+							<dir>src/test/resources/expected_results</dir>
+							<includes>
+								<include>drug_1_rowxml_inline_el_colls.xml</include>
+								<include>drugs_listing_inline_el_colls.xml</include>
+							</includes>
+							<systemId>src/test/resources/expected_results/xmlschema_inline_el_colls.xsd</systemId>
+						</validationSet>
+						<validationSet>
+							<dir>src/test/resources/expected_results</dir>
+							<includes>
+								<include>drug_1_rowxml_wrapped_el_colls.xml</include>
+								<include>drugs_listing_wrapped_el_colls.xml</include>
+							</includes>
+							<systemId>src/test/resources/expected_results/xmlschema_wrapped_el_colls.xsd</systemId>
+						</validationSet>
+					</validationSets>
+				</configuration>
+			</plugin>
 		</plugins>
-
 	</build>
 
 </project>

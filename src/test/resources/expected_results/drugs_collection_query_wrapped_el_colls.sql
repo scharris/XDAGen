@@ -1,10 +1,10 @@
-select xmlserialize(content xmlelement("drug-listing", xmlattributes('http://example/namespace' as "xmlns"),
+select xmlserialize(content xmlelement(name "drug-listing", xmlattributes('http://example/namespace' as "xmlns"),
          xmlagg(row_xml)) as clob) "rowcoll_xml"
 from
  ( select -- rows of XDAGENTEST.DRUG
      d.*,
      -- row_xml
-     xmlelement("drug"
+     xmlelement(name "drug"
       ,xmlforest(
         d.ID "id",
         d.NAME "name",
@@ -13,16 +13,16 @@ from
         d.DRUGBANK_ID "drugbank_id",
         d.CID "cid",
         d.THERAPEUTIC_INDICATIONS "therapeutic_indications",
-        d.SPL_XML "spl_xml"
+        d.spl "spl"
        )
       --  child tables for XDAGENTEST.DRUG
-      ,(select xmlelement("drug_functional_category-listing", 
+      ,(select xmlelement(name "drug_functional_category-listing", 
                  xmlagg(row_els_q.row_xml)) "rowcoll_xml"
         from
          ( select -- rows of XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY
              dfc.*,
              -- row_xml
-             xmlelement("drug_functional_category"
+             xmlelement(name "drug_functional_category"
               ,xmlforest(
                 dfc.DRUG_ID "drug_id",
                 dfc.FUNCTIONAL_CATEGORY_ID "functional_category_id",
@@ -37,13 +37,13 @@ from
         where
           row_els_q.DRUG_ID = d.ID
        ) -- child subquery
-      ,(select xmlelement("advisory-listing", 
+      ,(select xmlelement(name "advisory-listing", 
                  xmlagg(row_els_q.row_xml)) "rowcoll_xml"
         from
          ( select -- rows of XDAGENTEST.ADVISORY
              a.*,
              -- row_xml
-             xmlelement("advisory"
+             xmlelement(name "advisory"
               ,xmlforest(
                 a.ID "id",
                 a.DRUG_ID "drug_id",
@@ -58,13 +58,13 @@ from
         where
           row_els_q.DRUG_ID = d.ID
        ) -- child subquery
-      ,(select xmlelement("drug_reference-listing", 
+      ,(select xmlelement(name "drug_reference-listing", 
                  xmlagg(row_els_q.row_xml)) "rowcoll_xml"
         from
          ( select -- rows of XDAGENTEST.DRUG_REFERENCE
              dr.*,
              -- row_xml
-             xmlelement("drug_reference"
+             xmlelement(name "drug_reference"
               ,xmlforest(
                 dr.DRUG_ID "drug_id",
                 dr.REFERENCE_ID "reference_id",
@@ -78,13 +78,13 @@ from
         where
           row_els_q.DRUG_ID = d.ID
        ) -- child subquery
-      ,(select xmlelement("brand-listing", 
+      ,(select xmlelement(name "brand-listing", 
                  xmlagg(row_els_q.row_xml)) "rowcoll_xml"
         from
          ( select -- rows of XDAGENTEST.BRAND
              b.*,
              -- row_xml
-             xmlelement("brand"
+             xmlelement(name "brand"
               ,xmlforest(
                 b.DRUG_ID "drug_id",
                 b.BRAND_NAME "brand_name",
@@ -102,7 +102,7 @@ from
       --  parent tables for XDAGENTEST.DRUG
       ,(select -- rows of XDAGENTEST.COMPOUND
           -- row_xml
-          xmlelement("compound"
+          xmlelement(name "compound"
            ,xmlforest(
              c.ID "id",
              c.DISPLAY_NAME "display_name",

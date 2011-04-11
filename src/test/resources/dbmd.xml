@@ -134,7 +134,7 @@
                 <field nullable="true" length="4000" db-type-name="VARCHAR2" jdbc-type-code="12" name="THERAPEUTIC_INDICATIONS">
                     <rel-id name="DRUG" schema="XDAGENTEST"/>
                 </field>
-                <field nullable="true" db-type-name="XMLTYPE" jdbc-type-code="2009" name="SPL_XML">
+                <field nullable="true" db-type-name="XMLTYPE" jdbc-type-code="2009" name="SPL">
                     <rel-id name="DRUG" schema="XDAGENTEST"/>
                 </field>
             </fields>
