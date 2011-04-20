@@ -2,7 +2,7 @@
 <#assign write_xmlns_attr = !xmlns_is_default/>
 select -- rows of ${relid}
 <#if include_table_field_columns>  ${table_alias}.*,${"\n"}</#if>  -- row_xml
-  <#if convert_to_clob>xmlserialize(content </#if>xmlelement(name "${row_element_name}"<#if write_xmlns_attr>, xmlattributes('${xmlns!}' as "xmlns")</#if>
+  <#if convert_to_large_char>xmlserialize(content </#if>xmlelement(name "${row_element_name}"<#if write_xmlns_attr>, xmlattributes('${xmlns!}' as "xmlns")</#if>
    ,xmlforest(
      <#list output_fields as of>
      ${field_el_content_expr_gen.getFieldElementContentExpression(table_alias,of.field)} as "${of.outputElementName}"${of_has_next?string(',','')}
@@ -18,7 +18,7 @@ select -- rows of ${relid}
    ,(${parent_subquery}
     ) -- parent subquery
    </#list>
-  )<#if convert_to_clob> as clob)</#if> row_xml
+  )<#if convert_to_large_char> as ${large_char_type})</#if> row_xml
 from ${relid.idString} ${table_alias}<#if ((filter_condition!"")?length > 0)>
 where
   ${filter_condition}</#if><#if (order_by_exprs!)?size != 0>

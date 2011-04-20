@@ -44,8 +44,6 @@ public class TableOutputSpec implements Cloneable {
 	
 	protected RowOrdering rowOrdering;
 	
-
-	
 	protected Integer hashCode;
 	
 	
@@ -869,10 +867,13 @@ public class TableOutputSpec implements Cloneable {
 		// Get a list of expressions to order by, in terms of the table fields and the passed field qualifying alias.
 		public abstract List<String> getOrderByExpressions(String field_qualifying_alias);
 		
-		/** Convenience method for constructing order by expressions for field names.
-		 *  The field names may optionally including a trailing " asc" or " desc" to specify sort direction. */ 
+		/** Convenience method for constructing order by expressions for field names. */
+
 		public static RowOrdering fields(final String... field_names)
 		{
+			/** Convenience method for constructing order by expressions for field names.		 
+			 *  The field names may optionally including a trailing " asc" or " desc" to specify sort direction.
+			 */ 
 			return new RowOrdering() {
 				public List<String> getOrderByExpressions(String field_qualifying_alias)
 				{
@@ -880,6 +881,20 @@ public class TableOutputSpec implements Cloneable {
 				}
 			};
 		}
+
+		/** Convenience method for constructing order by expressions for field names.		 
+		 *  The field names may optionally including a trailing " asc" or " desc" to specify sort direction.
+		 */ 
+		public static RowOrdering fields(final List<String> field_names)
+		{
+			return new RowOrdering() {
+				public List<String> getOrderByExpressions(String field_qualifying_alias)
+				{
+					return dotQualify(field_names, field_qualifying_alias);
+				}
+			};
+		}
+
 	}
 	
 	public interface Factory {

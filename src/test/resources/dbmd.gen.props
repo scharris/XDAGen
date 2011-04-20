@@ -1,0 +1,4 @@
+# date-mapping => DATES_AS_DRIVER_REPORTED | DATES_AS_TIMESTAMPS | DATES_AS_DATES)
+date-mapping=DATES_AS_DRIVER_REPORTED
+relations-owner=xdagentest
+#exclude-relations-fqname-regex

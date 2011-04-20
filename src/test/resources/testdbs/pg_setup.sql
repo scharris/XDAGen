@@ -3,11 +3,14 @@
 sudo -u postgres psql
 postgres=> create user xdagentest with password 'xdagentest';
 postgres=> create database xdagentest owner xdagentest;
+
 # ^D
 # Then:
 sudo -u xdagentest psql
 xdagentest=> \i src/test/resources/testdbs/pg_setup.sql
 */
+
+CREATE SCHEMA xdagentest;
 
 CREATE TABLE Drug
 	    ( 
@@ -447,67 +450,67 @@ insert into manufacturer(id, name)
 
 insert into compound(id, display_name, nctr_isis_id)
  select generate_series, 'Test Compound ' || generate_series, 'DUMMY' || generate_series
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
  
 insert into drug(id, name, compound_id, therapeutic_indications, spl)
  select generate_series, 'Test Drug ' || generate_series, generate_series, 'Indication ' || generate_series, xmlparse(document '<document><gen-name>drug ' || generate_series || '</gen-name></document>') 
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
 
 
 insert into reference(id, publication)
  select 100*generate_series + 1, 'Publication 1 about drug # ' || generate_series
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
 
 insert into reference(id, publication)
  select 100*generate_series + 2, 'Publication 2 about drug # ' || generate_series
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
 
 insert into reference(id, publication)
  select 100*generate_series + 3, 'Publication 3 about drug # ' || generate_series
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
 
 insert into drug_reference (drug_id, reference_id, priority)
  select generate_series, 100*generate_series + 1, generate_series
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
 
 insert into drug_reference (drug_id, reference_id, priority)
  select generate_series, 100*generate_series + 2, generate_series
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
 
 insert into drug_reference (drug_id, reference_id, priority)
  select generate_series, 100*generate_series + 3, generate_series
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
 
 insert into drug_functional_category(drug_id, functional_category_id, authority_id, seq)
  select generate_series, mod(generate_series,3)+1, 1, 1
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
  
 insert into drug_functional_category(drug_id, functional_category_id, authority_id, seq)
  select generate_series, mod(generate_series,3)+4, 1, 2
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
 
 insert into brand(drug_id, brand_name, language_code, manufacturer_id)
  select generate_series, 'Brand'||generate_series||'(TM)', 'EN', mod(generate_series,3)+1
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
 
 insert into advisory(id, drug_id, advisory_type_id, text)
  select 100*generate_series+1, generate_series, 1, 'Advisory concerning drug ' || generate_series
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
 
 insert into advisory(id, drug_id, advisory_type_id, text)
  select 100*generate_series+2, generate_series, 2, 'Caution concerning drug ' || generate_series
- from generate_series(1,20)
+ from generate_series(1,5)
 ;
 

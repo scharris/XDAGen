@@ -1,4 +1,4 @@
 jdbc-driver-class=org.postgresql.Driver
-jdbc-connect-url=jdbc:postgresql:xdagentest
+jdbc-connect-url=jdbc:postgresql://localhost:5432/xdagentest
 user=xdagentest
 password=xdagentest

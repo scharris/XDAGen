@@ -468,5 +468,5 @@ insert all
    values(100*n+1, n, 1, 'Advisory concerning drug ' || n)
  into advisory(id, drug_id, advisory_type_id, text)
    values(100*n+2, n, 2, 'Caution concerning drug ' || n)
-select rownum n from dual connect by rownum <= 10
+select rownum n from dual connect by rownum <= 5
 ;

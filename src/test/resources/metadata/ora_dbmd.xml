@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<database-metadata xmlns="http://nctr.fda.gov/dbmd" case-sensitivity="INSENSITIVE_STORED_UPPER" requested-owning-schema-name="XDAGENTEST">
+<database-metadata xmlns="http://nctr.fda.gov/dbmd" dbms-minor-version="2" dbms-major-version="11" dbms-version="Oracle Database 11g Express Edition Release 11.2.0.2.0 - 64bit Beta" dbms-name="Oracle" case-sensitivity="INSENSITIVE_STORED_UPPER" requested-owning-schema-name="XDAGENTEST">
     <relation-metadatas>
         <rel-md rel-type="Table">
             <rel-id name="ADVISORY" schema="XDAGENTEST"/>
@@ -232,17 +232,17 @@
             <component pk-field="ID" fk-field="COMPOUND_ID"/>
         </foreign-key>
         <foreign-key>
+            <src-rel name="DRUG_REFERENCE" schema="XDAGENTEST"/>
+            <tgt-rel name="DRUG" schema="XDAGENTEST"/>
+            <component pk-field="ID" fk-field="DRUG_ID"/>
+        </foreign-key>
+        <foreign-key>
             <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
             <tgt-rel name="DRUG" schema="XDAGENTEST"/>
             <component pk-field="ID" fk-field="DRUG_ID"/>
         </foreign-key>
         <foreign-key>
             <src-rel name="ADVISORY" schema="XDAGENTEST"/>
-            <tgt-rel name="DRUG" schema="XDAGENTEST"/>
-            <component pk-field="ID" fk-field="DRUG_ID"/>
-        </foreign-key>
-        <foreign-key>
-            <src-rel name="DRUG_REFERENCE" schema="XDAGENTEST"/>
             <tgt-rel name="DRUG" schema="XDAGENTEST"/>
             <component pk-field="ID" fk-field="DRUG_ID"/>
         </foreign-key>

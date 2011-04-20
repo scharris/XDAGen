@@ -1,6 +1,5 @@
 package gov.fda.nctr.xdagen.tests;
 
-import static gov.fda.nctr.util.StringFuns.resourceAsString;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.xdagen.ChildCollectionsStyle;
@@ -18,40 +17,41 @@ import org.testng.annotations.BeforeClass;
 
 public class TestXmlSchemas {
 
+	String db;
+	ChildCollectionsStyle childCollectionsStyle;
+	
 	DBMD dbmd;
 
+	TestingResources res;
+	
 	@BeforeClass
 	protected void setUp() throws JAXBException, IOException
     {
-		InputStream dbmd_xml_is = getClass().getClassLoader().getResourceAsStream("dbmd.xml");
-
+		db = "pg"; // TODO: This should be a testng parameter or fetched from an environment variable (or default to "pg").
+		childCollectionsStyle = ChildCollectionsStyle.INLINE; // TODO: "
+		
+		res = new TestingResources();
+		
+		InputStream dbmd_xml_is = res.metadataResourceAsStream(db, "dbmd.xml");
 		dbmd = DBMD.readXML(dbmd_xml_is);
+		dbmd_xml_is.close();
 	
-		assert dbmd != null : "Could not load metadata from file dbmd.xml file, DBMD.readXML() returned null."; 
+		assert dbmd != null : "Could not load metadata from file " + res.metadataResourcePath(db,"dbmd.xml") + ", DBMD.readXML() returned null."; 
 		
 		assert dbmd.getRelationMetaDatas().size() > 1 : "Multiple relation metadatas expected."; 
     }
     
 	@Test
-	public void testInlineCollectionsXmlSchema() throws Exception
+	public void testXmlSchema() throws Exception
 	{
-		Diff xml_diff = new Diff(resourceAsString("expected_results/xmlschema_inline_el_colls.xsd"),
-								 getXmlSchema(ChildCollectionsStyle.INLINE));
+		Diff xml_diff = new Diff(res.mdResStr(db,"xmlschema_"+childCollectionsStyle+"_el_colls.xsd"),
+								 generateXmlSchemaAsString());
 		
 		assert xml_diff.identical() : "Inline collections XML Schema not as expected: " + xml_diff;		
 	}
 	
-	@Test
-	public void testWrappedCollectionsXmlSchema() throws Exception
-	{
-		Diff xml_diff = new Diff(resourceAsString("expected_results/xmlschema_wrapped_el_colls.xsd"),
-								 getXmlSchema(ChildCollectionsStyle.WRAPPED));
-		
-		assert xml_diff.identical() : "Wrapped collections XML Schema not as expected: " + xml_diff;		
-	}
 	
-	
-	private String getXmlSchema(ChildCollectionsStyle child_colls_style) throws IOException
+	private String generateXmlSchemaAsString() throws IOException
 	{
         DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd);
         
@@ -63,7 +63,7 @@ public class TestXmlSchemas {
         String xsd = g.getStandardXMLSchema(toplevel_el_relids,
                                             toplevel_el_list_relids,
                                             "http://example/namespace",
-                                            child_colls_style);
+                                            childCollectionsStyle);
         
         return xsd;
 	}

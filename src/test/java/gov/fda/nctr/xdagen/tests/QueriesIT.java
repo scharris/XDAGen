@@ -2,14 +2,13 @@ package gov.fda.nctr.xdagen.tests;
 
 import static gov.fda.nctr.util.CoreFuns.requireArg;
 import static gov.fda.nctr.util.StringFuns.readStreamAsString;
-import static gov.fda.nctr.util.StringFuns.resourceAsString;
 import static gov.fda.nctr.util.StringFuns.writeStringToFile;
 import static gov.fda.nctr.xdagen.TableOutputSpec.RowOrdering.fields;
 import gov.fda.nctr.dbmd.DBMD;
-import gov.fda.nctr.util.StringFuns;
 import gov.fda.nctr.xdagen.ChildCollectionsStyle;
 import gov.fda.nctr.xdagen.DefaultTableOutputSpecFactory;
 import gov.fda.nctr.xdagen.QueryGenerator;
+import gov.fda.nctr.xdagen.QueryGenerator.XmlOutputColumnType;
 import gov.fda.nctr.xdagen.TableOutputSpec;
 
 import java.io.IOException;
@@ -20,82 +19,89 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
-
-import javax.sql.DataSource;
 
 import org.custommonkey.xmlunit.Diff;
 
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.testng.annotations.BeforeClass;
 
 
 public class QueriesIT  {
 
-	DBMD dbmd;
+	String db;
+	ChildCollectionsStyle childCollectionsStyle;
 	
-	DataSource dataSource;
+	DBMD dbmd;
 	Connection conn;
 	
 	QueryGenerator qryGen;
 	
-	TableOutputSpec.Factory tosFactoryWithInlineColls;
-	TableOutputSpec.Factory tosFactoryWithWrappedColls;
+	TableOutputSpec.Factory tosFactory;
 	
-	TableOutputSpec drugInlineColls;
-	TableOutputSpec drugWrappedColls;
+	TableOutputSpec drugTOS;
 
+	final static int NUM_TEST_DRUGS = 5;
+	
+	TestingResources res; // testing related resources accessor
+		
 	/* When true, expected data will be *written* from the data to be tested, so all tests should pass.  Used to setup initial expected data.
 	 * Use with care and verify written "expected" data is actually as expected, obviously.
 	 */
-	private boolean onlyWriteExpectedData = false; 
+	private boolean onlyWriteExpectedData = true;
 	
 	
+	public static class QueriesITFactory {
+		@Factory
+		public Object[] createInstances()
+		{
+			String[] dbs = {"pg", "ora"};
+			ChildCollectionsStyle[] styles = {ChildCollectionsStyle.INLINE, ChildCollectionsStyle.WRAPPED}; 
+			
+			List<QueriesIT> l = new ArrayList<QueriesIT>();
+		
+			for(String db: dbs)
+				for(ChildCollectionsStyle style: styles) 
+					l.add(new QueriesIT(db, style));
+			
+			return l.toArray();
+		}
+	}
+		
+	public QueriesIT(String db, ChildCollectionsStyle child_coll_style)
+	{
+		this.db = db;
+		this.childCollectionsStyle = child_coll_style;
+	}
+
 	@BeforeClass
 	protected void setUp() throws Exception
     {
-		InputStream dbmd_xml_is = getClass().getClassLoader().getResourceAsStream("dbmd.xml");
-
+		res = new TestingResources();
+		
+		InputStream dbmd_xml_is = res.metadataResourceAsStream(db,"dbmd.xml");
 		this.dbmd = DBMD.readXML(dbmd_xml_is);
 		dbmd_xml_is.close();
 
-		assert dbmd != null : "Could not load metadata from file dbmd.xml file, DBMD.readXML() returned null.";
+		assert dbmd != null : "Could not load metadata from file "+res.metadataResourcePath(db,"dbmd.xml")+", DBMD.readXML() returned null.";
 		assert dbmd.getRelationMetaDatas().size() > 1 : "Multiple relation metadatas expected.";
 	
-		// TODO: decide which database to connect to here based on some environment variable or testng parameter.
-		Properties connect_props = loadProperties("testdbs/pg.jdbc.properties");
+		Properties connect_props = loadProperties(res.testdbsResPath(db,"jdbc.props"));
 		this.conn = createConnection(connect_props);
 		
-		tosFactoryWithInlineColls = new DefaultTableOutputSpecFactory(dbmd,
-		                                                              ChildCollectionsStyle.INLINE,
-			                                                          "http://example/namespace");
-		tosFactoryWithWrappedColls = new DefaultTableOutputSpecFactory(dbmd,
-		                                                               ChildCollectionsStyle.WRAPPED,
-			                                                           "http://example/namespace");
+		tosFactory = new DefaultTableOutputSpecFactory(dbmd, childCollectionsStyle,  "http://example/namespace");
 			
-		qryGen = new QueryGenerator(dbmd);
-		                            		
-		this.drugInlineColls = tosFactoryWithInlineColls.table("drug").withAllChildTables()
-		                                                              .withAllParentTables();
-		                            		
-		this.drugWrappedColls = tosFactoryWithWrappedColls.table("drug").withAllChildTables()
-	    			         	                                        .withAllParentTables();
+		qryGen = new QueryGenerator(dbmd, XmlOutputColumnType.LARGE_CHAR_TYPE);
 		
-		insertData();
+		qryGen.setSortUnsortedRowElementCollectionsByPrimaryKeys(true); // Sort each tables output by pk when no sort ordering is defined. 
+		                            		
+		this.drugTOS = tosFactory.table("drug").withAllChildTables().withAllParentTables();
     }
 
-
-	private void insertData() throws SQLException, IOException
-	{
-		String sql = StringFuns.resourceAsString("insert_test_data.sql").replaceAll("\r", " ");
-		
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-		
-		pstmt.executeUpdate();
-	}
-
-	
     @AfterClass
 	protected void tearDown() throws Exception
 	{
@@ -103,201 +109,116 @@ public class QueriesIT  {
 		conn.close();
 	}
 	
-
 	@Test
-	public void testOneRowElementsQueryRowXmlWithInlineCollections() throws Exception
+	public void testDrugRowElementResultDocumentsIndividually() throws Exception
 	{
-		String sql = qryGen.getRowElementsQuery(drugInlineColls,
-		                                        "d",
-		                                        "d.id = 1");
-
-		String row_xml = getOneClobResultAsString("ROW_XML", sql);
-		
-		if ( onlyWriteExpectedData )
+		for(int n=1; n <= NUM_TEST_DRUGS; ++n)
 		{
-			writeStringToFile(row_xml, "src/test/resources/expected_results/drug_1_rowxml_inline_el_colls.xml");
-			return;
+			String sql = qryGen.getRowElementsQuery(drugTOS,
+													"d",
+													"d.id = ?");
+
+			String row_xml = getOneLargeTextResultAsString("ROW_XML", sql, n);
+		
+			String expected_res_name = "drug_"+n+"_rowxml_"+childCollectionsStyle+"_el_colls.xml";	
+
+			if ( onlyWriteExpectedData )
+			{
+				writeStringToFile(row_xml, res.testResourcesClasspathBaseDir() + res.expectedResultPath(expected_res_name));
+			}
+			else
+			{
+				Diff xml_diff = new Diff(res.expectedResultAsString(expected_res_name), row_xml);
+				assert xml_diff.similar() : "Row elements query result differed from expected value: " + xml_diff;
+			}
 		}
-		
-		Diff xml_diff = new Diff(resourceAsString("expected_results/drug_1_rowxml_inline_el_colls.xml"),
-								 row_xml);
-		
-		assert xml_diff.identical() : "Row elements query result differed from expected value: " + xml_diff;		
 	}
 	
-	@Test
-	public void testOneRowElementsQueryRowXmlWithWrappedCollections() throws Exception
-	{
-		String sql = qryGen.getRowElementsQuery(drugWrappedColls,
-		                                        "d",
-		                                        "d.id = 1");
-
-		String row_xml = getOneClobResultAsString("ROW_XML", sql);
-		
-		if ( onlyWriteExpectedData )
-		{
-			writeStringToFile(row_xml, "src/test/resources/expected_results/drug_1_rowxml_wrapped_el_colls.xml");
-			return;
-		}
-		
-		Diff xml_diff = new Diff(resourceAsString("expected_results/drug_1_rowxml_wrapped_el_colls.xml"),
-								 row_xml);
-		
-		assert xml_diff.identical() : "Row elements query result differed from expected value: " + xml_diff;		
-	}
 	
 	@Test
-	public void testRowElementsOrderingAndFilteringWithInlineCollections() throws Exception
+	public void testRowElementsOrderingAndFiltering() throws Exception
 	{
-		TableOutputSpec drug_desc_id_ospec = drugInlineColls.orderedBy(fields("id desc","name")); // name superfluous here but just checking multiple order-by expressions
+		if ( onlyWriteExpectedData )
+			return;
+		
+		TableOutputSpec drug_desc_id_ospec = drugTOS.orderedBy(fields("id desc","name")); // name superfluous here but just checking multiple order-by expressions
 		
 		String sql = qryGen.getRowElementsQuery(drug_desc_id_ospec,
 		                                        "d",
 		                                        "d.id >= 1 and d.id <= 5");
 
-		String row_xml = getNthClobResultAsString(2, "ROW_XML", sql);
+		String row_xml = getNthLargeTextResultAsString(2, "ROW_XML", sql);
 		
-		if ( onlyWriteExpectedData )
-		{
-			writeStringToFile(row_xml, "src/test/resources/expected_results/drug4_rowxml_inline_el_colls.xml");
-			return;
-		}
+		String expected_res_name = "drug_4_rowxml_"+childCollectionsStyle+"_el_colls.xml";
 		
 		// 2nd row of rows 1 - 5 in reverse order should be row 4.
-		Diff xml_diff = new Diff(resourceAsString("expected_results/drug4_rowxml_inline_el_colls.xml"),
-								 row_xml);
+		Diff xml_diff = new Diff(res.expectedResultAsString(expected_res_name), row_xml);
 		
-		assert xml_diff.identical() : "Row elements query result differed from expected value: " + xml_diff;		
+		assert xml_diff.similar() : "Row elements query result differed from expected value: " + xml_diff;		
 	}
 
-	@Test
-	public void testRowElementsOrderingAndFilteringWithWrappedCollections() throws Exception
-	{
-		TableOutputSpec drug_desc_id_ospec = drugWrappedColls.orderedBy(fields("id desc"));
-		
-		String sql = qryGen.getRowElementsQuery(drug_desc_id_ospec,
-		                                        "d",
-		                                        "d.id >= 1 and d.id <= 5");
-
-		String row_xml = getNthClobResultAsString(2, "ROW_XML", sql);
-		
-		if ( onlyWriteExpectedData )
-		{
-			writeStringToFile(row_xml, "src/test/resources/expected_results/drug4_rowxml_wrapped_el_colls.xml");
-			return;
-		}
-		
-		// 2nd row of rows 1 - 5 in reverse order should be row 4.
-		Diff xml_diff = new Diff(resourceAsString("expected_results/drug4_rowxml_wrapped_el_colls.xml"),
-								 row_xml);
-		
-		assert xml_diff.identical() : "Row elements query result differed from expected value: " + xml_diff;		
-	}
 	
 	@Test
-	public void testRowCollectionElementQueryWithInlineCollections() throws Exception 
+	public void testRowCollectionElementQueryResult() throws Exception 
 	{
-		TableOutputSpec drug_id_ordered_ospec = drugInlineColls.orderedBy(fields("id"));
+		TableOutputSpec drug_id_ordered_ospec = drugTOS.orderedBy(fields("id"));
 		
 		String sql = qryGen.getRowCollectionElementQuery(drug_id_ordered_ospec, null, null);
 		
-		String rowcoll_xml = getOneClobResultAsString("ROWCOLL_XML", sql);
+		String rowcoll_xml = getOneLargeTextResultAsString("ROWCOLL_XML", sql);
+		
+		String expected_res_name = "drugs_listing_"+childCollectionsStyle+"_el_colls.xml";
 		
 		if ( onlyWriteExpectedData )
 		{
-			writeStringToFile(rowcoll_xml, "src/test/resources/expected_results/drugs_listing_inline_el_colls.xml");
-			return;
+			writeStringToFile(rowcoll_xml, res.testResourcesClasspathBaseDir() + res.expectedResultPath(expected_res_name));
 		}
+		else
+		{
+			Diff xml_diff = new Diff(res.expectedResultAsString(expected_res_name), rowcoll_xml);
 		
-		Diff xml_diff = new Diff(resourceAsString("expected_results/drugs_listing_inline_el_colls.xml"),
-								 rowcoll_xml);
-		
-		assert xml_diff.identical() : "Row collection element query result differed from expected value: " + xml_diff;		
+			assert xml_diff.similar() : "Row collection element query result differed from expected value: " + xml_diff;
+		}
 	}
 	
-	@Test
-	public void testRowCollectionElementQueryWithWrappedCollections() throws Exception
-	{
-		TableOutputSpec drug_id_ordered_ospec = drugWrappedColls.orderedBy(fields("id"));
-		
-		String sql = qryGen.getRowCollectionElementQuery(drug_id_ordered_ospec, null, null);
-
-		String rowcoll_xml = getOneClobResultAsString("ROWCOLL_XML", sql);
-		
-		if ( onlyWriteExpectedData )
-		{
-			writeStringToFile(rowcoll_xml, "src/test/resources/expected_results/drugs_listing_wrapped_el_colls.xml");
-			return;
-		}
-		
-		Diff xml_diff = new Diff(resourceAsString("expected_results/drugs_listing_wrapped_el_colls.xml"),
-								 rowcoll_xml);
-		
-		assert xml_diff.identical() : "Row collection element query result differed from expected value: " + xml_diff;		
-	}
 	
 	@Test
-	public void testInlineCollectionsDrugRowElementsQueryText() throws IOException
+	public void testDrugRowElementsQueryText() throws IOException
 	{
-		String sql = qryGen.getRowElementsQuery(drugInlineColls, "d").replaceAll("\r","");;
+		String sql = qryGen.getRowElementsQuery(drugTOS, "d").replaceAll("\r","");;
 
+		String expected_res_name = "drugs_query_"+childCollectionsStyle+"_el_colls.sql"; 
+		
 		if ( onlyWriteExpectedData )
 		{
-			writeStringToFile(sql, "src/test/resources/expected_results/drugs_query_inline_el_colls.sql");
-			return;
+			writeStringToFile(sql, res.testResourcesClasspathBaseDir() + res.expectedResultPath(db, expected_res_name));
 		}
-		
-		String expected_sql = resourceAsString("expected_results/drugs_query_inline_el_colls.sql").replaceAll("\r","");;
+		else
+		{
+			String expected_sql = res.expectedResultAsString(db, expected_res_name).replaceAll("\r","");
 
-		assert expected_sql.equals(sql) : "Inline collections drugs query not as expected.";
+			assert expected_sql.equals(sql) : "Drugs row elements query not as expected.";
+		}
 	}
 	
-	@Test
-	public void testWrappedCollectionsDrugRowElementsQueryText() throws IOException
-	{
-		String sql = qryGen.getRowElementsQuery(drugWrappedColls, "d").replaceAll("\r","");;
-		
-		if ( onlyWriteExpectedData )
-		{
-			writeStringToFile(sql, "src/test/resources/expected_results/drugs_query_wrapped_el_colls.sql");
-			return;
-		}
-		
-		String expected_sql = resourceAsString("expected_results/drugs_query_wrapped_el_colls.sql").replaceAll("\r","");
-
-		assert expected_sql.equals(sql) : "Wrapped collections drugs query not as expected.";
-	}
 	
 	@Test
-	public void testInlineCollectionsDrugRowCollectionElementQueryText() throws IOException
+	public void testDrugRowCollectionElementQueryText() throws IOException
 	{
-		String sql = qryGen.getRowCollectionElementQuery(drugInlineColls, null, null).replaceAll("\r","");
+		String sql = qryGen.getRowCollectionElementQuery(drugTOS, null, null).replaceAll("\r","");
+		
+		String expected_res_name = "drugs_collection_query_"+childCollectionsStyle+"_el_colls.sql";
 		
 		if ( onlyWriteExpectedData )
 		{
-			writeStringToFile(sql, "src/test/resources/expected_results/drugs_collection_query_inline_el_colls.sql");
-			return;
+			writeStringToFile(sql, res.testResourcesClasspathBaseDir() + res.expectedResultPath(db, expected_res_name));
 		}
-		
-		String expected_sql = resourceAsString("expected_results/drugs_collection_query_inline_el_colls.sql").replaceAll("\r","");
-
-		assert expected_sql.equals(sql): "Inline collections drugs collection query not as expected.";
-	}
-	
-	@Test
-	public void testWrappedCollectionsDrugRowCollectionElementQueryText() throws IOException
-	{
-		String sql = qryGen.getRowCollectionElementQuery(drugWrappedColls, null, null).replaceAll("\r","");
-		
-		if ( onlyWriteExpectedData )
+		else
 		{
-			writeStringToFile(sql, "src/test/resources/expected_results/drugs_collection_query_wrapped_el_colls.sql");
-			return;
-		}
-		
-		String expected_sql = resourceAsString("expected_results/drugs_collection_query_wrapped_el_colls.sql").replaceAll("\r","");
+			String expected_sql = res.expectedResultAsString(db, expected_res_name).replaceAll("\r","");
 
-		assert expected_sql.equals(sql) : "Wrapped collections drugs collection query not as expected.";
+			assert expected_sql.equals(sql) : "Drugs row collection element query not as expected.";
+		}
 	}
 	
 	
@@ -315,33 +236,44 @@ public class QueriesIT  {
 	    return conn;
 	}
 	
-	protected String getOneClobResultAsString(String col_name, String sql) throws SQLException, IOException
+	protected String getOneLargeTextResultAsString(String col_name, String sql, Object... param_vals) throws SQLException, IOException
 	{
-		return getNthClobResultAsString(1, col_name, sql);
+		return getNthLargeTextResultAsString(1, col_name, sql, param_vals);
 	}
 	
-	protected String getNthClobResultAsString(int n, String col_name, String sql) throws SQLException, IOException
+	protected String getNthLargeTextResultAsString(int n, String col_name, String sql, Object... param_vals) throws SQLException, IOException
 	{
-		Clob clob = (Clob)getNthResult(n, col_name, sql);
+		Object res = getNthResult(n, col_name, sql, param_vals);
 		
-		String str_val = readStreamAsString(clob.getCharacterStream());
+		if ( res instanceof String )
+			return (String)res;
+		else
+		{
+			Clob clob = (Clob)res;
+		
+			String str_val = readStreamAsString(clob.getCharacterStream());
 
-		clob.free();
+			clob.free();
+			
+			return str_val;
+		}
 		
-		return str_val;
 	}
 
 
-	protected Object getOneResult(String col_name, String sql) throws SQLException
+	protected Object getOneResult(String col_name, String sql, Object... param_vals) throws SQLException
 	{
-		return getNthResult(1, col_name, sql);
+		return getNthResult(1, col_name, sql, param_vals);
 	}
 
 	
-	protected Object getNthResult(int n, String col_name, String sql) throws SQLException
+	protected Object getNthResult(int n, String col_name, String sql, Object... param_vals) throws SQLException
 	{
 		PreparedStatement stmt = conn.prepareStatement(sql);
 		ResultSet rs = null;
+		
+		for(int i=0; i<param_vals.length; ++i)
+			stmt.setObject(i+1, param_vals[i]);
 		
 		try
 		{

@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<database-metadata xmlns="http://nctr.fda.gov/dbmd" dbms-minor-version="0" dbms-major-version="9" dbms-version="9.0.3" dbms-name="PostgreSQL" case-sensitivity="INSENSITIVE_STORED_LOWER" requested-owning-schema-name="xdagentest">
+    <relation-metadatas>
+        <rel-md rel-type="Table">
+            <rel-id name="advisory" schema="xdagentest"/>
+            <fields>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="id">
+                    <rel-id name="advisory" schema="xdagentest"/>
+                </field>
+                <field nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="drug_id">
+                    <rel-id name="advisory" schema="xdagentest"/>
+                </field>
+                <field nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="advisory_type_id">
+                    <rel-id name="advisory" schema="xdagentest"/>
+                </field>
+                <field nullable="false" length="2000" db-type-name="varchar" jdbc-type-code="12" name="text">
+                    <rel-id name="advisory" schema="xdagentest"/>
+                </field>
+            </fields>
+        </rel-md>
+        <rel-md rel-type="Table">
+            <rel-id name="advisory_type" schema="xdagentest"/>
+            <fields>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="id">
+                    <rel-id name="advisory_type" schema="xdagentest"/>
+                </field>
+                <field nullable="false" length="50" db-type-name="varchar" jdbc-type-code="12" name="name">
+                    <rel-id name="advisory_type" schema="xdagentest"/>
+                </field>
+                <field nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="authority_id">
+                    <rel-id name="advisory_type" schema="xdagentest"/>
+                </field>
+            </fields>
+        </rel-md>
+        <rel-md rel-type="Table">
+            <rel-id name="authority" schema="xdagentest"/>
+            <fields>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="id">
+                    <rel-id name="authority" schema="xdagentest"/>
+                </field>
+                <field nullable="false" length="200" db-type-name="varchar" jdbc-type-code="12" name="name">
+                    <rel-id name="authority" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="500" db-type-name="varchar" jdbc-type-code="12" name="url">
+                    <rel-id name="authority" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="2000" db-type-name="varchar" jdbc-type-code="12" name="description">
+                    <rel-id name="authority" schema="xdagentest"/>
+                </field>
+            </fields>
+        </rel-md>
+        <rel-md rel-type="Table">
+            <rel-id name="brand" schema="xdagentest"/>
+            <fields>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="drug_id">
+                    <rel-id name="brand" schema="xdagentest"/>
+                </field>
+                <field pk-part-num="2" nullable="false" length="200" db-type-name="varchar" jdbc-type-code="12" name="brand_name">
+                    <rel-id name="brand" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="10" db-type-name="varchar" jdbc-type-code="12" name="language_code">
+                    <rel-id name="brand" schema="xdagentest"/>
+                </field>
+                <field nullable="true" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="manufacturer_id">
+                    <rel-id name="brand" schema="xdagentest"/>
+                </field>
+            </fields>
+        </rel-md>
+        <rel-md rel-type="Table">
+            <rel-id name="compound" schema="xdagentest"/>
+            <fields>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="id">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="50" db-type-name="varchar" jdbc-type-code="12" name="display_name">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="100" db-type-name="varchar" jdbc-type-code="12" name="nctr_isis_id">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="2000" db-type-name="varchar" jdbc-type-code="12" name="smiles">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="2000" db-type-name="varchar" jdbc-type-code="12" name="canonical_smiles">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="50" db-type-name="varchar" jdbc-type-code="12" name="cas">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="2000" db-type-name="varchar" jdbc-type-code="12" name="mol_formula">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" radix="10" fractional-digits="0" precision="131089" db-type-name="numeric" jdbc-type-code="2" name="mol_weight">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="2147483647" db-type-name="text" jdbc-type-code="12" name="mol_file">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="2000" db-type-name="varchar" jdbc-type-code="12" name="inchi">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="27" db-type-name="varchar" jdbc-type-code="12" name="inchi_key">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="2000" db-type-name="varchar" jdbc-type-code="12" name="standard_inchi">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="27" db-type-name="varchar" jdbc-type-code="12" name="standard_inchi_key">
+                    <rel-id name="compound" schema="xdagentest"/>
+                </field>
+            </fields>
+        </rel-md>
+        <rel-md rel-type="Table">
+            <rel-id name="drug" schema="xdagentest"/>
+            <fields>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="id">
+                    <rel-id name="drug" schema="xdagentest"/>
+                </field>
+                <field nullable="false" length="500" db-type-name="varchar" jdbc-type-code="12" name="name">
+                    <rel-id name="drug" schema="xdagentest"/>
+                </field>
+                <field nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="compound_id">
+                    <rel-id name="drug" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="7" db-type-name="varchar" jdbc-type-code="12" name="mesh_id">
+                    <rel-id name="drug" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="7" db-type-name="varchar" jdbc-type-code="12" name="drugbank_id">
+                    <rel-id name="drug" schema="xdagentest"/>
+                </field>
+                <field nullable="true" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="cid">
+                    <rel-id name="drug" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="4000" db-type-name="varchar" jdbc-type-code="12" name="therapeutic_indications">
+                    <rel-id name="drug" schema="xdagentest"/>
+                </field>
+                <field nullable="true" db-type-name="xml" jdbc-type-code="2009" name="spl">
+                    <rel-id name="drug" schema="xdagentest"/>
+                </field>
+            </fields>
+        </rel-md>
+        <rel-md rel-type="Table">
+            <rel-id name="drug_functional_category" schema="xdagentest"/>
+            <fields>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="drug_id">
+                    <rel-id name="drug_functional_category" schema="xdagentest"/>
+                </field>
+                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="functional_category_id">
+                    <rel-id name="drug_functional_category" schema="xdagentest"/>
+                </field>
+                <field pk-part-num="3" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="authority_id">
+                    <rel-id name="drug_functional_category" schema="xdagentest"/>
+                </field>
+                <field nullable="true" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="seq">
+                    <rel-id name="drug_functional_category" schema="xdagentest"/>
+                </field>
+            </fields>
+        </rel-md>
+        <rel-md rel-type="Table">
+            <rel-id name="drug_reference" schema="xdagentest"/>
+            <fields>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="drug_id">
+                    <rel-id name="drug_reference" schema="xdagentest"/>
+                </field>
+                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="reference_id">
+                    <rel-id name="drug_reference" schema="xdagentest"/>
+                </field>
+                <field nullable="true" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="priority">
+                    <rel-id name="drug_reference" schema="xdagentest"/>
+                </field>
+            </fields>
+        </rel-md>
+        <rel-md rel-type="Table">
+            <rel-id name="functional_category" schema="xdagentest"/>
+            <fields>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="id">
+                    <rel-id name="functional_category" schema="xdagentest"/>
+                </field>
+                <field nullable="false" length="500" db-type-name="varchar" jdbc-type-code="12" name="name">
+                    <rel-id name="functional_category" schema="xdagentest"/>
+                </field>
+                <field nullable="true" length="2000" db-type-name="varchar" jdbc-type-code="12" name="description">
+                    <rel-id name="functional_category" schema="xdagentest"/>
+                </field>
+                <field nullable="true" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="parent_functional_category_id">
+                    <rel-id name="functional_category" schema="xdagentest"/>
+                </field>
+            </fields>
+        </rel-md>
+        <rel-md rel-type="Table">
+            <rel-id name="manufacturer" schema="xdagentest"/>
+            <fields>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="id">
+                    <rel-id name="manufacturer" schema="xdagentest"/>
+                </field>
+                <field nullable="false" length="200" db-type-name="varchar" jdbc-type-code="12" name="name">
+                    <rel-id name="manufacturer" schema="xdagentest"/>
+                </field>
+            </fields>
+        </rel-md>
+        <rel-md rel-type="Table">
+            <rel-id name="reference" schema="xdagentest"/>
+            <fields>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="0" precision="10" db-type-name="int4" jdbc-type-code="4" name="id">
+                    <rel-id name="reference" schema="xdagentest"/>
+                </field>
+                <field nullable="false" length="2000" db-type-name="varchar" jdbc-type-code="12" name="publication">
+                    <rel-id name="reference" schema="xdagentest"/>
+                </field>
+            </fields>
+        </rel-md>
+    </relation-metadatas>
+    <foreign-keys>
+        <foreign-key>
+            <src-rel name="advisory" schema="xdagentest"/>
+            <tgt-rel name="advisory_type" schema="xdagentest"/>
+            <component pk-field="id" fk-field="advisory_type_id"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="drug_functional_category" schema="xdagentest"/>
+            <tgt-rel name="authority" schema="xdagentest"/>
+            <component pk-field="id" fk-field="authority_id"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="advisory_type" schema="xdagentest"/>
+            <tgt-rel name="authority" schema="xdagentest"/>
+            <component pk-field="id" fk-field="authority_id"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="drug" schema="xdagentest"/>
+            <tgt-rel name="compound" schema="xdagentest"/>
+            <component pk-field="id" fk-field="compound_id"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="drug_functional_category" schema="xdagentest"/>
+            <tgt-rel name="drug" schema="xdagentest"/>
+            <component pk-field="id" fk-field="drug_id"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="advisory" schema="xdagentest"/>
+            <tgt-rel name="drug" schema="xdagentest"/>
+            <component pk-field="id" fk-field="drug_id"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="brand" schema="xdagentest"/>
+            <tgt-rel name="drug" schema="xdagentest"/>
+            <component pk-field="id" fk-field="drug_id"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="drug_reference" schema="xdagentest"/>
+            <tgt-rel name="drug" schema="xdagentest"/>
+            <component pk-field="id" fk-field="drug_id"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="drug_functional_category" schema="xdagentest"/>
+            <tgt-rel name="functional_category" schema="xdagentest"/>
+            <component pk-field="id" fk-field="functional_category_id"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="functional_category" schema="xdagentest"/>
+            <tgt-rel name="functional_category" schema="xdagentest"/>
+            <component pk-field="id" fk-field="parent_functional_category_id"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="brand" schema="xdagentest"/>
+            <tgt-rel name="manufacturer" schema="xdagentest"/>
+            <component pk-field="id" fk-field="manufacturer_id"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="drug_reference" schema="xdagentest"/>
+            <tgt-rel name="reference" schema="xdagentest"/>
+            <component pk-field="id" fk-field="reference_id"/>
+        </foreign-key>
+    </foreign-keys>
+</database-metadata>

@@ -52,7 +52,7 @@
       <element name="authority_id" type="decimal" minOccurs="1"/>
       
       <!-- child elements -->
-      <element name="advisory-listing" type="tns:advisory-listing" minOccurs="0"/>
+      <element name="advisory" type="tns:advisory" minOccurs="0" maxOccurs="unbounded"/>
       
       <!-- parent elements -->
       <element name="authority" type="tns:authority" minOccurs="0"/>
@@ -83,8 +83,8 @@
       <element name="description" type="string" minOccurs="0"/>
       
       <!-- child elements -->
-      <element name="drug_functional_category-listing" type="tns:drug_functional_category-listing" minOccurs="0"/>
-      <element name="advisory_type-listing" type="tns:advisory_type-listing" minOccurs="0"/>
+      <element name="drug_functional_category" type="tns:drug_functional_category" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="advisory_type" type="tns:advisory_type" minOccurs="0" maxOccurs="unbounded"/>
       
       <!-- parent elements -->
     </sequence>
@@ -163,7 +163,7 @@
       <element name="standard_inchi_key" type="string" minOccurs="0"/>
       
       <!-- child elements -->
-      <element name="drug-listing" type="tns:drug-listing" minOccurs="0"/>
+      <element name="drug" type="tns:drug" minOccurs="0" maxOccurs="unbounded"/>
       
       <!-- parent elements -->
     </sequence>
@@ -198,7 +198,7 @@
  
       <element name="therapeutic_indications" type="string" minOccurs="0"/>
  
-      <element name="spl_xml">
+      <element name="spl">
         <complexType>
             <sequence>
                 <any processContents="lax" minOccurs="0" maxOccurs="1"/>
@@ -207,10 +207,10 @@
       </element>
       
       <!-- child elements -->
-      <element name="drug_functional_category-listing" type="tns:drug_functional_category-listing" minOccurs="0"/>
-      <element name="advisory-listing" type="tns:advisory-listing" minOccurs="0"/>
-      <element name="drug_reference-listing" type="tns:drug_reference-listing" minOccurs="0"/>
-      <element name="brand-listing" type="tns:brand-listing" minOccurs="0"/>
+      <element name="drug_reference" type="tns:drug_reference" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="drug_functional_category" type="tns:drug_functional_category" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="advisory" type="tns:advisory" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="brand" type="tns:brand" minOccurs="0" maxOccurs="unbounded"/>
       
       <!-- parent elements -->
       <element name="compound" type="tns:compound" minOccurs="0"/>
@@ -302,11 +302,11 @@
       <element name="parent_functional_category_id" type="decimal" minOccurs="0"/>
       
       <!-- child elements -->
-      <element name="functional_category-listing" type="tns:functional_category-listing" minOccurs="0"/>
-      <element name="drug_functional_category-listing" type="tns:drug_functional_category-listing" minOccurs="0"/>
+      <element name="child-functional_category" type="tns:functional_category" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="drug_functional_category" type="tns:drug_functional_category" minOccurs="0" maxOccurs="unbounded"/>
       
       <!-- parent elements -->
-      <element name="functional_category" type="tns:functional_category" minOccurs="0"/>
+      <element name="parent-functional_category" type="tns:functional_category" minOccurs="0"/>
     </sequence>
   </complexType>
 
@@ -330,7 +330,7 @@
       <element name="name" type="string" minOccurs="1"/>
       
       <!-- child elements -->
-      <element name="brand-listing" type="tns:brand-listing" minOccurs="0"/>
+      <element name="brand" type="tns:brand" minOccurs="0" maxOccurs="unbounded"/>
       
       <!-- parent elements -->
     </sequence>
@@ -356,7 +356,7 @@
       <element name="publication" type="string" minOccurs="1"/>
       
       <!-- child elements -->
-      <element name="drug_reference-listing" type="tns:drug_reference-listing" minOccurs="0"/>
+      <element name="drug_reference" type="tns:drug_reference" minOccurs="0" maxOccurs="unbounded"/>
       
       <!-- parent elements -->
     </sequence>
