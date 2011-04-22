@@ -28,297 +28,297 @@ import gov.fda.nctr.dbmd.RelMetaData;
 
 public class DatabaseXmlSchemaGenerator {
 
-	DBMD dbmd;
-	
-	TypeNamer typeNamer;
-	
-	Configuration templateConfig;
-	Template xsdTemplate;
+    DBMD dbmd;
 
-	boolean includeGenerationTimestamp;
+    TypeNamer typeNamer;
 
-	
-	private static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
-	private static final String XMLSCHEMA_TEMPLATE =  "XMLSchema.ftl";
+    Configuration templateConfig;
+    Template xsdTemplate;
 
-	
-	
-	public DatabaseXmlSchemaGenerator(DBMD dbmd)
-		throws IOException
-	{
-		this(dbmd, new DefaultTypeNamer(dbmd));
-	}
-
-	// Primary constructor.
-	public DatabaseXmlSchemaGenerator(DBMD dbmd,                                   // Required
-	                                  TypeNamer type_namer)                        // Optional
-		throws IOException
-	{
-		this.dbmd = dbmd;
-		this.typeNamer = type_namer != null ? type_namer : new DefaultTypeNamer(dbmd);
-		
-		// Configure template engine.
-		this.templateConfig = new Configuration();
-		this.templateConfig.setTemplateLoader(new ClassTemplateLoader(getClass(), CLASSPATH_TEMPLATES_DIR_PATH));
-		this.templateConfig.setObjectWrapper(new DefaultObjectWrapper());
-		
-		// Load templates.
-		this.xsdTemplate = templateConfig.getTemplate(XMLSCHEMA_TEMPLATE);
-		
-		this.includeGenerationTimestamp = false;
-	}
-	
-	
-	public TypeNamer getTypeNamer()
-	{
-		return typeNamer;
-	}
-	
-	public void setTypeNamer(TypeNamer type_namer)
-	{
-		this.typeNamer = type_namer;
-	}
-	
-	public boolean getIncludeGenerationTimestamp()
-	{
-		return includeGenerationTimestamp;
-	}
-
-	public void setIncludeGenerationTimestamp(boolean includeGenerationTimestamp)
-	{
-		this.includeGenerationTimestamp = includeGenerationTimestamp;
-	}
+    boolean includeGenerationTimestamp;
 
 
-	
-	public String getStandardXMLSchema(Set<RelId> rels_getting_toplevel_el,      // optional, define top level elements for these, defaults to all
-	                                   Set<RelId> rels_getting_toplevel_list_el, // optional, define top level list elements for these, defaults to all
-	                                   String target_xml_namespace,              // required
-	                                   ChildCollectionsStyle child_colls_style)    // required
-	{
-		return getXMLSchema(new DefaultTableOutputSpecFactory(dbmd, child_colls_style, target_xml_namespace),
-		                    rels_getting_toplevel_el,
-		                    rels_getting_toplevel_list_el);
-	}
-
-	
-	public String getXMLSchema(TableOutputSpec.Factory ospec_factory,    // Required
-	                           Set<RelId> rels_getting_toplevel_el,      // Optional, define top level elements for these
-	                           Set<RelId> rels_getting_toplevel_list_el) // Optional, define top level list elements for these
-	{
-		List<TableOutputSpec> ospecs = new ArrayList<TableOutputSpec>();
-		
-		for(RelMetaData relmd: dbmd.getRelationMetaDatas())
-		{
-			TableOutputSpec ospec = ospec_factory.table(relmd.getRelationId()).withAllChildTables()
-																			  .withAllParentTables();
-			
-			ospecs.add(ospec);
-		}
-		
-		return getXMLSchema(ospecs,
-		                    rels_getting_toplevel_el,
-		                    rels_getting_toplevel_list_el,
-		                    true,  // Part of being the "standard" XMLSchema for this relation is that each parent and child element is optional in the XMLSchema, 
-		                    true); // so the schema will match regardless of which parents/children are included in a particular query.
-	}
-
-	
-	public String getXMLSchema(List<TableOutputSpec> ospecs,     // Required, all should have the same (or no) output xml namespace
-	                           Set<RelId> toplevel_el_rels,      // Optional, define top level elements for these, or for all if null.
-	                           Set<RelId> toplevel_list_el_rels, // Optinoal, define top level list elements for these, or for all if null.
-	                           boolean child_list_els_optional,  // whether child list elements should be optional (for schema reusability)
-	                           boolean parent_els_optional)      // whether parent elements     "
-	{
-		String xmlns = getSingleCommonXmlNamespaceOrErrorWith(ospecs,
-		                                                      "Input TableOutputSpecs must all have the same xml namespace (or none) for this method.");
-		
-		Map<String,Object> template_model = new HashMap<String,Object>();
-		
-		template_model.put("qgen", this);
-		template_model.put("typeNamer", typeNamer);
-		template_model.put("target_namespace", xmlns);
-		template_model.put("ospecs", ospecs);
-		template_model.put("toplevel_el_rels", toplevel_el_rels);
-		template_model.put("toplevel_list_el_rels", toplevel_list_el_rels);
-		template_model.put("child_els_opt", child_list_els_optional);
-		template_model.put("parent_els_opt", parent_els_optional);
-		template_model.put("generating_program", getClass().getName());
-		template_model.put("generated_date", includeGenerationTimestamp ? new java.util.Date() : null);
-		
-		try
-		{
-			Writer sw = new StringWriter();
-			
-			xsdTemplate.process(template_model, sw);
-		
-			return sw.toString();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			throw new RuntimeException("Failed to produce XML Schema from template: " + e.getMessage());
-		}	
-	}
+    private static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
+    private static final String XMLSCHEMA_TEMPLATE =  "XMLSchema.ftl";
 
 
-	private String getSingleCommonXmlNamespaceOrErrorWith(List<TableOutputSpec> ospecs, String msg) throws IllegalArgumentException
-	{
-		String xmlns;
-		Set<String> xmlnss = getXmlNamespaces(ospecs);
-		if ( xmlnss.size() > 1 )
-			throw new IllegalArgumentException(msg);
-		else if ( xmlnss.size() == 1 )
-			xmlns = xmlnss.iterator().next();
-		else
-			xmlns = null;
-		return xmlns;
-	}
-	
 
-	public DBMD getDatabaseMetaData()
-	{
-		return dbmd;
-	}
-	
-	// Returns the XML Schema simple type if any for the passed jdbc type code.  Will return null for complex types such as SQLXML (XMLTYPE) fields.
+    public DatabaseXmlSchemaGenerator(DBMD dbmd)
+        throws IOException
+    {
+        this(dbmd, new DefaultTypeNamer(dbmd));
+    }
+
+    // Primary constructor.
+    public DatabaseXmlSchemaGenerator(DBMD dbmd,                                   // Required
+                                      TypeNamer type_namer)                        // Optional
+        throws IOException
+    {
+        this.dbmd = dbmd;
+        this.typeNamer = type_namer != null ? type_namer : new DefaultTypeNamer(dbmd);
+
+        // Configure template engine.
+        this.templateConfig = new Configuration();
+        this.templateConfig.setTemplateLoader(new ClassTemplateLoader(getClass(), CLASSPATH_TEMPLATES_DIR_PATH));
+        this.templateConfig.setObjectWrapper(new DefaultObjectWrapper());
+
+        // Load templates.
+        this.xsdTemplate = templateConfig.getTemplate(XMLSCHEMA_TEMPLATE);
+
+        this.includeGenerationTimestamp = false;
+    }
+
+
+    public TypeNamer getTypeNamer()
+    {
+        return typeNamer;
+    }
+
+    public void setTypeNamer(TypeNamer type_namer)
+    {
+        this.typeNamer = type_namer;
+    }
+
+    public boolean getIncludeGenerationTimestamp()
+    {
+        return includeGenerationTimestamp;
+    }
+
+    public void setIncludeGenerationTimestamp(boolean includeGenerationTimestamp)
+    {
+        this.includeGenerationTimestamp = includeGenerationTimestamp;
+    }
+
+
+
+    public String getStandardXMLSchema(Set<RelId> rels_getting_toplevel_el,      // optional, define top level elements for these, defaults to all
+                                       Set<RelId> rels_getting_toplevel_list_el, // optional, define top level list elements for these, defaults to all
+                                       String target_xml_namespace,              // required
+                                       ChildCollectionsStyle child_colls_style)    // required
+    {
+        return getXMLSchema(new DefaultTableOutputSpecFactory(dbmd, child_colls_style, target_xml_namespace),
+                            rels_getting_toplevel_el,
+                            rels_getting_toplevel_list_el);
+    }
+
+
+    public String getXMLSchema(TableOutputSpec.Factory ospec_factory,    // Required
+                               Set<RelId> rels_getting_toplevel_el,      // Optional, define top level elements for these
+                               Set<RelId> rels_getting_toplevel_list_el) // Optional, define top level list elements for these
+    {
+        List<TableOutputSpec> ospecs = new ArrayList<TableOutputSpec>();
+
+        for(RelMetaData relmd: dbmd.getRelationMetaDatas())
+        {
+            TableOutputSpec ospec = ospec_factory.table(relmd.getRelationId()).withAllChildTables()
+                                                                              .withAllParentTables();
+
+            ospecs.add(ospec);
+        }
+
+        return getXMLSchema(ospecs,
+                            rels_getting_toplevel_el,
+                            rels_getting_toplevel_list_el,
+                            true,  // Part of being the "standard" XMLSchema for this relation is that each parent and child element is optional in the XMLSchema,
+                            true); // so the schema will match regardless of which parents/children are included in a particular query.
+    }
+
+
+    public String getXMLSchema(List<TableOutputSpec> ospecs,     // Required, all should have the same (or no) output xml namespace
+                               Set<RelId> toplevel_el_rels,      // Optional, define top level elements for these, or for all if null.
+                               Set<RelId> toplevel_list_el_rels, // Optinoal, define top level list elements for these, or for all if null.
+                               boolean child_list_els_optional,  // whether child list elements should be optional (for schema reusability)
+                               boolean parent_els_optional)      // whether parent elements     "
+    {
+        String xmlns = getSingleCommonXmlNamespaceOrErrorWith(ospecs,
+                                                              "Input TableOutputSpecs must all have the same xml namespace (or none) for this method.");
+
+        Map<String,Object> template_model = new HashMap<String,Object>();
+
+        template_model.put("qgen", this);
+        template_model.put("typeNamer", typeNamer);
+        template_model.put("target_namespace", xmlns);
+        template_model.put("ospecs", ospecs);
+        template_model.put("toplevel_el_rels", toplevel_el_rels);
+        template_model.put("toplevel_list_el_rels", toplevel_list_el_rels);
+        template_model.put("child_els_opt", child_list_els_optional);
+        template_model.put("parent_els_opt", parent_els_optional);
+        template_model.put("generating_program", getClass().getName());
+        template_model.put("generated_date", includeGenerationTimestamp ? new java.util.Date() : null);
+
+        try
+        {
+            Writer sw = new StringWriter();
+
+            xsdTemplate.process(template_model, sw);
+
+            return sw.toString();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to produce XML Schema from template: " + e.getMessage());
+        }
+    }
+
+
+    private String getSingleCommonXmlNamespaceOrErrorWith(List<TableOutputSpec> ospecs, String msg) throws IllegalArgumentException
+    {
+        String xmlns;
+        Set<String> xmlnss = getXmlNamespaces(ospecs);
+        if ( xmlnss.size() > 1 )
+            throw new IllegalArgumentException(msg);
+        else if ( xmlnss.size() == 1 )
+            xmlns = xmlnss.iterator().next();
+        else
+            xmlns = null;
+        return xmlns;
+    }
+
+
+    public DBMD getDatabaseMetaData()
+    {
+        return dbmd;
+    }
+
+    // Returns the XML Schema simple type if any for the passed jdbc type code.  Will return null for complex types such as SQLXML (XMLTYPE) fields.
     public String getXmlSchemaSimpleTypeForJdbcTypeCode(int jdbc_type)
-	{
-    	// http://sqltech.cl/doc/oas10gR31/integrate.1013/b28994/adptr_db.htm#CHDBBIEB
-    	switch (jdbc_type)
-    	{
-    	case Types.TINYINT:
-    		return "byte";
+    {
+        // http://sqltech.cl/doc/oas10gR31/integrate.1013/b28994/adptr_db.htm#CHDBBIEB
+        switch (jdbc_type)
+        {
+        case Types.TINYINT:
+            return "byte";
 
-    	case Types.SMALLINT:
-    		return "short";
+        case Types.SMALLINT:
+            return "short";
 
-    	case Types.INTEGER:
-    	case Types.BIGINT:
-    		return "integer";
+        case Types.INTEGER:
+        case Types.BIGINT:
+            return "integer";
 
-    	case Types.FLOAT:
-    	case Types.REAL:
-    	case Types.DOUBLE:
-    		return "double";
+        case Types.FLOAT:
+        case Types.REAL:
+        case Types.DOUBLE:
+            return "double";
 
-    	case Types.DECIMAL:
-    	case Types.NUMERIC:
-    		return "decimal";
+        case Types.DECIMAL:
+        case Types.NUMERIC:
+            return "decimal";
 
-    	case Types.CHAR:
-    	case Types.VARCHAR:
-    	case Types.LONGVARCHAR:
-    	case Types.CLOB:
-    	case Types.OTHER:
-    		return "string";
+        case Types.CHAR:
+        case Types.VARCHAR:
+        case Types.LONGVARCHAR:
+        case Types.CLOB:
+        case Types.OTHER:
+            return "string";
 
-    	case Types.BIT:
-    	case Types.BOOLEAN:
-    		return "boolean";
-    		
-    	case Types.DATE:
-    		return "date";
-    	case Types.TIME:
-    		return "time";
-    	case Types.TIMESTAMP:
-    		return "dateTime";
+        case Types.BIT:
+        case Types.BOOLEAN:
+            return "boolean";
 
-    	case Types.BLOB:
-    	case Types.BINARY:
-    	case Types.VARBINARY:
-    	case Types.LONGVARBINARY:
-    		return "base64Binary";
+        case Types.DATE:
+            return "date";
+        case Types.TIME:
+            return "time";
+        case Types.TIMESTAMP:
+            return "dateTime";
 
-    	default:
-    		return null;
-    	}
-	}
-    
-	private List<RelId> parseRelIds(String relids_strlist)
-	{
-		if ( relids_strlist == null || relids_strlist.trim().length() == 0 )
-			return Collections.emptyList();
-		else
-		{
-			List<RelId> relids = new ArrayList<RelId>();
-			
-			String[] relid_strs = relids_strlist.split("\\s*,\\s*");
-			
-			for(String relid_str: relid_strs)
-			{
-				RelId relid = dbmd.toRelId(relid_str);
-				
-				relids.add(relid);
-			}
-			
-			return relids;
-		}
-	}
-	
+        case Types.BLOB:
+        case Types.BINARY:
+        case Types.VARBINARY:
+        case Types.LONGVARBINARY:
+            return "base64Binary";
 
-	private static Set<String> getXmlNamespaces(List<TableOutputSpec> ospecs)
-	{
-		Set<String> xmlnss = new HashSet<String>();
-		
-		for(TableOutputSpec ospec: ospecs)
-			xmlnss.add(ospec.getOutputXmlNamespace());
-		
-		return xmlnss;
-	}
+        default:
+            return null;
+        }
+    }
 
-	
-	///////////////////////////////////////////////////////////////
-	// Type naming interface and default implementation.
-	
-	public static interface TypeNamer {
-		
-		public String getRowElementTypeName(RelId rel_id);
-		
-		public String getRowCollectionElementTypeName(RelId rel_id);
-		
-	}
-	
-	public static class DefaultTypeNamer implements TypeNamer {
-		
-		DBMD dbmd;
-		
-		public DefaultTypeNamer(DBMD dbmd)
-		{
-			this.dbmd = dbmd;
-		}
+    private List<RelId> parseRelIds(String relids_strlist)
+    {
+        if ( relids_strlist == null || relids_strlist.trim().length() == 0 )
+            return Collections.emptyList();
+        else
+        {
+            List<RelId> relids = new ArrayList<RelId>();
 
-		@Override
-		public String getRowElementTypeName(RelId rel_id)
-		{
-			boolean found_dup_relname = false;
-			for(RelMetaData rmd: dbmd.getRelationMetaDatas())
-			{
-				if ( (!rmd.getRelationId().equals(rel_id)) &&
-					 rmd.getRelationId().getName().equals(rel_id.getName()) )
-				{
-					found_dup_relname = true;
-					break;
-				}
-			}
-			
-			if ( found_dup_relname )
-				return rel_id.getIdString().toLowerCase();
-			else
-				return rel_id.getName().toLowerCase();
-		}
+            String[] relid_strs = relids_strlist.split("\\s*,\\s*");
 
-		@Override
-		public String getRowCollectionElementTypeName(RelId rel_id)
-		{
-			return getRowElementTypeName(rel_id) + "-listing";
-		}
-	}
-	
-	// Type naming interface and default implementation.
-	///////////////////////////////////////////////////////////////
-	
-	
+            for(String relid_str: relid_strs)
+            {
+                RelId relid = dbmd.toRelId(relid_str);
+
+                relids.add(relid);
+            }
+
+            return relids;
+        }
+    }
+
+
+    private static Set<String> getXmlNamespaces(List<TableOutputSpec> ospecs)
+    {
+        Set<String> xmlnss = new HashSet<String>();
+
+        for(TableOutputSpec ospec: ospecs)
+            xmlnss.add(ospec.getOutputXmlNamespace());
+
+        return xmlnss;
+    }
+
+
+    ///////////////////////////////////////////////////////////////
+    // Type naming interface and default implementation.
+
+    public static interface TypeNamer {
+
+        public String getRowElementTypeName(RelId rel_id);
+
+        public String getRowCollectionElementTypeName(RelId rel_id);
+
+    }
+
+    public static class DefaultTypeNamer implements TypeNamer {
+
+        DBMD dbmd;
+
+        public DefaultTypeNamer(DBMD dbmd)
+        {
+            this.dbmd = dbmd;
+        }
+
+        @Override
+        public String getRowElementTypeName(RelId rel_id)
+        {
+            boolean found_dup_relname = false;
+            for(RelMetaData rmd: dbmd.getRelationMetaDatas())
+            {
+                if ( (!rmd.getRelationId().equals(rel_id)) &&
+                     rmd.getRelationId().getName().equals(rel_id.getName()) )
+                {
+                    found_dup_relname = true;
+                    break;
+                }
+            }
+
+            if ( found_dup_relname )
+                return rel_id.getIdString().toLowerCase();
+            else
+                return rel_id.getName().toLowerCase();
+        }
+
+        @Override
+        public String getRowCollectionElementTypeName(RelId rel_id)
+        {
+            return getRowElementTypeName(rel_id) + "-listing";
+        }
+    }
+
+    // Type naming interface and default implementation.
+    ///////////////////////////////////////////////////////////////
+
+
     public static void main(String[] args) throws Exception
     {
         int arg_ix = 0;
@@ -330,50 +330,50 @@ public class DatabaseXmlSchemaGenerator {
         String toplevel_el_list_relids_strlist;
         Set<RelId> toplevel_el_list_relids;
         String xmlschema_outfile_path;
-    	
+
         if ( args.length == 6 )
         {
-        	dbmd_xml_infile_path = args[arg_ix++];
-        	target_namespace = args[arg_ix++];
-        	child_colls_style = ChildCollectionsStyle.valueOf(args[arg_ix++].toUpperCase());
-        	toplevel_el_relids_strlist = args[arg_ix++];
-        	toplevel_el_list_relids_strlist = args[arg_ix++];
-        	xmlschema_outfile_path = args[arg_ix++];
-        	
-        	
-        	if ( toplevel_el_relids_strlist.trim().equals("*all*") )
-        		toplevel_el_relids_strlist = null; // let it default
-        	else if ( toplevel_el_relids_strlist.equals("*none*") )
-        		toplevel_el_relids_strlist = "";
-        	
-        	if ( toplevel_el_list_relids_strlist.trim().equals("*all*") )
-        		toplevel_el_list_relids_strlist = null; // let it default
-        	else if ( toplevel_el_list_relids_strlist.equals("*none*") )
-        			toplevel_el_list_relids_strlist = "";
+            dbmd_xml_infile_path = args[arg_ix++];
+            target_namespace = args[arg_ix++];
+            child_colls_style = ChildCollectionsStyle.valueOf(args[arg_ix++].toUpperCase());
+            toplevel_el_relids_strlist = args[arg_ix++];
+            toplevel_el_list_relids_strlist = args[arg_ix++];
+            xmlschema_outfile_path = args[arg_ix++];
+
+
+            if ( toplevel_el_relids_strlist.trim().equals("*all*") )
+                toplevel_el_relids_strlist = null; // let it default
+            else if ( toplevel_el_relids_strlist.equals("*none*") )
+                toplevel_el_relids_strlist = "";
+
+            if ( toplevel_el_list_relids_strlist.trim().equals("*all*") )
+                toplevel_el_list_relids_strlist = null; // let it default
+            else if ( toplevel_el_list_relids_strlist.equals("*none*") )
+                    toplevel_el_list_relids_strlist = "";
         }
         else
-        	throw new IllegalArgumentException("Expected arguments: <db-metadata-file> <target-namespace> <xml-collection-style:inline|wrapped> <toplevel-el-relids|*all*|*none*> <toplevel-el-list-relids|*all*|*none*> <xmlschema-output-file>");
+            throw new IllegalArgumentException("Expected arguments: <db-metadata-file> <target-namespace> <xml-collection-style:inline|wrapped> <toplevel-el-relids|*all*|*none*> <toplevel-el-list-relids|*all*|*none*> <xmlschema-output-file>");
 
         InputStream dbmd_is = new FileInputStream(dbmd_xml_infile_path);
-        
+
         DBMD dbmd = DBMD.readXML(dbmd_is);
         dbmd_is.close();
-        
+
         DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd);
 
         toplevel_el_relids = toplevel_el_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_relids_strlist)) : null;
         toplevel_el_list_relids = toplevel_el_list_relids_strlist != null ? new HashSet<RelId>(g.parseRelIds(toplevel_el_list_relids_strlist)) : null;
-        
+
         String xsd = g.getStandardXMLSchema(toplevel_el_relids,
                                             toplevel_el_list_relids,
                                             target_namespace,
                                             child_colls_style);
-        
+
         OutputStream os = new FileOutputStream(xmlschema_outfile_path);
         os.write(xsd.getBytes());
         os.close();
-        
+
         System.exit(0);
     }
-   
+
 }

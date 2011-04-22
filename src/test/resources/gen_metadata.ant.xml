@@ -4,69 +4,69 @@
 <!-- TODO: Only generate missing .dbmd or .xsd files. -->
 <project basedir="." default="" name="Generate-Database-Metadata">
 
-	<property name="test.resources.dir" location="src/test/resources"/>
-	<property name="testdbs.dir" location="${test.resources.dir}/testdbs"/>
-	<property name="metadata.dir" location="${test.resources.dir}/metadata"/>
- 	<property name="dbmd.gen.properties" location="${test.resources.dir}/dbmd.gen.props"/>
-	<property name="xsd.target.namespace" value="http://example/namespace"/>
-	
-	<path id="classpath.from.maven">
+  <property name="test.resources.dir" location="src/test/resources"/>
+  <property name="testdbs.dir" location="${test.resources.dir}/testdbs"/>
+  <property name="metadata.dir" location="${test.resources.dir}/metadata"/>
+   <property name="dbmd.gen.properties" location="${test.resources.dir}/dbmd.gen.props"/>
+  <property name="xsd.target.namespace" value="http://example/namespace"/>
+
+  <path id="classpath.from.maven">
     <pathelement path="${classpath_from_maven}/"/>
   </path>
 
-	
-	<target name="check-metadata-dir-exists">
-		<available file="${metadata.dir}" property="metadata.dir.exists"></available>
-	</target>
-	
-	<target name="generate-all-dbmds-and-schemas" depends="check-metadata-dir-exists" unless="metadata.dir.exists">
-		<mkdir dir="${metadata.dir}"/>
-		<private-generate-dbmd-and-schemas db="pg" />
-		<private-generate-dbmd-and-schemas db="ora"/>
-	</target>
-	
-	
-	<macrodef name="private-generate-dbmd-and-schemas">
+
+  <target name="check-metadata-dir-exists">
+    <available file="${metadata.dir}" property="metadata.dir.exists"></available>
+  </target>
+
+  <target name="generate-all-dbmds-and-schemas" depends="check-metadata-dir-exists" unless="metadata.dir.exists">
+    <mkdir dir="${metadata.dir}"/>
+    <private-generate-dbmd-and-schemas db="pg" />
+    <private-generate-dbmd-and-schemas db="ora"/>
+  </target>
+
+
+  <macrodef name="private-generate-dbmd-and-schemas">
     <attribute name="db"/>
     <sequential>
-    	<private-generate-database-metadata db="@{db}"/>
-			<private-generate-xmlschema         db="@{db}" element.collections.style="WRAPPED"/>
-			<private-generate-xmlschema         db="@{db}" element.collections.style="INLINE"/>
+      <private-generate-database-metadata db="@{db}"/>
+      <private-generate-xmlschema         db="@{db}" element.collections.style="WRAPPED"/>
+      <private-generate-xmlschema         db="@{db}" element.collections.style="INLINE"/>
     </sequential>
   </macrodef>
-	
-	
-	<macrodef name="private-generate-database-metadata">
+
+
+  <macrodef name="private-generate-database-metadata">
     <attribute name="db"/>
     <sequential>
-    	<echo>Generating database metadata.</echo>
-			<echo>Fetching metadata for schema.</echo>
-			<java classname="gov.fda.nctr.dbmd.DatabaseMetaDataFetcher" failonerror="true" fork="true">
-				<classpath refid="classpath.from.maven"/>
-				<arg value="${testdbs.dir}/@{db}_jdbc.props"/>
-				<arg value="${dbmd.gen.properties}"/>
-				<arg value="${metadata.dir}/@{db}_dbmd.xml"/>
-			</java>
-			<echo message="Wrote metadata to file @{db}_dbmd.xml."/>
+      <echo>Generating database metadata.</echo>
+      <echo>Fetching metadata for schema.</echo>
+      <java classname="gov.fda.nctr.dbmd.DatabaseMetaDataFetcher" failonerror="true" fork="true">
+        <classpath refid="classpath.from.maven"/>
+        <arg value="${testdbs.dir}/@{db}_jdbc.props"/>
+        <arg value="${dbmd.gen.properties}"/>
+        <arg value="${metadata.dir}/@{db}_dbmd.xml"/>
+      </java>
+      <echo message="Wrote metadata to file @{db}_dbmd.xml."/>
     </sequential>
-	</macrodef>
+  </macrodef>
 
-	
-	<macrodef name="private-generate-xmlschema">
-		<attribute name="db"/>
-		<attribute name="element.collections.style"/>
-		<sequential>
-			<java classname="gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator" fork="true">
-				<classpath refid="classpath.from.maven"/>
-				<arg value="${metadata.dir}/@{db}_dbmd.xml"/>
-		    <arg value="${xsd.target.namespace}"/>
-				<arg value="@{element.collections.style}"/>
-				<arg value="*all*" /> <!-- define top-level elements for these tables/views-->
-				<arg value="*all*" />	<!-- define top-level list-type elements for these tables/views-->
-				<arg value="${metadata.dir}/@{db}_xmlschema_@{element.collections.style}_el_colls.xsd" />
-			</java>
-			<echo message="Wrote XML Schema file @{db}_xmlschema_@{element.collections.style}_el_colls.xsd"/>
-		</sequential>			
-	</macrodef>
+
+  <macrodef name="private-generate-xmlschema">
+    <attribute name="db"/>
+    <attribute name="element.collections.style"/>
+    <sequential>
+      <java classname="gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator" fork="true">
+        <classpath refid="classpath.from.maven"/>
+        <arg value="${metadata.dir}/@{db}_dbmd.xml"/>
+        <arg value="${xsd.target.namespace}"/>
+        <arg value="@{element.collections.style}"/>
+        <arg value="*all*" /> <!-- define top-level elements for these tables/views-->
+        <arg value="*all*" />	<!-- define top-level list-type elements for these tables/views-->
+        <arg value="${metadata.dir}/@{db}_xmlschema_@{element.collections.style}_el_colls.xsd" />
+      </java>
+      <echo message="Wrote XML Schema file @{db}_xmlschema_@{element.collections.style}_el_colls.xsd"/>
+    </sequential>
+  </macrodef>
 
 </project>

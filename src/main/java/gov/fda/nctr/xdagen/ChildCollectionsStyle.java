@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package gov.fda.nctr.xdagen;
 
