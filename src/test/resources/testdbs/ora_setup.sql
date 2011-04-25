@@ -3,7 +3,6 @@
 /* Create user, e.g. as system on Oracle XE:
 create user xdagentest identified by xdagentest;
 grant connect, resource to xdagentest;
-grant create table to xdagentest;
 */
 
 CREATE TABLE Drug
