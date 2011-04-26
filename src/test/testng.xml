@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="XDAGenTestSuite" verbose="1">
-	<test name="Regression">
-		<classes>
-			<class name="gov.fda.nctr.xdagen.tests.QueriesIT$QueriesITFactory"/>
-			<class name="gov.fda.nctr.xdagen.tests.TestXmlSchemas"/>
-		</classes>
-	</test>
+  <test name="Regression">
+    <classes>
+      <class name="gov.fda.nctr.xdagen.tests.QueriesIT$QueriesITFactory"/>
+      <class name="gov.fda.nctr.xdagen.tests.TestXmlSchemas"/>
+    </classes>
+  </test>
 </suite>
