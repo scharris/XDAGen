@@ -80,6 +80,10 @@ public class QueryGenerator {
     public enum OrderByClauseInclusion { INCLUDE_ORDERBY_CLAUSE_IF_ORDERED, OMIT_ORDERBY_CLAUSE, NA }
 
 
+    public QueryGenerator(DBMD dbmd) throws IOException
+    {
+        this(dbmd, XmlOutputColumnType.LARGE_CHAR_TYPE);
+    }
 
     public QueryGenerator(DBMD dbmd,                                       // Req
                           XmlOutputColumnType default_xml_output_col_type) // Req
