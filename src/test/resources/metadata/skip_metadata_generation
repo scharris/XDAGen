@@ -1,0 +1,2 @@
+The presence of a file named "skip_metadata_generation" here will cause metadata not to be generated during builds.
+Remove or rename the file to trigger metadata generation.  It will not be automatically replaced.

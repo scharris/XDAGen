@@ -16,47 +16,6 @@ from
         d.SPL as "spl"
        )
       --  child tables for XDAGENTEST.DRUG
-      ,(select xmlelement(name "drug_reference-listing", 
-                 xmlagg(dr_row.row_xml order by dr_row.DRUG_ID,dr_row.REFERENCE_ID)) "rowcoll_xml"
-        from
-         ( select -- rows of XDAGENTEST.DRUG_REFERENCE
-             dr.*,
-             -- row_xml
-             xmlelement(name "drug_reference"
-              ,xmlforest(
-                dr.DRUG_ID as "drug_id",
-                dr.REFERENCE_ID as "reference_id",
-                dr.PRIORITY as "priority"
-               )
-              -- No child tables for XDAGENTEST.DRUG_REFERENCE
-              -- No parent tables for XDAGENTEST.DRUG_REFERENCE
-             ) row_xml
-           from XDAGENTEST.DRUG_REFERENCE dr
-         ) dr_row
-        where
-          dr_row.DRUG_ID = d.ID
-       ) -- child subquery
-      ,(select xmlelement(name "drug_functional_category-listing", 
-                 xmlagg(dfc_row.row_xml order by dfc_row.DRUG_ID,dfc_row.FUNCTIONAL_CATEGORY_ID,dfc_row.AUTHORITY_ID)) "rowcoll_xml"
-        from
-         ( select -- rows of XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY
-             dfc.*,
-             -- row_xml
-             xmlelement(name "drug_functional_category"
-              ,xmlforest(
-                dfc.DRUG_ID as "drug_id",
-                dfc.FUNCTIONAL_CATEGORY_ID as "functional_category_id",
-                dfc.AUTHORITY_ID as "authority_id",
-                dfc.SEQ as "seq"
-               )
-              -- No child tables for XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY
-              -- No parent tables for XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY
-             ) row_xml
-           from XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY dfc
-         ) dfc_row
-        where
-          dfc_row.DRUG_ID = d.ID
-       ) -- child subquery
       ,(select xmlelement(name "advisory-listing", 
                  xmlagg(a_row.row_xml order by a_row.ID)) "rowcoll_xml"
         from
@@ -98,6 +57,47 @@ from
          ) b_row
         where
           b_row.DRUG_ID = d.ID
+       ) -- child subquery
+      ,(select xmlelement(name "drug_functional_category-listing", 
+                 xmlagg(dfc_row.row_xml order by dfc_row.DRUG_ID,dfc_row.FUNCTIONAL_CATEGORY_ID,dfc_row.AUTHORITY_ID)) "rowcoll_xml"
+        from
+         ( select -- rows of XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY
+             dfc.*,
+             -- row_xml
+             xmlelement(name "drug_functional_category"
+              ,xmlforest(
+                dfc.DRUG_ID as "drug_id",
+                dfc.FUNCTIONAL_CATEGORY_ID as "functional_category_id",
+                dfc.AUTHORITY_ID as "authority_id",
+                dfc.SEQ as "seq"
+               )
+              -- No child tables for XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY
+              -- No parent tables for XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY
+             ) row_xml
+           from XDAGENTEST.DRUG_FUNCTIONAL_CATEGORY dfc
+         ) dfc_row
+        where
+          dfc_row.DRUG_ID = d.ID
+       ) -- child subquery
+      ,(select xmlelement(name "drug_reference-listing", 
+                 xmlagg(dr_row.row_xml order by dr_row.DRUG_ID,dr_row.REFERENCE_ID)) "rowcoll_xml"
+        from
+         ( select -- rows of XDAGENTEST.DRUG_REFERENCE
+             dr.*,
+             -- row_xml
+             xmlelement(name "drug_reference"
+              ,xmlforest(
+                dr.DRUG_ID as "drug_id",
+                dr.REFERENCE_ID as "reference_id",
+                dr.PRIORITY as "priority"
+               )
+              -- No child tables for XDAGENTEST.DRUG_REFERENCE
+              -- No parent tables for XDAGENTEST.DRUG_REFERENCE
+             ) row_xml
+           from XDAGENTEST.DRUG_REFERENCE dr
+         ) dr_row
+        where
+          dr_row.DRUG_ID = d.ID
        ) -- child subquery
       --  parent tables for XDAGENTEST.DRUG
       ,(select -- rows of XDAGENTEST.COMPOUND

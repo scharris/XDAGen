@@ -36,7 +36,7 @@ import static gov.fda.nctr.util.StringFuns.makeNameNotInSet;
 import gov.fda.nctr.xdagen.TableOutputSpec.RowOrdering;
 import static gov.fda.nctr.xdagen.QueryGenerator.OrderByClauseInclusion.INCLUDE_ORDERBY_CLAUSE_IF_ORDERED;
 import static gov.fda.nctr.xdagen.QueryGenerator.OrderByClauseInclusion.OMIT_ORDERBY_CLAUSE;
-import static gov.fda.nctr.xdagen.QueryGenerator.XmlIndentation.DO_NOT_SPECIFY;
+import static gov.fda.nctr.xdagen.QueryGenerator.XmlIndentation.INDENT_UNSPECIFIED;
 
 
 public class QueryGenerator {
@@ -73,7 +73,7 @@ public class QueryGenerator {
 
     public enum XmlOutputColumnType { XML_TYPE, LARGE_CHAR_TYPE }
 
-    public enum XmlIndentation { INDENT, NO_INDENT, DO_NOT_SPECIFY }  // controls indentation clause of xmlserialize for LARGE_CHAR_TYPE xml output column type
+    public enum XmlIndentation { INDENT, NO_INDENT, INDENT_UNSPECIFIED }  // controls indentation clause of xmlserialize for LARGE_CHAR_TYPE xml output column type
 
     public enum OutputColumnsInclusion { XML_COLUMN_ONLY, ALL_FIELDS_THEN_ROW_XML };
 
@@ -113,7 +113,7 @@ public class QueryGenerator {
         largeCharTypeName = dbms_name != null && dbms_name.toUpperCase().contains("POSTGRES") ? "text" : "clob";
 
         // Oracle needs NO INDENT when serializing xml to avoid capricious indentation of xmltype fields mixed with unindented surroundings.
-        xmlIndentation = dbms_name != null && dbms_name.toUpperCase().contains("ORACLE") ? XmlIndentation.NO_INDENT : XmlIndentation.DO_NOT_SPECIFY;
+        xmlIndentation = dbms_name != null && dbms_name.toUpperCase().contains("ORACLE") ? XmlIndentation.NO_INDENT : XmlIndentation.INDENT_UNSPECIFIED;
     }
 
     public void setDefaultXmlOutputColumnType(XmlOutputColumnType t)
@@ -586,7 +586,7 @@ public class QueryGenerator {
 
     private String getXmlIndentationClause()
     {
-        return xmlIndentation == DO_NOT_SPECIFY ? null
+        return xmlIndentation == INDENT_UNSPECIFIED ? null
                 : xmlIndentation == XmlIndentation.NO_INDENT ? "no indent"
                 : "indent" + (xmlIndentationSize != null ? " " + xmlIndentationSize : "");
     }
