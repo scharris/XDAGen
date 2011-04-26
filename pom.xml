@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>gov.fda.nctr</groupId>
   <artifactId>xdagen</artifactId>
-  <version>0.9.7-SNAPSHOT</version>
+  <version>0.9.7.1-SNAPSHOT</version>
   <name>Xml Data Access Generator</name>
   <description>Generates hierarchical SQL/XML queries and matching XML Schemas from simple table output specifications.</description>
 
