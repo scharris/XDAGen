@@ -83,8 +83,8 @@
       <element name="description" type="string" minOccurs="0"/>
       
       <!-- child elements -->
-      <element name="drug_functional_category-listing" type="tns:drug_functional_category-listing" minOccurs="0"/>
       <element name="advisory_type-listing" type="tns:advisory_type-listing" minOccurs="0"/>
+      <element name="drug_functional_category-listing" type="tns:drug_functional_category-listing" minOccurs="0"/>
       
       <!-- parent elements -->
     </sequence>
@@ -207,10 +207,10 @@
       </element>
       
       <!-- child elements -->
-      <element name="drug_reference-listing" type="tns:drug_reference-listing" minOccurs="0"/>
-      <element name="drug_functional_category-listing" type="tns:drug_functional_category-listing" minOccurs="0"/>
       <element name="advisory-listing" type="tns:advisory-listing" minOccurs="0"/>
       <element name="brand-listing" type="tns:brand-listing" minOccurs="0"/>
+      <element name="drug_functional_category-listing" type="tns:drug_functional_category-listing" minOccurs="0"/>
+      <element name="drug_reference-listing" type="tns:drug_reference-listing" minOccurs="0"/>
       
       <!-- parent elements -->
       <element name="compound" type="tns:compound" minOccurs="0"/>
@@ -302,8 +302,8 @@
       <element name="parent_functional_category_id" type="decimal" minOccurs="0"/>
       
       <!-- child elements -->
-      <element name="functional_category-listing" type="tns:functional_category-listing" minOccurs="0"/>
       <element name="drug_functional_category-listing" type="tns:drug_functional_category-listing" minOccurs="0"/>
+      <element name="functional_category-listing" type="tns:functional_category-listing" minOccurs="0"/>
       
       <!-- parent elements -->
       <element name="functional_category" type="tns:functional_category" minOccurs="0"/>

@@ -12,30 +12,8 @@ select -- rows of xdagentest.drug
      d.spl as "spl"
     )
    --  child tables for xdagentest.drug
-   ,(select xmlelement(name "drug_functional_category-listing", 
-              xmlagg(dfc_row.row_xml)) "rowcoll_xml"
-     from
-      ( select -- rows of xdagentest.drug_functional_category
-          dfc.*,
-          -- row_xml
-          xmlelement(name "drug_functional_category"
-           ,xmlforest(
-             dfc.drug_id as "drug_id",
-             dfc.functional_category_id as "functional_category_id",
-             dfc.authority_id as "authority_id",
-             dfc.seq as "seq"
-            )
-           -- No child tables for xdagentest.drug_functional_category
-           -- No parent tables for xdagentest.drug_functional_category
-          ) row_xml
-        from xdagentest.drug_functional_category dfc
-        order by dfc.drug_id,dfc.functional_category_id,dfc.authority_id
-      ) dfc_row
-     where
-       dfc_row.drug_id = d.id
-    ) -- child subquery
    ,(select xmlelement(name "advisory-listing", 
-              xmlagg(a_row.row_xml)) "rowcoll_xml"
+              xmlagg(a_row.row_xml order by a_row.id)) "rowcoll_xml"
      from
       ( select -- rows of xdagentest.advisory
           a.*,
@@ -51,13 +29,12 @@ select -- rows of xdagentest.drug
            -- No parent tables for xdagentest.advisory
           ) row_xml
         from xdagentest.advisory a
-        order by a.id
       ) a_row
      where
        a_row.drug_id = d.id
     ) -- child subquery
    ,(select xmlelement(name "brand-listing", 
-              xmlagg(b_row.row_xml)) "rowcoll_xml"
+              xmlagg(b_row.row_xml order by b_row.drug_id,b_row.brand_name)) "rowcoll_xml"
      from
       ( select -- rows of xdagentest.brand
           b.*,
@@ -73,13 +50,33 @@ select -- rows of xdagentest.drug
            -- No parent tables for xdagentest.brand
           ) row_xml
         from xdagentest.brand b
-        order by b.drug_id,b.brand_name
       ) b_row
      where
        b_row.drug_id = d.id
     ) -- child subquery
+   ,(select xmlelement(name "drug_functional_category-listing", 
+              xmlagg(dfc_row.row_xml order by dfc_row.drug_id,dfc_row.functional_category_id,dfc_row.authority_id)) "rowcoll_xml"
+     from
+      ( select -- rows of xdagentest.drug_functional_category
+          dfc.*,
+          -- row_xml
+          xmlelement(name "drug_functional_category"
+           ,xmlforest(
+             dfc.drug_id as "drug_id",
+             dfc.functional_category_id as "functional_category_id",
+             dfc.authority_id as "authority_id",
+             dfc.seq as "seq"
+            )
+           -- No child tables for xdagentest.drug_functional_category
+           -- No parent tables for xdagentest.drug_functional_category
+          ) row_xml
+        from xdagentest.drug_functional_category dfc
+      ) dfc_row
+     where
+       dfc_row.drug_id = d.id
+    ) -- child subquery
    ,(select xmlelement(name "drug_reference-listing", 
-              xmlagg(dr_row.row_xml)) "rowcoll_xml"
+              xmlagg(dr_row.row_xml order by dr_row.drug_id,dr_row.reference_id)) "rowcoll_xml"
      from
       ( select -- rows of xdagentest.drug_reference
           dr.*,
@@ -94,7 +91,6 @@ select -- rows of xdagentest.drug
            -- No parent tables for xdagentest.drug_reference
           ) row_xml
         from xdagentest.drug_reference dr
-        order by dr.drug_id,dr.reference_id
       ) dr_row
      where
        dr_row.drug_id = d.id
@@ -124,7 +120,6 @@ select -- rows of xdagentest.drug
      from xdagentest.compound c
      where
        c.id = d.compound_id
-     order by c.id
     ) -- parent subquery
   ) as text) row_xml
 from xdagentest.drug d

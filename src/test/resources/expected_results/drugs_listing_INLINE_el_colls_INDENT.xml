@@ -9,33 +9,6 @@
         <gen-name>drug 1</gen-name>
       </document>
     </spl>
-    <drug_reference>
-      <drug_id>1</drug_id>
-      <reference_id>101</reference_id>
-      <priority>1</priority>
-    </drug_reference>
-    <drug_reference>
-      <drug_id>1</drug_id>
-      <reference_id>102</reference_id>
-      <priority>1</priority>
-    </drug_reference>
-    <drug_reference>
-      <drug_id>1</drug_id>
-      <reference_id>103</reference_id>
-      <priority>1</priority>
-    </drug_reference>
-    <drug_functional_category>
-      <drug_id>1</drug_id>
-      <functional_category_id>2</functional_category_id>
-      <authority_id>1</authority_id>
-      <seq>1</seq>
-    </drug_functional_category>
-    <drug_functional_category>
-      <drug_id>1</drug_id>
-      <functional_category_id>5</functional_category_id>
-      <authority_id>1</authority_id>
-      <seq>2</seq>
-    </drug_functional_category>
     <advisory>
       <id>101</id>
       <drug_id>1</drug_id>
@@ -54,6 +27,33 @@
       <language_code>EN</language_code>
       <manufacturer_id>2</manufacturer_id>
     </brand>
+    <drug_functional_category>
+      <drug_id>1</drug_id>
+      <functional_category_id>2</functional_category_id>
+      <authority_id>1</authority_id>
+      <seq>1</seq>
+    </drug_functional_category>
+    <drug_functional_category>
+      <drug_id>1</drug_id>
+      <functional_category_id>5</functional_category_id>
+      <authority_id>1</authority_id>
+      <seq>2</seq>
+    </drug_functional_category>
+    <drug_reference>
+      <drug_id>1</drug_id>
+      <reference_id>101</reference_id>
+      <priority>1</priority>
+    </drug_reference>
+    <drug_reference>
+      <drug_id>1</drug_id>
+      <reference_id>102</reference_id>
+      <priority>1</priority>
+    </drug_reference>
+    <drug_reference>
+      <drug_id>1</drug_id>
+      <reference_id>103</reference_id>
+      <priority>1</priority>
+    </drug_reference>
     <compound>
       <id>1</id>
       <display_name>Test Compound 1</display_name>
@@ -70,33 +70,6 @@
         <gen-name>drug 2</gen-name>
       </document>
     </spl>
-    <drug_reference>
-      <drug_id>2</drug_id>
-      <reference_id>201</reference_id>
-      <priority>2</priority>
-    </drug_reference>
-    <drug_reference>
-      <drug_id>2</drug_id>
-      <reference_id>202</reference_id>
-      <priority>2</priority>
-    </drug_reference>
-    <drug_reference>
-      <drug_id>2</drug_id>
-      <reference_id>203</reference_id>
-      <priority>2</priority>
-    </drug_reference>
-    <drug_functional_category>
-      <drug_id>2</drug_id>
-      <functional_category_id>3</functional_category_id>
-      <authority_id>1</authority_id>
-      <seq>1</seq>
-    </drug_functional_category>
-    <drug_functional_category>
-      <drug_id>2</drug_id>
-      <functional_category_id>6</functional_category_id>
-      <authority_id>1</authority_id>
-      <seq>2</seq>
-    </drug_functional_category>
     <advisory>
       <id>201</id>
       <drug_id>2</drug_id>
@@ -115,6 +88,33 @@
       <language_code>EN</language_code>
       <manufacturer_id>3</manufacturer_id>
     </brand>
+    <drug_functional_category>
+      <drug_id>2</drug_id>
+      <functional_category_id>3</functional_category_id>
+      <authority_id>1</authority_id>
+      <seq>1</seq>
+    </drug_functional_category>
+    <drug_functional_category>
+      <drug_id>2</drug_id>
+      <functional_category_id>6</functional_category_id>
+      <authority_id>1</authority_id>
+      <seq>2</seq>
+    </drug_functional_category>
+    <drug_reference>
+      <drug_id>2</drug_id>
+      <reference_id>201</reference_id>
+      <priority>2</priority>
+    </drug_reference>
+    <drug_reference>
+      <drug_id>2</drug_id>
+      <reference_id>202</reference_id>
+      <priority>2</priority>
+    </drug_reference>
+    <drug_reference>
+      <drug_id>2</drug_id>
+      <reference_id>203</reference_id>
+      <priority>2</priority>
+    </drug_reference>
     <compound>
       <id>2</id>
       <display_name>Test Compound 2</display_name>
@@ -131,33 +131,6 @@
         <gen-name>drug 3</gen-name>
       </document>
     </spl>
-    <drug_reference>
-      <drug_id>3</drug_id>
-      <reference_id>301</reference_id>
-      <priority>3</priority>
-    </drug_reference>
-    <drug_reference>
-      <drug_id>3</drug_id>
-      <reference_id>302</reference_id>
-      <priority>3</priority>
-    </drug_reference>
-    <drug_reference>
-      <drug_id>3</drug_id>
-      <reference_id>303</reference_id>
-      <priority>3</priority>
-    </drug_reference>
-    <drug_functional_category>
-      <drug_id>3</drug_id>
-      <functional_category_id>1</functional_category_id>
-      <authority_id>1</authority_id>
-      <seq>1</seq>
-    </drug_functional_category>
-    <drug_functional_category>
-      <drug_id>3</drug_id>
-      <functional_category_id>4</functional_category_id>
-      <authority_id>1</authority_id>
-      <seq>2</seq>
-    </drug_functional_category>
     <advisory>
       <id>301</id>
       <drug_id>3</drug_id>
@@ -176,6 +149,33 @@
       <language_code>EN</language_code>
       <manufacturer_id>1</manufacturer_id>
     </brand>
+    <drug_functional_category>
+      <drug_id>3</drug_id>
+      <functional_category_id>1</functional_category_id>
+      <authority_id>1</authority_id>
+      <seq>1</seq>
+    </drug_functional_category>
+    <drug_functional_category>
+      <drug_id>3</drug_id>
+      <functional_category_id>4</functional_category_id>
+      <authority_id>1</authority_id>
+      <seq>2</seq>
+    </drug_functional_category>
+    <drug_reference>
+      <drug_id>3</drug_id>
+      <reference_id>301</reference_id>
+      <priority>3</priority>
+    </drug_reference>
+    <drug_reference>
+      <drug_id>3</drug_id>
+      <reference_id>302</reference_id>
+      <priority>3</priority>
+    </drug_reference>
+    <drug_reference>
+      <drug_id>3</drug_id>
+      <reference_id>303</reference_id>
+      <priority>3</priority>
+    </drug_reference>
     <compound>
       <id>3</id>
       <display_name>Test Compound 3</display_name>
@@ -192,33 +192,6 @@
         <gen-name>drug 4</gen-name>
       </document>
     </spl>
-    <drug_reference>
-      <drug_id>4</drug_id>
-      <reference_id>401</reference_id>
-      <priority>4</priority>
-    </drug_reference>
-    <drug_reference>
-      <drug_id>4</drug_id>
-      <reference_id>402</reference_id>
-      <priority>4</priority>
-    </drug_reference>
-    <drug_reference>
-      <drug_id>4</drug_id>
-      <reference_id>403</reference_id>
-      <priority>4</priority>
-    </drug_reference>
-    <drug_functional_category>
-      <drug_id>4</drug_id>
-      <functional_category_id>2</functional_category_id>
-      <authority_id>1</authority_id>
-      <seq>1</seq>
-    </drug_functional_category>
-    <drug_functional_category>
-      <drug_id>4</drug_id>
-      <functional_category_id>5</functional_category_id>
-      <authority_id>1</authority_id>
-      <seq>2</seq>
-    </drug_functional_category>
     <advisory>
       <id>401</id>
       <drug_id>4</drug_id>
@@ -237,6 +210,33 @@
       <language_code>EN</language_code>
       <manufacturer_id>2</manufacturer_id>
     </brand>
+    <drug_functional_category>
+      <drug_id>4</drug_id>
+      <functional_category_id>2</functional_category_id>
+      <authority_id>1</authority_id>
+      <seq>1</seq>
+    </drug_functional_category>
+    <drug_functional_category>
+      <drug_id>4</drug_id>
+      <functional_category_id>5</functional_category_id>
+      <authority_id>1</authority_id>
+      <seq>2</seq>
+    </drug_functional_category>
+    <drug_reference>
+      <drug_id>4</drug_id>
+      <reference_id>401</reference_id>
+      <priority>4</priority>
+    </drug_reference>
+    <drug_reference>
+      <drug_id>4</drug_id>
+      <reference_id>402</reference_id>
+      <priority>4</priority>
+    </drug_reference>
+    <drug_reference>
+      <drug_id>4</drug_id>
+      <reference_id>403</reference_id>
+      <priority>4</priority>
+    </drug_reference>
     <compound>
       <id>4</id>
       <display_name>Test Compound 4</display_name>
@@ -253,33 +253,6 @@
         <gen-name>drug 5</gen-name>
       </document>
     </spl>
-    <drug_reference>
-      <drug_id>5</drug_id>
-      <reference_id>501</reference_id>
-      <priority>5</priority>
-    </drug_reference>
-    <drug_reference>
-      <drug_id>5</drug_id>
-      <reference_id>502</reference_id>
-      <priority>5</priority>
-    </drug_reference>
-    <drug_reference>
-      <drug_id>5</drug_id>
-      <reference_id>503</reference_id>
-      <priority>5</priority>
-    </drug_reference>
-    <drug_functional_category>
-      <drug_id>5</drug_id>
-      <functional_category_id>3</functional_category_id>
-      <authority_id>1</authority_id>
-      <seq>1</seq>
-    </drug_functional_category>
-    <drug_functional_category>
-      <drug_id>5</drug_id>
-      <functional_category_id>6</functional_category_id>
-      <authority_id>1</authority_id>
-      <seq>2</seq>
-    </drug_functional_category>
     <advisory>
       <id>501</id>
       <drug_id>5</drug_id>
@@ -298,6 +271,33 @@
       <language_code>EN</language_code>
       <manufacturer_id>3</manufacturer_id>
     </brand>
+    <drug_functional_category>
+      <drug_id>5</drug_id>
+      <functional_category_id>3</functional_category_id>
+      <authority_id>1</authority_id>
+      <seq>1</seq>
+    </drug_functional_category>
+    <drug_functional_category>
+      <drug_id>5</drug_id>
+      <functional_category_id>6</functional_category_id>
+      <authority_id>1</authority_id>
+      <seq>2</seq>
+    </drug_functional_category>
+    <drug_reference>
+      <drug_id>5</drug_id>
+      <reference_id>501</reference_id>
+      <priority>5</priority>
+    </drug_reference>
+    <drug_reference>
+      <drug_id>5</drug_id>
+      <reference_id>502</reference_id>
+      <priority>5</priority>
+    </drug_reference>
+    <drug_reference>
+      <drug_id>5</drug_id>
+      <reference_id>503</reference_id>
+      <priority>5</priority>
+    </drug_reference>
     <compound>
       <id>5</id>
       <display_name>Test Compound 5</display_name>

@@ -1,212 +1,110 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<database-metadata xmlns="http://nctr.fda.gov/dbmd" dbms-minor-version="2" dbms-major-version="11" dbms-version="Oracle Database 11g Express Edition Release 11.2.0.2.0 - 64bit Beta" dbms-name="Oracle" case-sensitivity="INSENSITIVE_STORED_UPPER" requested-owning-schema-name="XDAGENTEST">
+<database-metadata xmlns="http://nctr.fda.gov/dbmd" dbms-minor-version="2" dbms-major-version="11" dbms-version="Oracle Database 11g Express Edition Release 11.2.0.2.0 - Beta" dbms-name="Oracle" case-sensitivity="INSENSITIVE_STORED_UPPER" requested-owning-schema-name="XDAGENTEST">
     <relation-metadatas>
         <rel-md rel-type="Table">
             <rel-id name="ADVISORY" schema="XDAGENTEST"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
-                    <rel-id name="ADVISORY" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
-                    <rel-id name="ADVISORY" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ADVISORY_TYPE_ID">
-                    <rel-id name="ADVISORY" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="false" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="TEXT">
-                    <rel-id name="ADVISORY" schema="XDAGENTEST"/>
-                </field>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID"/>
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID"/>
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ADVISORY_TYPE_ID"/>
+                <field nullable="false" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="TEXT"/>
             </fields>
         </rel-md>
         <rel-md rel-type="Table">
             <rel-id name="ADVISORY_TYPE" schema="XDAGENTEST"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
-                    <rel-id name="ADVISORY_TYPE" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="false" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
-                    <rel-id name="ADVISORY_TYPE" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID">
-                    <rel-id name="ADVISORY_TYPE" schema="XDAGENTEST"/>
-                </field>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID"/>
+                <field nullable="false" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME"/>
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID"/>
             </fields>
         </rel-md>
         <rel-md rel-type="Table">
             <rel-id name="AUTHORITY" schema="XDAGENTEST"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
-                    <rel-id name="AUTHORITY" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
-                    <rel-id name="AUTHORITY" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="URL">
-                    <rel-id name="AUTHORITY" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="DESCRIPTION">
-                    <rel-id name="AUTHORITY" schema="XDAGENTEST"/>
-                </field>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID"/>
+                <field nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME"/>
+                <field nullable="true" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="URL"/>
+                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="DESCRIPTION"/>
             </fields>
         </rel-md>
         <rel-md rel-type="Table">
             <rel-id name="BRAND" schema="XDAGENTEST"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
-                    <rel-id name="BRAND" schema="XDAGENTEST"/>
-                </field>
-                <field pk-part-num="2" nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="BRAND_NAME">
-                    <rel-id name="BRAND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="10" db-type-name="VARCHAR2" jdbc-type-code="12" name="LANGUAGE_CODE">
-                    <rel-id name="BRAND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="MANUFACTURER_ID">
-                    <rel-id name="BRAND" schema="XDAGENTEST"/>
-                </field>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID"/>
+                <field pk-part-num="2" nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="BRAND_NAME"/>
+                <field nullable="true" length="10" db-type-name="VARCHAR2" jdbc-type-code="12" name="LANGUAGE_CODE"/>
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="MANUFACTURER_ID"/>
             </fields>
         </rel-md>
         <rel-md rel-type="Table">
             <rel-id name="COMPOUND" schema="XDAGENTEST"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="DISPLAY_NAME">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="100" db-type-name="VARCHAR2" jdbc-type-code="12" name="NCTR_ISIS_ID">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="SMILES">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="CANONICAL_SMILES">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="CAS">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="MOL_FORMULA">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="MOL_WEIGHT">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" db-type-name="CLOB" jdbc-type-code="2005" name="MOL_FILE">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="INCHI">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="27" db-type-name="VARCHAR2" jdbc-type-code="12" name="INCHI_KEY">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="STANDARD_INCHI">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="27" db-type-name="VARCHAR2" jdbc-type-code="12" name="STANDARD_INCHI_KEY">
-                    <rel-id name="COMPOUND" schema="XDAGENTEST"/>
-                </field>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID"/>
+                <field nullable="true" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="DISPLAY_NAME"/>
+                <field nullable="true" length="100" db-type-name="VARCHAR2" jdbc-type-code="12" name="NCTR_ISIS_ID"/>
+                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="SMILES"/>
+                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="CANONICAL_SMILES"/>
+                <field nullable="true" length="50" db-type-name="VARCHAR2" jdbc-type-code="12" name="CAS"/>
+                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="MOL_FORMULA"/>
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="MOL_WEIGHT"/>
+                <field nullable="true" db-type-name="CLOB" jdbc-type-code="2005" name="MOL_FILE"/>
+                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="INCHI"/>
+                <field nullable="true" length="27" db-type-name="VARCHAR2" jdbc-type-code="12" name="INCHI_KEY"/>
+                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="STANDARD_INCHI"/>
+                <field nullable="true" length="27" db-type-name="VARCHAR2" jdbc-type-code="12" name="STANDARD_INCHI_KEY"/>
             </fields>
         </rel-md>
         <rel-md rel-type="Table">
             <rel-id name="DRUG" schema="XDAGENTEST"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
-                    <rel-id name="DRUG" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="false" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
-                    <rel-id name="DRUG" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="COMPOUND_ID">
-                    <rel-id name="DRUG" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="7" db-type-name="VARCHAR2" jdbc-type-code="12" name="MESH_ID">
-                    <rel-id name="DRUG" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="7" db-type-name="VARCHAR2" jdbc-type-code="12" name="DRUGBANK_ID">
-                    <rel-id name="DRUG" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="CID">
-                    <rel-id name="DRUG" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="4000" db-type-name="VARCHAR2" jdbc-type-code="12" name="THERAPEUTIC_INDICATIONS">
-                    <rel-id name="DRUG" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" db-type-name="XMLTYPE" jdbc-type-code="2009" name="SPL">
-                    <rel-id name="DRUG" schema="XDAGENTEST"/>
-                </field>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID"/>
+                <field nullable="false" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME"/>
+                <field nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="COMPOUND_ID"/>
+                <field nullable="true" length="7" db-type-name="VARCHAR2" jdbc-type-code="12" name="MESH_ID"/>
+                <field nullable="true" length="7" db-type-name="VARCHAR2" jdbc-type-code="12" name="DRUGBANK_ID"/>
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="CID"/>
+                <field nullable="true" length="4000" db-type-name="VARCHAR2" jdbc-type-code="12" name="THERAPEUTIC_INDICATIONS"/>
+                <field nullable="true" db-type-name="XMLTYPE" jdbc-type-code="2009" name="SPL"/>
             </fields>
         </rel-md>
         <rel-md rel-type="Table">
             <rel-id name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
-                    <rel-id name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-                </field>
-                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="FUNCTIONAL_CATEGORY_ID">
-                    <rel-id name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-                </field>
-                <field pk-part-num="3" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID">
-                    <rel-id name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="SEQ">
-                    <rel-id name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-                </field>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID"/>
+                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="FUNCTIONAL_CATEGORY_ID"/>
+                <field pk-part-num="3" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="AUTHORITY_ID"/>
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="SEQ"/>
             </fields>
         </rel-md>
         <rel-md rel-type="Table">
             <rel-id name="DRUG_REFERENCE" schema="XDAGENTEST"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID">
-                    <rel-id name="DRUG_REFERENCE" schema="XDAGENTEST"/>
-                </field>
-                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="REFERENCE_ID">
-                    <rel-id name="DRUG_REFERENCE" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="PRIORITY">
-                    <rel-id name="DRUG_REFERENCE" schema="XDAGENTEST"/>
-                </field>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="DRUG_ID"/>
+                <field pk-part-num="2" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="REFERENCE_ID"/>
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="PRIORITY"/>
             </fields>
         </rel-md>
         <rel-md rel-type="Table">
             <rel-id name="FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
-                    <rel-id name="FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="false" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
-                    <rel-id name="FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="DESCRIPTION">
-                    <rel-id name="FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="PARENT_FUNCTIONAL_CATEGORY_ID">
-                    <rel-id name="FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-                </field>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID"/>
+                <field nullable="false" length="500" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME"/>
+                <field nullable="true" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="DESCRIPTION"/>
+                <field nullable="true" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="PARENT_FUNCTIONAL_CATEGORY_ID"/>
             </fields>
         </rel-md>
         <rel-md rel-type="Table">
             <rel-id name="MANUFACTURER" schema="XDAGENTEST"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
-                    <rel-id name="MANUFACTURER" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME">
-                    <rel-id name="MANUFACTURER" schema="XDAGENTEST"/>
-                </field>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID"/>
+                <field nullable="false" length="200" db-type-name="VARCHAR2" jdbc-type-code="12" name="NAME"/>
             </fields>
         </rel-md>
         <rel-md rel-type="Table">
             <rel-id name="REFERENCE" schema="XDAGENTEST"/>
             <fields>
-                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID">
-                    <rel-id name="REFERENCE" schema="XDAGENTEST"/>
-                </field>
-                <field nullable="false" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="PUBLICATION">
-                    <rel-id name="REFERENCE" schema="XDAGENTEST"/>
-                </field>
+                <field pk-part-num="1" nullable="false" radix="10" fractional-digits="-127" precision="0" db-type-name="NUMBER" jdbc-type-code="3" name="ID"/>
+                <field nullable="false" length="2000" db-type-name="VARCHAR2" jdbc-type-code="12" name="PUBLICATION"/>
             </fields>
         </rel-md>
     </relation-metadatas>
@@ -217,9 +115,9 @@
             <component pk-field="ID" fk-field="ADVISORY_TYPE_ID"/>
         </foreign-key>
         <foreign-key>
-            <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-            <tgt-rel name="AUTHORITY" schema="XDAGENTEST"/>
-            <component pk-field="ID" fk-field="AUTHORITY_ID"/>
+            <src-rel name="ADVISORY" schema="XDAGENTEST"/>
+            <tgt-rel name="DRUG" schema="XDAGENTEST"/>
+            <component pk-field="ID" fk-field="DRUG_ID"/>
         </foreign-key>
         <foreign-key>
             <src-rel name="ADVISORY_TYPE" schema="XDAGENTEST"/>
@@ -227,39 +125,9 @@
             <component pk-field="ID" fk-field="AUTHORITY_ID"/>
         </foreign-key>
         <foreign-key>
-            <src-rel name="DRUG" schema="XDAGENTEST"/>
-            <tgt-rel name="COMPOUND" schema="XDAGENTEST"/>
-            <component pk-field="ID" fk-field="COMPOUND_ID"/>
-        </foreign-key>
-        <foreign-key>
-            <src-rel name="DRUG_REFERENCE" schema="XDAGENTEST"/>
-            <tgt-rel name="DRUG" schema="XDAGENTEST"/>
-            <component pk-field="ID" fk-field="DRUG_ID"/>
-        </foreign-key>
-        <foreign-key>
-            <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-            <tgt-rel name="DRUG" schema="XDAGENTEST"/>
-            <component pk-field="ID" fk-field="DRUG_ID"/>
-        </foreign-key>
-        <foreign-key>
-            <src-rel name="ADVISORY" schema="XDAGENTEST"/>
-            <tgt-rel name="DRUG" schema="XDAGENTEST"/>
-            <component pk-field="ID" fk-field="DRUG_ID"/>
-        </foreign-key>
-        <foreign-key>
             <src-rel name="BRAND" schema="XDAGENTEST"/>
             <tgt-rel name="DRUG" schema="XDAGENTEST"/>
             <component pk-field="ID" fk-field="DRUG_ID"/>
-        </foreign-key>
-        <foreign-key>
-            <src-rel name="FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-            <tgt-rel name="FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-            <component pk-field="ID" fk-field="PARENT_FUNCTIONAL_CATEGORY_ID"/>
-        </foreign-key>
-        <foreign-key>
-            <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-            <tgt-rel name="FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
-            <component pk-field="ID" fk-field="FUNCTIONAL_CATEGORY_ID"/>
         </foreign-key>
         <foreign-key>
             <src-rel name="BRAND" schema="XDAGENTEST"/>
@@ -267,9 +135,39 @@
             <component pk-field="ID" fk-field="MANUFACTURER_ID"/>
         </foreign-key>
         <foreign-key>
+            <src-rel name="DRUG" schema="XDAGENTEST"/>
+            <tgt-rel name="COMPOUND" schema="XDAGENTEST"/>
+            <component pk-field="ID" fk-field="COMPOUND_ID"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
+            <tgt-rel name="AUTHORITY" schema="XDAGENTEST"/>
+            <component pk-field="ID" fk-field="AUTHORITY_ID"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
+            <tgt-rel name="DRUG" schema="XDAGENTEST"/>
+            <component pk-field="ID" fk-field="DRUG_ID"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="DRUG_FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
+            <tgt-rel name="FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
+            <component pk-field="ID" fk-field="FUNCTIONAL_CATEGORY_ID"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="DRUG_REFERENCE" schema="XDAGENTEST"/>
+            <tgt-rel name="DRUG" schema="XDAGENTEST"/>
+            <component pk-field="ID" fk-field="DRUG_ID"/>
+        </foreign-key>
+        <foreign-key>
             <src-rel name="DRUG_REFERENCE" schema="XDAGENTEST"/>
             <tgt-rel name="REFERENCE" schema="XDAGENTEST"/>
             <component pk-field="ID" fk-field="REFERENCE_ID"/>
+        </foreign-key>
+        <foreign-key>
+            <src-rel name="FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
+            <tgt-rel name="FUNCTIONAL_CATEGORY" schema="XDAGENTEST"/>
+            <component pk-field="ID" fk-field="PARENT_FUNCTIONAL_CATEGORY_ID"/>
         </foreign-key>
     </foreign-keys>
 </database-metadata>

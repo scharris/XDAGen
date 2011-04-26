@@ -47,8 +47,6 @@ public class QueriesIT  {
 
     TableOutputSpec drugTOS;
 
-    final static int NUM_TEST_DRUGS = 5;
-
     TestingResources res; // testing related resources accessor
 
     /* When true, expected data will be *written* from the data to be tested, so all tests should pass.  Used to setup initial expected data.
@@ -61,7 +59,7 @@ public class QueriesIT  {
         @Factory
         public Object[] createInstances()
         {
-            String[] dbs = {/*"pg",*/ "ora"};
+            String[] dbs = {"pg", "ora"};
             ChildCollectionsStyle[] coll_styles = {ChildCollectionsStyle.INLINE, ChildCollectionsStyle.WRAPPED};
 
             List<QueriesIT> l = new ArrayList<QueriesIT>();
@@ -70,11 +68,12 @@ public class QueriesIT  {
                 for(ChildCollectionsStyle style: coll_styles)
                 {
                     if ( db.equals("pg") )
-                        l.add(new QueriesIT(db, style, XmlIndentation.DO_NOT_SPECIFY));
+                        l.add(new QueriesIT(db, style, XmlIndentation.INDENT_UNSPECIFIED)); // postgres doesn't support the indentation clause at all
                     else
                     {
                         l.add(new QueriesIT(db, style, XmlIndentation.INDENT));
                         l.add(new QueriesIT(db, style, XmlIndentation.NO_INDENT));
+                        // no IDENT_UNSPECIFIED for Oracle since it behaves strangely (only xmltype fields are indented in the output)
                     }
                 }
 

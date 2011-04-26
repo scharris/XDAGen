@@ -15,11 +15,11 @@
   </path>
 
 
-  <target name="check-metadata-dir-exists">
-    <available file="${metadata.dir}" property="metadata.dir.exists"></available>
+  <target name="check-should-skip-metadata-generation">
+    <available file="${metadata.dir}/skip_metadata_generation" property="skip.metadata.generation"></available>
   </target>
 
-  <target name="generate-all-dbmds-and-schemas" depends="check-metadata-dir-exists" unless="metadata.dir.exists">
+  <target name="generate-all-dbmds-and-schemas" depends="check-should-skip-metadata-generation" unless="skip.metadata.generation">
     <mkdir dir="${metadata.dir}"/>
     <private-generate-dbmd-and-schemas db="pg" />
     <private-generate-dbmd-and-schemas db="ora"/>
