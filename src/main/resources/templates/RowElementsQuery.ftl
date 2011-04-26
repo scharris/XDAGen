@@ -18,7 +18,7 @@ select -- rows of ${relid}
    ,(${parent_subquery}
     ) -- parent subquery
    </#list>
-  )<#if convert_to_large_char> as ${large_char_type})</#if> row_xml
+  )<#if convert_to_large_char> as ${large_char_type}<#if xml_indentation??> ${xml_indentation}</#if>)</#if> row_xml
 from ${relid.idString} ${table_alias}<#if ((filter_condition!"")?length > 0)>
 where
   ${filter_condition}</#if><#if (order_by_exprs!)?size != 0>
