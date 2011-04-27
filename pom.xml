@@ -4,16 +4,22 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>gov.fda.nctr</groupId>
   <artifactId>xdagen</artifactId>
-  <version>0.9.7.1-SNAPSHOT</version>
+  <version>0.9.8</version>
   <name>Xml Data Access Generator</name>
   <description>Generates hierarchical SQL/XML queries and matching XML Schemas from simple table output specifications.</description>
 
   <distributionManagement>
-    <repository>
-      <id>nctr-maven-repo-server</id>
+    <snapshotRepository>
+      <id>snapshots-repo</id>
       <url>http://ncsvmweb01.nctr.fda.gov/mvnrepo/content/repositories/snapshots</url>
+      <uniqueVersion>false</uniqueVersion>
+    </snapshotRepository>
+    <repository>
+      <id>releases-repo</id>
+      <url>http://ncsvmweb01.nctr.fda.gov/mvnrepo/content/repositories/releases</url>
     </repository>
   </distributionManagement>
+
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -29,7 +35,7 @@
     <dependency>
       <groupId>gov.fda.nctr</groupId>
       <artifactId>dbmd</artifactId>
-      <version>1.1.1-SNAPSHOT</version>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
         <groupId>org.testng</groupId>
