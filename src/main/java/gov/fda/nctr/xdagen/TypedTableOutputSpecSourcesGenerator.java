@@ -34,6 +34,9 @@ public class TypedTableOutputSpecSourcesGenerator {
     protected DBMD dbmd;
 
     protected String targetPackage; // Target package for generated classes.
+    protected String xdagenOutputXmlNamespace;
+
+    protected ChildCollectionsStyle childCollectionsStyle;
 
     protected TypedTableOutputSpecNamer typedTableOutputSpecNamer; // Controls naming of the generated classes and their parent/child addition methods.
 
@@ -50,12 +53,16 @@ public class TypedTableOutputSpecSourcesGenerator {
     // Primary constructor.
     public TypedTableOutputSpecSourcesGenerator(DBMD dbmd,
                                                 String target_java_package,
+                                                String xdagen_output_xml_namespace,
+                                                ChildCollectionsStyle child_collections_style,
                                                 String default_tableoutputspec_factory_expr, // optional
                                                 TypedTableOutputSpecNamer typedtos_namer)  // optional
         throws IOException
     {
         this.dbmd = dbmd;
         this.targetPackage = target_java_package;
+        this.xdagenOutputXmlNamespace = xdagen_output_xml_namespace;
+        this.childCollectionsStyle = child_collections_style;
         this.typedTableOutputSpecNamer = typedtos_namer != null ? typedtos_namer : new DefaultTypedTableOutputSpecNamer(dbmd);
 
         // Configure template engine.
@@ -70,11 +77,15 @@ public class TypedTableOutputSpecSourcesGenerator {
 
 
     public TypedTableOutputSpecSourcesGenerator(DBMD dbmd,
-                                                String target_java_package)
+                                                String target_java_package,
+                                                String xdagen_output_xml_namespace,
+                                                ChildCollectionsStyle child_collections_style)
         throws IOException
     {
         this(dbmd,
              target_java_package,
+             xdagen_output_xml_namespace,
+             child_collections_style,
              null,
              new DefaultTypedTableOutputSpecNamer(dbmd));
     }
@@ -140,6 +151,8 @@ public class TypedTableOutputSpecSourcesGenerator {
         Map<String,Object> template_model = new HashMap<String,Object>();
 
         template_model.put("target_package", targetPackage);
+        template_model.put("xdagen_output_xml_namespace", xdagenOutputXmlNamespace);
+        template_model.put("child_collections_style", "ChildCollectionsStyle."+childCollectionsStyle.toString());
         template_model.put("namer", typedTableOutputSpecNamer);
         template_model.put("relids", dbmd.getRelationIds());
 
@@ -297,12 +310,16 @@ public class TypedTableOutputSpecSourcesGenerator {
         int arg_ix = 0;
         String dbmd_xml_infile_path;
         String target_java_package;
+        String xdagen_output_xml_namespace;
+        ChildCollectionsStyle child_collections_style;
         File output_dir;
 
-        if ( args.length == 3 )
+        if ( args.length == 5 )
         {
             dbmd_xml_infile_path = args[arg_ix++];
             target_java_package = args[arg_ix++];
+            xdagen_output_xml_namespace = args[arg_ix++];
+            child_collections_style = ChildCollectionsStyle.valueOf(args[arg_ix++]);
             output_dir = new File(args[arg_ix++]);
             if ( !output_dir.isDirectory() )
                 throw new IllegalArgumentException("Output directory not found.");
@@ -316,7 +333,9 @@ public class TypedTableOutputSpecSourcesGenerator {
         dbmd_is.close();
 
         TypedTableOutputSpecSourcesGenerator g = new TypedTableOutputSpecSourcesGenerator(dbmd,
-                                                                                          target_java_package);
+                                                                                          target_java_package,
+                                                                                          xdagen_output_xml_namespace,
+                                                                                          child_collections_style);
 
         g.writeSourceFilesTo(output_dir);
 
