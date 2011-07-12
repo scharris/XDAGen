@@ -640,7 +640,7 @@ public class QueryGenerator {
                 case Types.DATE:
                     return "TO_CHAR(" + qfieldname + ",'YYYY-MM-DD')";
                 case Types.TIMESTAMP:
-                    return "TO_CHAR(" + qfieldname + ",'YYYY-MM-DD\"T\"HH:MI:SS')";
+                    return "TO_CHAR(" + qfieldname + ",'YYYY-MM-DD\"T\"HH24:MI:SS')";
                 default:
                     return qfieldname;
             }
