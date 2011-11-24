@@ -7,12 +7,13 @@ import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.RelId;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 
-public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory {
+public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory, Serializable {
 
     DBMD dbmd;
     ElementNamer elNamer;
@@ -122,7 +123,7 @@ public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory {
     }
 
 
-    public static class DefaultElementNamer implements ElementNamer {
+    public static class DefaultElementNamer implements ElementNamer, Serializable {
 
         DBMD dbmd;
 
@@ -279,5 +280,90 @@ public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory {
             return getDefaultRowElementName(fk.getTargetRelationId()) + "-parent-referenced-via-" + stringFrom(lc(fk.getSourceFieldNames()),"-");
         }
 
+
+        @Override
+        public int hashCode()
+        {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((childCollsStyle == null) ? 0 : childCollsStyle.hashCode());
+            result = prime * result + ((dbmd == null) ? 0 : dbmd.hashCode());
+            return result;
+        }
+
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            DefaultElementNamer other = (DefaultElementNamer) obj;
+            if (childCollsStyle != other.childCollsStyle)
+                return false;
+            if (dbmd == null)
+            {
+                if (other.dbmd != null)
+                    return false;
+            }
+            else if (!dbmd.equals(other.dbmd))
+                return false;
+            return true;
+        }
+
+        private static final long serialVersionUID = 1L;
     }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((childCollsStyle == null) ? 0 : childCollsStyle.hashCode());
+        result = prime * result + ((dbmd == null) ? 0 : dbmd.hashCode());
+        result = prime * result + ((elNamer == null) ? 0 : elNamer.hashCode());
+        result = prime * result + ((outputXmlNamespace == null) ? 0 : outputXmlNamespace.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        DefaultTableOutputSpecFactory other = (DefaultTableOutputSpecFactory) obj;
+        if (childCollsStyle != other.childCollsStyle)
+            return false;
+        if (dbmd == null)
+        {
+            if (other.dbmd != null)
+                return false;
+        }
+        else if (!dbmd.equals(other.dbmd))
+            return false;
+        if (elNamer == null)
+        {
+            if (other.elNamer != null)
+                return false;
+        }
+        else if (!elNamer.equals(other.elNamer))
+            return false;
+        if (outputXmlNamespace == null)
+        {
+            if (other.outputXmlNamespace != null)
+                return false;
+        }
+        else if (!outputXmlNamespace.equals(other.outputXmlNamespace))
+            return false;
+        return true;
+    }
+
+    private static final long serialVersionUID = 1L;
 }

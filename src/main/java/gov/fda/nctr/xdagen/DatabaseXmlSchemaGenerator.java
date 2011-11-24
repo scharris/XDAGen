@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.sql.Types;
@@ -26,16 +27,16 @@ import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.dbmd.RelMetaData;
 
 
-public class DatabaseXmlSchemaGenerator {
+public class DatabaseXmlSchemaGenerator implements Serializable {
 
-    DBMD dbmd;
+    private DBMD dbmd;
 
-    TypeNamer typeNamer;
+    private TypeNamer typeNamer;
 
-    Configuration templateConfig;
-    Template xsdTemplate;
+    private transient Configuration templateConfig;
+    private transient Template xsdTemplate;
 
-    boolean includeGenerationTimestamp;
+    private boolean includeGenerationTimestamp;
 
 
     private static final String CLASSPATH_TEMPLATES_DIR_PATH = "/templates";
@@ -56,16 +57,9 @@ public class DatabaseXmlSchemaGenerator {
     {
         this.dbmd = dbmd;
         this.typeNamer = type_namer != null ? type_namer : new DefaultTypeNamer(dbmd);
-
-        // Configure template engine.
-        this.templateConfig = new Configuration();
-        this.templateConfig.setTemplateLoader(new ClassTemplateLoader(getClass(), CLASSPATH_TEMPLATES_DIR_PATH));
-        this.templateConfig.setObjectWrapper(new DefaultObjectWrapper());
-
-        // Load templates.
-        this.xsdTemplate = templateConfig.getTemplate(XMLSCHEMA_TEMPLATE);
-
         this.includeGenerationTimestamp = false;
+
+        initTemplate();
     }
 
 
@@ -271,7 +265,7 @@ public class DatabaseXmlSchemaGenerator {
     ///////////////////////////////////////////////////////////////
     // Type naming interface and default implementation.
 
-    public static interface TypeNamer {
+    public static interface TypeNamer extends Serializable {
 
         public String getRowElementTypeName(RelId rel_id);
 
@@ -313,6 +307,8 @@ public class DatabaseXmlSchemaGenerator {
         {
             return getRowElementTypeName(rel_id) + "-listing";
         }
+
+        private static final long serialVersionUID = 1L;
     }
 
     // Type naming interface and default implementation.
@@ -376,4 +372,33 @@ public class DatabaseXmlSchemaGenerator {
         System.exit(0);
     }
 
+
+    private void initTemplate() throws IOException
+    {
+        // Configure template engine.
+        this.templateConfig = new Configuration();
+        this.templateConfig.setTemplateLoader(new ClassTemplateLoader(getClass(), CLASSPATH_TEMPLATES_DIR_PATH));
+        this.templateConfig.setObjectWrapper(new DefaultObjectWrapper());
+
+        // Load templates.
+        this.xsdTemplate = templateConfig.getTemplate(XMLSCHEMA_TEMPLATE);
+    }
+
+
+    private Object readResolve()
+    {
+        try
+        {
+            initTemplate();
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        return this;
+    }
+
+
+    private static final long serialVersionUID = 1L;
 }

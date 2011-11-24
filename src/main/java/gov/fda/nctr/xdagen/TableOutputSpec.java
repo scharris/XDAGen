@@ -12,6 +12,7 @@ import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.util.CollFuns;
 import gov.fda.nctr.util.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,8 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class TableOutputSpec implements Cloneable {
-
+public class TableOutputSpec implements Cloneable, Serializable {
 
     protected RelId relId;
 
@@ -109,7 +109,7 @@ public class TableOutputSpec implements Cloneable {
                               DBMD dbmd,                                         // required
                               Factory ospec_factory,                             // required
                               ChildCollectionsStyle child_colls_style,           // required
-                              List<OutputField> output_el_names_by_field, // optional
+                              List<OutputField> output_el_names_by_field,        // optional
                               RowOrdering row_ordering,                          // optional
                               String output_xml_ns,                              // optional
                               String row_el_name,                                // optional
@@ -121,7 +121,7 @@ public class TableOutputSpec implements Cloneable {
         this.relId = requireArg(relid, "relation id");
         this.dbmd = requireArg(dbmd, "database metadata");
         this.factory = requireArg(ospec_factory, "table output spec factory");
-        this.childCollsStyle = child_colls_style;
+        this.childCollsStyle = requireArg(child_colls_style, "child collection style");
         this.outputFields = output_el_names_by_field != null ? new ArrayList<OutputField>(output_el_names_by_field)
                                                              : getDefaultOutputFields(relId);
         this.rowOrdering = row_ordering;
@@ -701,7 +701,7 @@ public class TableOutputSpec implements Cloneable {
     ///////////////////////////////////////////////////////////////////////////////////
     // Factory customization
 
-    public TableOutputSpec factory(Factory f)
+    public TableOutputSpec withFactory(Factory f)
     {
         try
         {
@@ -800,7 +800,7 @@ public class TableOutputSpec implements Cloneable {
             else
             {
                 if ( hashCode != null && tos.hashCode != null && !hashCode.equals(tos.hashCode()) )
-                        return false;
+                    return false;
                 else
                     return eqOrNull(relId,tos.relId)
                         && eqOrNull(dbmd, tos.dbmd)
@@ -822,7 +822,7 @@ public class TableOutputSpec implements Cloneable {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Inner classes and interfaces
 
-    public static class OutputField {
+    public static class OutputField implements Serializable {
 
         Field field;
         String outputElementName;
@@ -859,10 +859,12 @@ public class TableOutputSpec implements Cloneable {
             OutputField other = (OutputField)o;
             return this.field.equals(other.field) && this.outputElementName.equals(other.outputElementName);
         }
+
+        private static final long serialVersionUID = 1L;
     }
 
 
-    public static abstract class RowOrdering {
+    public static abstract class RowOrdering implements Serializable {
 
         // Get a list of expressions to order by, in terms of the table fields and the passed field qualifying alias.
         public abstract List<String> getOrderByExpressions(String field_qualifying_alias);
@@ -879,6 +881,7 @@ public class TableOutputSpec implements Cloneable {
                 {
                     return dotQualify(asList(field_names), field_qualifying_alias);
                 }
+                private static final long serialVersionUID = 1L;
             };
         }
 
@@ -892,9 +895,11 @@ public class TableOutputSpec implements Cloneable {
                 {
                     return dotQualify(field_names, field_qualifying_alias);
                 }
+                private static final long serialVersionUID = 1L;
             };
         }
 
+        private static final long serialVersionUID = 1L;
     }
 
     public interface Factory {
@@ -912,4 +917,5 @@ public class TableOutputSpec implements Cloneable {
     // Inner classes and interfaces
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private static final long serialVersionUID = 1L;
 }

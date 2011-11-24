@@ -1,19 +1,12 @@
 package gov.fda.nctr.xdagen.tests;
 
-import static gov.fda.nctr.util.CoreFuns.requireArg;
-import static gov.fda.nctr.util.StringFuns.readStreamAsString;
-import static gov.fda.nctr.util.StringFuns.writeStringToFile;
-import static gov.fda.nctr.xdagen.TableOutputSpec.RowOrdering.fields;
-import gov.fda.nctr.dbmd.DBMD;
-import gov.fda.nctr.xdagen.ChildCollectionsStyle;
-import gov.fda.nctr.xdagen.DefaultTableOutputSpecFactory;
-import gov.fda.nctr.xdagen.QueryGenerator;
-import gov.fda.nctr.xdagen.QueryGenerator.XmlOutputColumnType;
-import gov.fda.nctr.xdagen.QueryGenerator.XmlIndentation;
-import gov.fda.nctr.xdagen.TableOutputSpec;
-
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,6 +23,18 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.testng.annotations.BeforeClass;
+
+import static gov.fda.nctr.util.CoreFuns.requireArg;
+import static gov.fda.nctr.util.StringFuns.readStreamAsString;
+import static gov.fda.nctr.util.StringFuns.writeStringToFile;
+import static gov.fda.nctr.xdagen.TableOutputSpec.RowOrdering.fields;
+import gov.fda.nctr.dbmd.DBMD;
+import gov.fda.nctr.xdagen.ChildCollectionsStyle;
+import gov.fda.nctr.xdagen.DefaultTableOutputSpecFactory;
+import gov.fda.nctr.xdagen.QueryGenerator;
+import gov.fda.nctr.xdagen.QueryGenerator.XmlOutputColumnType;
+import gov.fda.nctr.xdagen.QueryGenerator.XmlIndentation;
+import gov.fda.nctr.xdagen.TableOutputSpec;
 
 
 public class QueriesIT  {
@@ -119,6 +124,51 @@ public class QueriesIT  {
     {
         conn.rollback();
         conn.close();
+    }
+
+    @Test
+    public void testSerialization() throws Exception
+    {
+        File f = File.createTempFile("ser", null);
+        ObjectOutputStream oos = null;
+        ObjectInputStream ois = null;
+
+        try
+        {
+            oos = new ObjectOutputStream(new FileOutputStream(f));
+
+            oos.writeObject(qryGen);
+            oos.writeObject(tosFactory);
+            oos.writeObject(drugTOS);
+            oos.close();
+
+            ois = new ObjectInputStream(new FileInputStream(f));
+
+            QueryGenerator qry_gen = (QueryGenerator)ois.readObject();
+            TableOutputSpec.Factory tos_fact = (TableOutputSpec.Factory)ois.readObject();
+            TableOutputSpec drug_tos = (TableOutputSpec)ois.readObject();
+            ois.close();
+
+            assert qry_gen.getDatabaseMetaData().equals(qryGen.getDatabaseMetaData())
+                : "Deserialized query generator does not equal the original.";
+
+            assert qry_gen.getDatabaseMetaData().toXMLString().equals(qryGen.getDatabaseMetaData().toXMLString())
+                : "Deserialized query generator xml does not equal that of the original.";
+
+            assert tos_fact.table("drug").equals(tosFactory.table("drug"))
+                : "Deserialized TableOutputSpec.Factory produces different TableOutputSpec than that of the original.";
+
+            assert drug_tos.equals(drugTOS)
+                : "Deserialized table output spec is not equal to the original.";
+        }
+        finally
+        {
+            if ( oos != null )
+                oos.close();
+            if ( ois != null )
+                ois.close();
+            f.delete();
+        }
     }
 
     @Test
