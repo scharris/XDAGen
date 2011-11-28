@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -629,20 +630,13 @@ public class QueryGenerator implements Serializable {
         rowForestQueryTemplate = templateConfig.getTemplate(ROWFOREST_QUERY_TEMPLATE);
     }
 
-    private Object readResolve()
+
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException
     {
-        try
-        {
-            initTemplates();
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        ois.defaultReadObject();
 
-        return this;
+        initTemplates();
     }
-
 
 
     public interface FieldElementContentExpressionGenerator {

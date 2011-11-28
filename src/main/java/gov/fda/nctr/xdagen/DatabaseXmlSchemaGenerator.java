@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -385,18 +386,12 @@ public class DatabaseXmlSchemaGenerator implements Serializable {
     }
 
 
-    private Object readResolve()
-    {
-        try
-        {
-            initTemplate();
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
 
-        return this;
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException
+    {
+        ois.defaultReadObject();
+
+        initTemplate();
     }
 
 
