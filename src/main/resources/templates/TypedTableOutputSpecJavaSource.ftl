@@ -181,40 +181,39 @@ public class ${class_name} extends TableOutputSpec {
   }
 
   @Override
-  public ${class_name} outputFields(List<TableOutputSpec.OutputField> output_fields)
+  public ${class_name} withFields(List<TableOutputSpec.OutputField> output_fields)
   {
-    return (${class_name})super.outputFields(output_fields);
+    return (${class_name})super.withFields(output_fields);
   }
 
   @Override
-  public ${class_name} suppressOutputForFields(Set<String> db_field_names)
+  public ${class_name} withoutFields(String... db_field_names)
   {
-    return (${class_name})super.suppressOutputForFields(db_field_names);
+    return (${class_name})super.withoutFields(db_field_names);
   }
 
   @Override
-  public ${class_name} suppressOutputForFields(String... db_field_names)
+  public ${class_name} withoutFields(Set<String> db_field_names)
   {
-    return (${class_name})super.suppressOutputForFields(db_field_names);
-  }
-
-
-  @Override
-  public ${class_name} suppressOutputForFieldsOtherThan(Set<String> db_field_names)
-  {
-    return (${class_name})super.suppressOutputForFieldsOtherThan(db_field_names);
+    return (${class_name})super.withoutFields(db_field_names);
   }
 
   @Override
-  public ${class_name} suppressOutputForFieldsOtherThan(String... db_field_names)
+  public ${class_name} withoutFieldsOtherThan(String... db_field_names)
   {
-    return (${class_name})super.suppressOutputForFieldsOtherThan(db_field_names);
+    return (${class_name})super.withoutFieldsOtherThan(db_field_names);
   }
 
   @Override
-  public ${class_name} outputFieldAs(String db_field_name, String output_el_name)
+  public ${class_name} withoutFieldsOtherThan(Set<String> db_field_names)
   {
-    return (${class_name})super.outputFieldAs(db_field_name, output_el_name);
+    return (${class_name})super.withoutFieldsOtherThan(db_field_names);
+  }
+
+  @Override
+  public ${class_name} withFieldAsElement(String db_field_name, String output_el_name)
+  {
+    return (${class_name})super.withFieldAsElement(db_field_name, output_el_name);
   }
 
 
@@ -225,20 +224,20 @@ public class ${class_name} extends TableOutputSpec {
   }
 
   @Override
-  public ${class_name} factory(TableOutputSpec.Factory f)
+  public ${class_name} withFactory(TableOutputSpec.Factory f)
   {
-      return (${class_name})super.factory(f);
+      return (${class_name})super.withFactory(f);
   }
 
   @Override
-  public ${class_name} outputXmlNamespace(String ns)
+  public ${class_name} withOutputXmlNamespace(String ns)
   {
-      return (${class_name})super.outputXmlNamespace(ns);
+      return (${class_name})super.withOutputXmlNamespace(ns);
   }
 
   @Override
-  public ${class_name} childCollectionsStyle(ChildCollectionsStyle child_colls_style)
+  public ${class_name} withChildCollectionsStyle(ChildCollectionsStyle child_colls_style)
   {
-      return (${class_name})super.childCollectionsStyle(child_colls_style);
+      return (${class_name})super.withChildCollectionsStyle(child_colls_style);
   }
 }

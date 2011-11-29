@@ -573,7 +573,7 @@ public class TableOutputSpec implements Cloneable, Serializable {
     ///////////////////////////////////////////////////////////////////////////////////
     // Output fields customization
 
-    public TableOutputSpec outputFields(List<OutputField> output_fields)
+    public TableOutputSpec withFields(List<OutputField> output_fields)
     {
         try
         {
@@ -588,12 +588,12 @@ public class TableOutputSpec implements Cloneable, Serializable {
         }
     }
 
-    public TableOutputSpec suppressOutputForFields(String... db_field_names)
+    public TableOutputSpec withoutFields(String... db_field_names)
     {
-        return suppressOutputForFields(new HashSet<String>(Arrays.asList(db_field_names)));
+        return withoutFields(new HashSet<String>(Arrays.asList(db_field_names)));
     }
 
-    public TableOutputSpec suppressOutputForFields(Set<String> db_field_names)
+    public TableOutputSpec withoutFields(Set<String> db_field_names)
     {
         List<OutputField> remaining = new ArrayList<OutputField>();
 
@@ -616,13 +616,13 @@ public class TableOutputSpec implements Cloneable, Serializable {
         }
     }
 
-    public TableOutputSpec suppressOutputForFieldsOtherThan(String... db_field_names)
+    public TableOutputSpec withoutFieldsOtherThan(String... db_field_names)
     {
-        return suppressOutputForFieldsOtherThan(new HashSet<String>(Arrays.asList(db_field_names)));
+        return withoutFieldsOtherThan(new HashSet<String>(Arrays.asList(db_field_names)));
     }
 
 
-    public TableOutputSpec suppressOutputForFieldsOtherThan(Set<String> db_field_names)
+    public TableOutputSpec withoutFieldsOtherThan(Set<String> db_field_names)
     {
         List<OutputField> remaining = new ArrayList<OutputField>();
 
@@ -645,7 +645,7 @@ public class TableOutputSpec implements Cloneable, Serializable {
         }
     }
 
-    public TableOutputSpec outputFieldAs(String db_field_name, String output_el_name)
+    public TableOutputSpec withFieldAsElement(String db_field_name, String output_el_name)
     {
         List<OutputField> l = new ArrayList<OutputField>();
 
@@ -724,7 +724,7 @@ public class TableOutputSpec implements Cloneable, Serializable {
     ///////////////////////////////////////////////////////////////////////////////////
     // Output XML Namespace customization
 
-    public TableOutputSpec outputXmlNamespace(String ns)
+    public TableOutputSpec withOutputXmlNamespace(String ns)
     {
         try
         {
@@ -745,8 +745,8 @@ public class TableOutputSpec implements Cloneable, Serializable {
 
     ///////////////////////////////////////////////////////////////////////////////////
     // Child element collection style customization
-
-    public TableOutputSpec childCollectionsStyle(ChildCollectionsStyle child_colls_style)
+    // TODO: Finish regularizing these method names here and in the template, rebuild and publish.
+    public TableOutputSpec withChildCollectionsStyle(ChildCollectionsStyle child_colls_style)
     {
         try
         {
