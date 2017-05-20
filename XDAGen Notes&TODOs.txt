@@ -1,9 +1,0 @@
-TODO
-----
-
-
-
-COMMIT NOTES
-------------
-(SVN)
-Added output xml namespace and child collections style as constants in generated Prototypes source, so apps will not have to provide them (xml namespace in particular) at runtime.
