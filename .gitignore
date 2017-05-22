@@ -4,3 +4,5 @@ build
 xdagen.jar
 target
 outgoing_patches/
+.idea/
+*.iml
