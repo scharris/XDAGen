@@ -1,7 +1,14 @@
 -- One time setup for local testing schema.
 
-/* Create user, e.g. as system on Oracle XE:
+/*
+-- Install "Database App Development VM" from
+--    http://www.oracle.com/technetwork/community/developer-vm/index.html.
+-- Add "host only" network adapter in main Virtualbox settings, restrict range to single ip address.
+-- Add guest's ip address configured above as "oravm" in /etc/hosts of host OS.
+-- Import the VM in Virtualbox, change network type to host-only, restart.
+-- In guest, login to Oracle as system and create xdagentest schema:
 create user xdagentest identified by xdagentest;
+alter user xdagentest quota unlimited on users;
 grant connect, resource to xdagentest;
 */
 
