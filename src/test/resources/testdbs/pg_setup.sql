@@ -5,8 +5,11 @@ postgres=> create user xdagentest with password 'xdagentest';
 postgres=> create database xdagentest owner xdagentest;
 
 # ^D
-# Then:
+# Then depending on authentication settings for postgres, do one of:
 sudo -u xdagentest psql
+# or
+psql -U xdagentest
+# Then create schem objects with this script.
 xdagentest=> \i src/test/resources/testdbs/pg_setup.sql
 */
 
