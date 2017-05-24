@@ -1,4 +1,4 @@
 jdbc-driver-class=oracle.jdbc.OracleDriver
-jdbc-connect-url=jdbc:oracle:thin:@oravm:1521/orcl
+jdbc-connect-url=jdbc:oracle:thin:@dbvm:1521/orcl
 user=xdagentest
 password=xdagentest
