@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 
-<!-- TODO: Only generate missing .dbmd or .xsd files. -->
 <project basedir="." default="" name="Generate-Database-Metadata">
 
   <property name="test.resources.dir" location="src/test/resources"/>
@@ -16,7 +15,7 @@
 
 
   <target name="check-should-skip-metadata-generation">
-    <available file="${metadata.dir}/skip_metadata_generation" property="skip.metadata.generation"></available>
+    <available file="${metadata.dir}/skip_metadata_generation" property="skip.metadata.generation"/>
   </target>
 
   <target name="generate-all-dbmds-and-schemas" depends="check-should-skip-metadata-generation" unless="skip.metadata.generation">
