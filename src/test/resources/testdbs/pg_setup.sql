@@ -1,16 +1,22 @@
 /* One time setup for local testing schema.
 # Setup a postgres user for the testing if necessary (or enter alternate credentials in pg.jdbc.properties for a testing database).
-sudo -u postgres psql
-postgres=> create user xdagentest with password 'xdagentest';
-postgres=> create database xdagentest owner xdagentest;
+# Connect as postgres administrator.
+  sudo -u postgres psql
+or
+  psql -U Sharris postgres # (FDA Windows)
+etc
+# Within psql, create the xdagentest user and database.
+  create user xdagentest with password 'xdagentest';
+  create database xdagentest owner xdagentest;
+  \q
 
-# ^D
-# Then depending on authentication settings for postgres, do one of:
+# Login via psql as xdagentest.
+# Depending on authentication settings for postgres, do one of:
 sudo -u xdagentest psql
 # or
 psql -U xdagentest
-# Then create schem objects with this script.
-xdagentest=> \i src/test/resources/testdbs/pg_setup.sql
+# Then create schema objects with this script.
+  \i src/test/resources/testdbs/pg_setup.sql
 */
 
 CREATE SCHEMA xdagentest;

@@ -1,10 +1,14 @@
 -- One time setup for local testing schema.
 
-/*
+/* [VirtualBox Setup]
+-- Install VirtualBox.
+--   On Windows, install with NDIS5 networking (default is NDIS6 but may cause error):
+--     ./VirtualBox-xxx-Win.exe -msiparams NETWORKTYPE=NDIS5
+-- Add "host only" network adapter in main Virtualbox settings.
+--   Enable DHCP server but restrict range to single ip address (192.168.56.101).
+-- Add guest's ip address configured above as "oravm" in /etc/hosts of host OS.
 -- Install "Database App Development VM" from
 --    http://www.oracle.com/technetwork/community/developer-vm/index.html.
--- Add "host only" network adapter in main Virtualbox settings, restrict range to single ip address.
--- Add guest's ip address configured above as "oravm" in /etc/hosts of host OS.
 -- Import the VM in Virtualbox, change network type to host-only, restart.
 -- In guest, login to Oracle as system and create xdagentest schema:
 create user xdagentest identified by xdagentest;
