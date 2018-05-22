@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.sql.Types;
 import java.util.*;
@@ -36,9 +35,9 @@ public class QueryGenerator
 {
     private final DBMD dbmd;
 
-    private Template rowElementsQueryTemplate;
-    private transient Template rowCollectionElementQueryTemplate;
-    private transient Template rowForestQueryTemplate;
+    private final Template rowElementsQueryTemplate;
+    private final Template rowCollectionElementQueryTemplate;
+    private final Template rowForestQueryTemplate;
 
     private FieldElementContentExpressionGenerator fieldElementContentExpressionGenerator;
 
@@ -98,7 +97,12 @@ public class QueryGenerator
         // Oracle needs NO INDENT when serializing xml to avoid capricious indentation of xmltype fields mixed with unindented surroundings.
         this.xmlIndentation = dbms != null && dbms.toUpperCase().contains("ORACLE") ? XmlIndentation.NO_INDENT : XmlIndentation.INDENT_UNSPECIFIED;
 
-        initTemplates();
+        Configuration conf = getTemplateConfig();
+
+        // Load templates.
+        this.rowElementsQueryTemplate = conf.getTemplate(ROWELEMENTSSQUERY_TEMPLATE_NAME);
+        this.rowCollectionElementQueryTemplate = conf.getTemplate(ROWCOLLECTIONELEMENT_QUERY_TEMPLATE);
+        this.rowForestQueryTemplate = conf.getTemplate(ROWFOREST_QUERY_TEMPLATE);
     }
 
     public void setDefaultXmlOutputColumnType(XmlOutputColumnType t)
@@ -613,16 +617,6 @@ public class QueryGenerator
             return Optional.empty();
     }
 
-    private void initTemplates() throws IOException
-    {
-        Configuration conf = getTemplateConfig();
-
-        // Load templates.
-        this.rowElementsQueryTemplate = conf.getTemplate(ROWELEMENTSSQUERY_TEMPLATE_NAME);
-        this.rowCollectionElementQueryTemplate = conf.getTemplate(ROWCOLLECTIONELEMENT_QUERY_TEMPLATE);
-        this.rowForestQueryTemplate = conf.getTemplate(ROWFOREST_QUERY_TEMPLATE);
-    }
-
     private static Configuration getTemplateConfig()
     {
         Configuration templateConfig = new Configuration(Freemarker.compatibilityVersion);
@@ -630,14 +624,6 @@ public class QueryGenerator
         templateConfig.setObjectWrapper(new DefaultObjectWrapper(Freemarker.compatibilityVersion));
         return templateConfig;
     }
-
-    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException
-    {
-        ois.defaultReadObject();
-
-        initTemplates();
-    }
-
 
     public interface FieldElementContentExpressionGenerator
     {
