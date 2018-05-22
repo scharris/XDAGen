@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema targetNamespace="http://example/namespace"
-        xmlns:tns="http://example/namespace"
+<schema targetNamespace="http://nctr.fda.gov/xdagen"
+        xmlns:tns="http://nctr.fda.gov/xdagen"
         elementFormDefault="qualified"
         xmlns="http://www.w3.org/2001/XMLSchema" >
 <!-- 

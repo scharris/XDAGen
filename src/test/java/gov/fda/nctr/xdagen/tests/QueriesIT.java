@@ -15,21 +15,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
+import gov.fda.nctr.xdagen.ChildCollectionsStyle;
 import org.custommonkey.xmlunit.Diff;
-
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.testng.annotations.BeforeClass;
 
 import static gov.fda.nctr.util.CoreFuns.requireArg;
-import static gov.fda.nctr.util.StringFuns.readStreamAsString;
-import static gov.fda.nctr.util.StringFuns.writeStringToFile;
+import static gov.fda.nctr.util.Files.writeStringToFile;
 import static gov.fda.nctr.xdagen.TableOutputSpec.RowOrdering.fields;
+import static gov.fda.nctr.xdagen.tests.TestingResources.readStreamAsString;
 import gov.fda.nctr.dbmd.DBMD;
-import gov.fda.nctr.xdagen.ChildCollectionsStyle;
 import gov.fda.nctr.xdagen.DefaultTableOutputSpecFactory;
 import gov.fda.nctr.xdagen.QueryGenerator;
 import gov.fda.nctr.xdagen.QueryGenerator.XmlOutputColumnType;
@@ -67,7 +67,7 @@ public class QueriesIT  {
             String[] dbs = {"pg", "ora"};
             ChildCollectionsStyle[] coll_styles = {ChildCollectionsStyle.INLINE, ChildCollectionsStyle.WRAPPED};
 
-            List<QueriesIT> l = new ArrayList<QueriesIT>();
+            List<QueriesIT> l = new ArrayList<>();
 
             for(String db: dbs)
                 for(ChildCollectionsStyle style: coll_styles)
@@ -86,10 +86,10 @@ public class QueriesIT  {
         }
     }
 
-    public QueriesIT(String db, ChildCollectionsStyle child_coll_style, XmlIndentation xml_indentation)
+    public QueriesIT(String db, ChildCollectionsStyle childCollStyle, XmlIndentation xml_indentation)
     {
         this.db = db;
-        this.childCollectionsStyle = child_coll_style;
+        this.childCollectionsStyle = childCollStyle;
         this.xmlIndentation = xml_indentation;
     }
 
@@ -108,7 +108,7 @@ public class QueriesIT  {
         Properties connect_props = loadProperties(res.testdbsResPath(db,"jdbc.props"));
         this.conn = createConnection(connect_props);
 
-        tosFactory = new DefaultTableOutputSpecFactory(dbmd, childCollectionsStyle,  "http://example/namespace");
+        tosFactory = new DefaultTableOutputSpecFactory(dbmd, childCollectionsStyle,"http://nctr.fda.gov/xdagen");
 
         qryGen = new QueryGenerator(dbmd, XmlOutputColumnType.LARGE_CHAR_TYPE);
 
@@ -176,13 +176,16 @@ public class QueriesIT  {
     {
         for(int n=1; n <= 2; ++n)
         {
-            String sql = qryGen.getRowElementsQuery(drugTOS,
-                                                    "d",
-                                                    "d.id = ?");
+            String sql =
+                qryGen.getRowElementsQuery(
+                    drugTOS,
+                    "d",
+                    Optional.of("d.id = ?")
+                );
 
             String row_xml = getOneLargeTextResultAsString("ROW_XML", sql, n);
 
-            String expected_res_name = "drug_"+n+"_rowxml_"+childCollectionsStyle+"_el_colls_" + xmlIndentation + ".xml";
+            String expected_res_name = "drug_"+n+"_rowxml_" + "_" + xmlIndentation + ".xml";
 
             if ( onlyWriteExpectedData )
             {
@@ -205,13 +208,16 @@ public class QueriesIT  {
 
         TableOutputSpec drug_desc_id_ospec = drugTOS.orderedBy(fields("id desc","name")); // name superfluous here but just checking multiple order-by expressions
 
-        String sql = qryGen.getRowElementsQuery(drug_desc_id_ospec,
-                                                "d",
-                                                "d.id >= 1 and d.id <= 5");
+        String sql =
+            qryGen.getRowElementsQuery(
+                drug_desc_id_ospec,
+                "d",
+                Optional.of("d.id >= 1 and d.id <= 5")
+            );
 
         String row_xml = getNthLargeTextResultAsString(4, "ROW_XML", sql);
 
-        String expected_res_name = "drug_2_rowxml_"+childCollectionsStyle+"_el_colls_" + xmlIndentation + ".xml";
+        String expected_res_name = "drug_2_rowxml_" + xmlIndentation + ".xml";
 
         // 4th row of rows 1 - 5 in reverse order should be row 2.
         Diff xml_diff = new Diff(res.expectedResultAsString(expected_res_name), row_xml);
@@ -229,7 +235,7 @@ public class QueriesIT  {
 
         String rowcoll_xml = getOneLargeTextResultAsString("ROWCOLL_XML", sql);
 
-        String expected_res_name = "drugs_listing_"+childCollectionsStyle+"_el_colls_" + xmlIndentation + ".xml";
+        String expected_res_name = "drugs_listing_"+ xmlIndentation + ".xml";
 
         if ( onlyWriteExpectedData )
         {
@@ -252,7 +258,7 @@ public class QueriesIT  {
 
         String rowcoll_xml = getOneLargeTextResultAsString("ROWCOLL_XML", sql);
 
-        String expected_res_name = "drugs_reverse_listing_"+childCollectionsStyle+"_el_colls_" + xmlIndentation + ".xml";
+        String expected_res_name = "drugs_reverse_listing_" + xmlIndentation + ".xml";
 
         if ( onlyWriteExpectedData )
         {
@@ -273,7 +279,7 @@ public class QueriesIT  {
     {
         String sql = qryGen.getRowElementsQuery(drugTOS, "d").replaceAll("\r","");;
 
-        String expected_res_name = "drugs_query_"+childCollectionsStyle+"_el_colls_" + xmlIndentation + ".sql";
+        String expected_res_name = "drugs_query_"+ xmlIndentation + ".sql";
 
         if ( onlyWriteExpectedData )
         {
@@ -293,7 +299,7 @@ public class QueriesIT  {
     {
         String sql = qryGen.getRowCollectionElementQuery(drugTOS, null, null).replaceAll("\r","");
 
-        String expected_res_name = "drugs_collection_query_"+childCollectionsStyle+"_el_colls_" + xmlIndentation + ".sql";
+        String expected_res_name = "drugs_collection_query_" + xmlIndentation + ".sql";
 
         if ( onlyWriteExpectedData )
         {

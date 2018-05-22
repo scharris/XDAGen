@@ -1,4 +1,4 @@
-select xmlserialize(content xmlelement(name "drug-listing", xmlattributes('http://example/namespace' as "xmlns"),
+select xmlserialize(content xmlelement(name "drug-listing", xmlattributes('http://nctr.fda.gov/xdagen' as "xmlns"),
          xmlagg(d_row.row_xml order by d_row.ID)) as clob no indent) "rowcoll_xml"
 from
  ( select -- rows of XDAGENTEST.DRUG

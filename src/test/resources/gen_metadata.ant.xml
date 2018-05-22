@@ -6,8 +6,8 @@
   <property name="test.resources.dir" location="src/test/resources"/>
   <property name="testdbs.dir" location="${test.resources.dir}/testdbs"/>
   <property name="metadata.dir" location="${test.resources.dir}/metadata"/>
-   <property name="dbmd.gen.properties" location="${test.resources.dir}/dbmd.gen.props"/>
-  <property name="xsd.target.namespace" value="http://example/namespace"/>
+  <property name="dbmd.gen.properties" location="${test.resources.dir}/dbmd.gen.props"/>
+  <property name="xsd.target.namespace" value="http://nctr.fda.gov/xdagen"/>
 
   <path id="classpath.from.maven">
     <pathelement path="${classpath_from_maven}/"/>

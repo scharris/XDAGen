@@ -1,12 +1,8 @@
 package gov.fda.nctr.xdagen.tests;
 
-import gov.fda.nctr.dbmd.DBMD;
-import gov.fda.nctr.dbmd.RelId;
-import gov.fda.nctr.xdagen.ChildCollectionsStyle;
-import gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator;
-
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.Set;
 import javax.xml.bind.JAXBException;
 
@@ -14,21 +10,27 @@ import org.custommonkey.xmlunit.Diff;
 import org.testng.annotations.Test;
 import org.testng.annotations.BeforeClass;
 
+import gov.fda.nctr.xdagen.ChildCollectionsStyle;
+import gov.fda.nctr.dbmd.DBMD;
+import gov.fda.nctr.dbmd.RelId;
+import gov.fda.nctr.xdagen.DatabaseXmlSchemaGenerator;
+
 
 public class TestXmlSchemas {
 
-    String db;
-    ChildCollectionsStyle childCollectionsStyle;
+    private String db;
 
-    DBMD dbmd;
+    private ChildCollectionsStyle childCollectionsStyle;
+
+    private DBMD dbmd;
 
     TestingResources res;
 
     @BeforeClass
     protected void setUp() throws JAXBException, IOException
     {
-        db = "pg"; // TODO: This should be a testng parameter or fetched from an environment variable (or default to "pg").
-        childCollectionsStyle = ChildCollectionsStyle.INLINE; // TODO: "
+        db = "pg";
+        childCollectionsStyle = ChildCollectionsStyle.INLINE;
 
         res = new TestingResources();
 
@@ -44,26 +46,28 @@ public class TestXmlSchemas {
     @Test
     public void testXmlSchema() throws Exception
     {
-        Diff xml_diff = new Diff(res.mdResStr(db,"xmlschema_"+childCollectionsStyle+"_el_colls.xsd"),
-                                 generateXmlSchemaAsString());
+        Diff xml_diff = new Diff(
+            res.mdResStr(db,"xmlschema_"+childCollectionsStyle+"_el_colls.xsd"),
+            generateXmlSchemaAsString()
+        );
 
         assert xml_diff.identical() : "Inline collections XML Schema not as expected: " + xml_diff;
-    }
 
+    }
 
     private String generateXmlSchemaAsString() throws IOException
     {
         DatabaseXmlSchemaGenerator g = new DatabaseXmlSchemaGenerator(dbmd);
 
-        g.setIncludeGenerationTimestamp(false);
+        Optional<Set<RelId>> toplevelElRelIds = Optional.empty();
+        Optional<Set<RelId>> toplevelElListRelIds = Optional.empty();
 
-        Set<RelId> toplevel_el_relids = null;
-        Set<RelId> toplevel_el_list_relids = null;
-
-        String xsd = g.getStandardXMLSchema(toplevel_el_relids,
-                                            toplevel_el_list_relids,
-                                            "http://example/namespace",
-                                            childCollectionsStyle);
+        String xsd = g.getStandardXMLSchema(
+            "http://example/namespace",
+            childCollectionsStyle,
+            toplevelElRelIds,
+            toplevelElListRelIds
+        );
 
         return xsd;
     }

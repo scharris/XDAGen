@@ -1,6 +1,6 @@
 select -- rows of XDAGENTEST.DRUG
   -- row_xml
-  xmlserialize(content xmlelement(name "drug", xmlattributes('http://example/namespace' as "xmlns")
+  xmlserialize(content xmlelement(name "drug", xmlattributes('http://nctr.fda.gov/xdagen' as "xmlns")
    ,xmlforest(
      d.ID as "id",
      d.NAME as "name",

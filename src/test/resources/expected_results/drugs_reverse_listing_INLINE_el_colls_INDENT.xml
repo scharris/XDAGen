@@ -1,4 +1,4 @@
-<drug-listing xmlns="http://example/namespace">
+<drug-listing xmlns="http://nctr.fda.gov/xdagen">
   <drug>
     <id>5</id>
     <name>Test Drug 5</name>

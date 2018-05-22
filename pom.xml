@@ -4,8 +4,8 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>gov.fda.nctr</groupId>
   <artifactId>xdagen</artifactId>
-  <version>1.1</version>
-  <name>Xml Data Access Generator</name>
+  <version>2.0</version>
+  <name>XML Data Access Generator</name>
   <description>Generates hierarchical SQL/XML queries and matching XML Schemas from simple table output specifications.</description>
 
   <distributionManagement>
@@ -43,7 +43,7 @@
     <dependency>
       <groupId>org.freemarker</groupId>
       <artifactId>freemarker</artifactId>
-      <version>2.3.23</version>
+      <version>2.3.28</version>
     </dependency>
     <dependency>
       <groupId>gov.fda.nctr</groupId>
@@ -150,43 +150,6 @@
         </executions>
       </plugin>
 
-      <!-- TODO: Do these in Java instead as unit tests.
-       Validate expected xml query results against the expected xml schemas.
-        Other tests will guarantee that actual query results are the same as these
-        expected ones.
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>xml-maven-plugin</artifactId>
-        <version>1.0-beta-3</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>validate</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <validationSets>
-            <validationSet>
-              <dir>src/test/resources/expected_results</dir>
-              <includes>
-                <include>drug_1_rowxml_inline_el_colls.xml</include>
-                <include>drugs_listing_inline_el_colls.xml</include>
-              </includes>
-              <systemId>src/test/resources/xmlschema_INLINE_el_colls.xsd</systemId>
-            </validationSet>
-            <validationSet>
-              <dir>src/test/resources/expected_results</dir>
-              <includes>
-                <include>drug_1_rowxml_wrapped_el_colls.xml</include>
-                <include>drugs_listing_wrapped_el_colls.xml</include>
-              </includes>
-              <systemId>src/test/resources/xmlschema_WRAPPED_el_colls.xsd</systemId>
-            </validationSet>
-          </validationSets>
-        </configuration>
-      </plugin>
-      -->
     </plugins>
 
     <extensions>

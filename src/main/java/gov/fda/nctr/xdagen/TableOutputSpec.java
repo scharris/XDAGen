@@ -1,152 +1,165 @@
 package gov.fda.nctr.xdagen;
 
-import static gov.fda.nctr.util.CoreFuns.eqOrNull;
+import java.util.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+
+import gov.fda.nctr.util.CollFuns;
+import gov.fda.nctr.util.Pair;
 import static gov.fda.nctr.util.CoreFuns.hashcode;
 import static gov.fda.nctr.util.CoreFuns.requireArg;
 import static gov.fda.nctr.util.StringFuns.dotQualify;
-import static java.util.Arrays.asList;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.Field;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.RelId;
-import gov.fda.nctr.util.CollFuns;
-import gov.fda.nctr.util.Pair;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 
-public class TableOutputSpec implements Cloneable, Serializable {
+public final class TableOutputSpec
+{
+    private final RelId relId;
 
-    protected RelId relId;
+    private final DBMD dbmd;
 
-    protected DBMD dbmd;
+    private final Factory factory;
 
-    protected Factory factory;
+    private final ChildCollectionsStyle childCollectionsStyle;
 
-    protected ChildCollectionsStyle childCollsStyle;
+    private final String outputXmlNamespace;
 
-    protected String outputXmlNamespace;
+    private final List<OutputField> outputFields;
 
-    protected List<OutputField> outputFields;
+    private final List<Pair<ForeignKey,TableOutputSpec>> childSpecsByFK;
 
-    protected List<Pair<ForeignKey,TableOutputSpec>> childSpecsByFK;
+    private final List<Pair<ForeignKey,TableOutputSpec>> parentSpecsByFK;
 
-    protected List<Pair<ForeignKey,TableOutputSpec>> parentSpecsByFK;
+    private final String rowCollectionElementName;
 
-    protected String rowCollectionElementName;
+    private final String rowElementName;
 
-    protected String rowElementName;
+    private final Optional<RowOrdering> rowOrdering;
 
-    protected RowOrdering rowOrdering;
-
-    protected Integer hashCode;
-
+    private final int hashCode;
 
     /** Create an output spec with all the includedFields for the passed table/view included but no parents or children.
      If the table name is not qualified by schema, then the DBMD should have an owning schema specified, else
      database metadata may not be found for databases supporting schemas. */
-    public TableOutputSpec(String pq_relname,                       // required
-                           DBMD dbmd,                               // required
-                           Factory ospec_factory,                   // required
-                           ChildCollectionsStyle child_colls_style, // required
-                           String output_xml_ns)                    // optional (null for no namespace)
+    public TableOutputSpec
+    (
+        String pqRelName,
+        DBMD dbmd,
+        Factory factory,
+        ChildCollectionsStyle childCollectionsStyle,
+        String outputXmlNamespace
+    )
     {
-        this(dbmd.toRelId(pq_relname),
-             dbmd,
-             ospec_factory,
-             child_colls_style,
-             output_xml_ns);
+        this(dbmd.toRelId(pqRelName), dbmd, factory, childCollectionsStyle, outputXmlNamespace);
     }
 
-
-    public TableOutputSpec(RelId relId,                             // required
-                           DBMD dbmd,                               // required
-                           Factory ospec_factory,                   // required
-                           ChildCollectionsStyle child_colls_style, // required
-                           String output_xml_ns)                    // optional (null for no namespace)
+    public TableOutputSpec
+    (
+        RelId relId,
+        DBMD dbmd,
+        Factory factory,
+        ChildCollectionsStyle childCollectionsStyle,
+        String outputXmlNamespace
+    )
     {
-        this(relId,
-             dbmd,
-             ospec_factory,
-             child_colls_style,
-             null, // output el name / field associations
-             null, // row ordering
-             output_xml_ns,
-             null, // row el name
-             null, // row coll el name
-             null, // child table specs
-             null);// parent table specs
+        this(
+            relId,
+            dbmd,
+            factory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
     }
 
-    public TableOutputSpec(RelId relId,                             // required
-                           DBMD dbmd,                               // required
-                           Factory ospec_factory,                   // required
-                           ChildCollectionsStyle child_colls_style, // required
-                           String output_xml_ns,                    // optional
-                           String row_el_name,                      // optional
-                           String row_collection_el_name)           // optional
+    public TableOutputSpec
+    (
+        RelId relId,
+        DBMD dbmd,
+        Factory factory,
+        ChildCollectionsStyle childCollectionsStyle,
+        String outputXmlNamespace,
+        Optional<String> rowElName,
+        Optional<String> rowCollectionElName
+    )
     {
-        this(relId,
-             dbmd,
-             ospec_factory,
-             child_colls_style,
-             null, // output el name / field associations
-             null, // row ordering
-             output_xml_ns,
-             row_el_name,
-             row_collection_el_name,
-             null,
-             null);
+        this(
+            relId,
+            dbmd,
+            factory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.empty(),
+            Optional.empty(),
+            rowElName,
+            rowCollectionElName,
+            Optional.empty(),
+            Optional.empty()
+        );
     }
 
-
-    protected TableOutputSpec(RelId relid,                                       // required
-                              DBMD dbmd,                                         // required
-                              Factory ospec_factory,                             // required
-                              ChildCollectionsStyle child_colls_style,           // required
-                              List<OutputField> output_el_names_by_field,        // optional
-                              RowOrdering row_ordering,                          // optional
-                              String output_xml_ns,                              // optional
-                              String row_el_name,                                // optional
-                              String row_collection_el_name,                     // optional
-                              List<Pair<ForeignKey,TableOutputSpec>> included_child_table_specs,  // optional
-                              List<Pair<ForeignKey,TableOutputSpec>> included_parent_table_specs) // optional
+    /// primary constructor
+    private TableOutputSpec
+    (
+        RelId relId,
+        DBMD dbmd,
+        Factory factory,
+        ChildCollectionsStyle childCollectionsStyle,
+        String outputXmlNamespace,
+        Optional<List<OutputField>> outputFields,
+        Optional<RowOrdering> rowOrdering,
+        Optional<String> rowElName,
+        Optional<String> rowCollectionElName,
+        Optional<List<Pair<ForeignKey,TableOutputSpec>>> includedChildTableSpecs,
+        Optional<List<Pair<ForeignKey,TableOutputSpec>>> includedParentTableSpecs
+    )
     {
-        super();
-        this.relId = requireArg(relid, "relation id");
-        this.dbmd = requireArg(dbmd, "database metadata");
-        this.factory = requireArg(ospec_factory, "table output spec factory");
-        this.childCollsStyle = requireArg(child_colls_style, "child collection style");
-        this.outputFields = output_el_names_by_field != null ? new ArrayList<OutputField>(output_el_names_by_field)
-                                                             : getDefaultOutputFields(relId);
-        this.rowOrdering = row_ordering;
-        this.outputXmlNamespace = output_xml_ns;
-        this.rowElementName = row_el_name != null ? row_el_name : relid.getName().toLowerCase();
-        this.rowCollectionElementName = row_collection_el_name != null ? row_collection_el_name : relid.getName().toLowerCase() + "-listing";
-        this.childSpecsByFK = included_child_table_specs != null ? new ArrayList<Pair<ForeignKey,TableOutputSpec>>(included_child_table_specs)
-                                                                 : new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
-        this.parentSpecsByFK = included_parent_table_specs != null ? new ArrayList<Pair<ForeignKey,TableOutputSpec>>(included_parent_table_specs)
-                                                                   : new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
+        Objects.requireNonNull(relId);
+        Objects.requireNonNull(dbmd);
+        Objects.requireNonNull(factory);
+        Objects.requireNonNull(childCollectionsStyle);
+        Objects.requireNonNull(outputXmlNamespace);
+        Objects.requireNonNull(outputFields);
+        Objects.requireNonNull(rowOrdering);
+        Objects.requireNonNull(rowElName);
+        Objects.requireNonNull(rowCollectionElName);
+        Objects.requireNonNull(includedChildTableSpecs);
+        Objects.requireNonNull(includedParentTableSpecs);
 
-        hashCode = null;
+        this.relId = relId;
+        this.dbmd = dbmd;
+        this.factory = factory;
+        this.childCollectionsStyle = childCollectionsStyle;
+        this.outputXmlNamespace = outputXmlNamespace;
+        this.outputFields = outputFields.isPresent() ? new ArrayList<>(outputFields.get())
+                            : getDefaultOutputFields(this.relId);
+        this.rowOrdering = rowOrdering;
+        this.rowElementName = rowElName.orElseGet(() -> relId.getName().toLowerCase());
+        this.rowCollectionElementName = rowCollectionElName.orElseGet(() -> relId.getName().toLowerCase()+"-listing");
+        this.childSpecsByFK = includedChildTableSpecs.isPresent() ? new ArrayList<>(includedChildTableSpecs.get())
+                              : emptyList();
+        this.parentSpecsByFK = includedParentTableSpecs.isPresent() ? new ArrayList<>(includedParentTableSpecs.get())
+                               : emptyList();
+        this.hashCode = computeHashCode();
     }
 
-
-    protected List<OutputField> getDefaultOutputFields(RelId relid)
+    private List<OutputField> getDefaultOutputFields(RelId relid)
     {
-        List<OutputField> res = new ArrayList<OutputField>();
+        List<OutputField> res = new ArrayList<>();
 
-        for(Field f: dbmd.getRelationMetaData(relid).getFields())
+        for ( Field f: dbmd.getRelationMetaData(relid).getFields() )
             res.add(new OutputField(f, f.getName().toLowerCase()));
 
         return res;
     }
-
 
     public RelId getRelationId()
     {
@@ -158,11 +171,6 @@ public class TableOutputSpec implements Cloneable, Serializable {
         return dbmd;
     }
 
-    public String getOutputXmlNamespace()
-    {
-        return outputXmlNamespace;
-    }
-
     public Factory getFactory()
     {
         return factory;
@@ -170,12 +178,17 @@ public class TableOutputSpec implements Cloneable, Serializable {
 
     public ChildCollectionsStyle getChildCollectionsStyle()
     {
-        return childCollsStyle;
+        return childCollectionsStyle;
+    }
+
+    public String getOutputXmlNamespace()
+    {
+        return outputXmlNamespace;
     }
 
     public boolean isInlineChildCollections()
     {
-        return childCollsStyle == ChildCollectionsStyle.INLINE;
+        return childCollectionsStyle == ChildCollectionsStyle.INLINE;
     }
 
     public List<OutputField> getOutputFields()
@@ -193,7 +206,7 @@ public class TableOutputSpec implements Cloneable, Serializable {
         return rowElementName;
     }
 
-    public RowOrdering getRowOrdering()
+    public Optional<RowOrdering> getRowOrdering()
     {
         return rowOrdering;
     }
@@ -204,63 +217,60 @@ public class TableOutputSpec implements Cloneable, Serializable {
 
     public List<Pair<ForeignKey,TableOutputSpec>> getChildOutputSpecsByFK()
     {
-        return new ArrayList<Pair<ForeignKey,TableOutputSpec>>(childSpecsByFK);
+        return new ArrayList<>(childSpecsByFK);
     }
 
     public List<TableOutputSpec> getChildOutputSpecs()
     {
-        List<TableOutputSpec> ospecs = new ArrayList<TableOutputSpec>();
+        List<TableOutputSpec> ospecs = new ArrayList<>();
 
-        for(Pair<ForeignKey,TableOutputSpec> fk_ospec_pair: childSpecsByFK)
-            ospecs.add(fk_ospec_pair.snd());
+        for ( Pair<ForeignKey,TableOutputSpec> fkSpecPair: childSpecsByFK )
+            ospecs.add(fkSpecPair.snd());
 
         return ospecs;
     }
 
 
-    public List<Pair<ForeignKey,TableOutputSpec>> getOutputSpecsByFKForChild(String pq_child_rel_name)
+    public List<Pair<ForeignKey,TableOutputSpec>> getOutputSpecsByFKForChild(String pqChildRelName)
     {
-        return getOutputSpecsByFKForChild(dbmd.toRelId(pq_child_rel_name));
+        return getOutputSpecsByFKForChild(dbmd.toRelId(pqChildRelName));
     }
 
 
     /** Obtains all of the current specifications for the indicated child table (which may be included multiple times
         via differing foreign keys), or the empty list if the child table is not currently included. */
-    public List<Pair<ForeignKey,TableOutputSpec>> getOutputSpecsByFKForChild(RelId child_relid)
+    public List<Pair<ForeignKey,TableOutputSpec>> getOutputSpecsByFKForChild(RelId childRelId)
     {
-        List<Pair<ForeignKey,TableOutputSpec>> child_specs = new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
+        List<Pair<ForeignKey,TableOutputSpec>> childSpecs = new ArrayList<>();
 
-        for(Pair<ForeignKey,TableOutputSpec> fk_ospec_pair: childSpecsByFK)
+        for ( Pair<ForeignKey,TableOutputSpec> fkSpecPair: childSpecsByFK )
         {
-            if ( fk_ospec_pair.snd().getRelationId().equals(child_relid) )
-                child_specs.add(fk_ospec_pair);
+            if ( fkSpecPair.snd().getRelationId().equals(childRelId) )
+                childSpecs.add(fkSpecPair);
         }
 
-        return child_specs;
+        return childSpecs;
     }
 
-
-    public TableOutputSpec getOutputSpecForChild(String pq_child_rel_name)
+    public TableOutputSpec getOutputSpecForChild(String pqChildRelName)
     {
-        return getOutputSpecForChild(dbmd.toRelId(pq_child_rel_name));
+        return getOutputSpecForChild(dbmd.toRelId(pqChildRelName));
     }
 
-
-    public TableOutputSpec getOutputSpecForChild(RelId child_relid)
+    public TableOutputSpec getOutputSpecForChild(RelId childRelId)
     {
-        List<Pair<ForeignKey,TableOutputSpec>> child_specs = getOutputSpecsByFKForChild(child_relid);
+        List<Pair<ForeignKey,TableOutputSpec>> childSpecs = getOutputSpecsByFKForChild(childRelId);
 
-        if ( child_specs.size() == 0 )
-            throw new IllegalArgumentException("Table " + child_relid + " has no foreign key links to " + relId + ".");
-        else if ( child_specs.size() > 1 )
-            throw new IllegalArgumentException("Child table " + child_relid + " has multiple links to " + relId + ".");
+        if ( childSpecs.size() == 0 )
+            throw new IllegalArgumentException("Table " + childRelId + " has no foreign key links to " + relId + ".");
+        else if ( childSpecs.size() > 1 )
+            throw new IllegalArgumentException("Child table " + childRelId + " has multiple links to " + relId + ".");
         else
-            return child_specs.get(0).snd();
+            return childSpecs.get(0).snd();
     }
 
     // Retrieval of included child table specifications
     /////////////////////////////////////////////////////////////////////////////////////
-
 
 
     /////////////////////////////////////////////////////////////////////////////////////
@@ -268,149 +278,153 @@ public class TableOutputSpec implements Cloneable, Serializable {
 
     public List<Pair<ForeignKey,TableOutputSpec>> getParentOutputSpecsByFK()
     {
-        return new ArrayList<Pair<ForeignKey,TableOutputSpec>>(parentSpecsByFK);
+        return new ArrayList<>(parentSpecsByFK);
     }
 
     public List<TableOutputSpec> getParentOutputSpecs()
     {
-        List<TableOutputSpec> ospecs = new ArrayList<TableOutputSpec>();
+        List<TableOutputSpec> specs = new ArrayList<>();
 
-        for(Pair<ForeignKey,TableOutputSpec> fk_ospec_pair: parentSpecsByFK)
-            ospecs.add(fk_ospec_pair.snd());
+        for ( Pair<ForeignKey,TableOutputSpec> fkSpecPair: parentSpecsByFK )
+            specs.add(fkSpecPair.snd());
 
-        return ospecs;
+        return specs;
     }
 
-    public List<Pair<ForeignKey,TableOutputSpec>> getOutputSpecsByFKForParent(String pq_parent_rel_name)
+    public List<Pair<ForeignKey,TableOutputSpec>> getOutputSpecsByFKForParent(String pqParentRelName)
     {
-        return getOutputSpecsByFKForParent(dbmd.toRelId(pq_parent_rel_name));
+        return getOutputSpecsByFKForParent(dbmd.toRelId(pqParentRelName));
     }
 
 
     /** Obtains all of the current specifications for the indicated parent tables (which may be included multiple times under differing foreign keys), or the empty list if the parent
         table is not currently included. */
-    public List<Pair<ForeignKey,TableOutputSpec>> getOutputSpecsByFKForParent(RelId parent_relid)
+    public List<Pair<ForeignKey,TableOutputSpec>> getOutputSpecsByFKForParent(RelId parentRelId)
     {
-        List<Pair<ForeignKey,TableOutputSpec>> parent_specs = new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
+        List<Pair<ForeignKey,TableOutputSpec>> parentSpecs = new ArrayList<>();
 
-        for(Pair<ForeignKey,TableOutputSpec> fk_ospec_pair: parentSpecsByFK)
+        for ( Pair<ForeignKey,TableOutputSpec> fkSpecPair: parentSpecsByFK )
         {
-            if ( fk_ospec_pair.snd().getRelationId().equals(parent_relid) )
-                parent_specs.add(fk_ospec_pair);
+            if ( fkSpecPair.snd().getRelationId().equals(parentRelId) )
+                parentSpecs.add(fkSpecPair);
         }
 
-        return parent_specs;
+        return parentSpecs;
     }
 
-    public TableOutputSpec getOutputSpecForParent(String pq_parent_rel_name)
+    public TableOutputSpec getOutputSpecForParent(String pqParentRelName)
     {
-        return getOutputSpecForParent(dbmd.toRelId(pq_parent_rel_name));
+        return getOutputSpecForParent(dbmd.toRelId(pqParentRelName));
     }
 
 
-    public TableOutputSpec getOutputSpecForParent(RelId parent_relid)
+    public TableOutputSpec getOutputSpecForParent(RelId parentRelId)
     {
-        List<Pair<ForeignKey,TableOutputSpec>> parent_specs = getOutputSpecsByFKForParent(parent_relid);
+        List<Pair<ForeignKey,TableOutputSpec>> parentSpecs = getOutputSpecsByFKForParent(parentRelId);
 
-        if ( parent_specs.size() == 0 )
-            throw new IllegalArgumentException("Table " + relId + " has no foreign key links to " + parent_relid + ".");
-        else if ( parent_specs.size() > 1 )
-            throw new IllegalArgumentException("Parent table " + parent_relid + " has multiple foreign key links from " + relId + ".");
+        if ( parentSpecs.size() == 0 )
+            throw new IllegalArgumentException("Table " + relId + " has no foreign key links to " + parentRelId + ".");
+        else if ( parentSpecs.size() > 1 )
+            throw new IllegalArgumentException("Parent table " + parentRelId + " has multiple foreign key links from " + relId + ".");
         else
-            return parent_specs.get(0).snd();
+            return parentSpecs.get(0).snd();
     }
 
     // Retrieval of included parent table specifications
     /////////////////////////////////////////////////////////////////////////////////////
 
-
-
     ////////////////////////////////////////////////////////////////////////////////////
     // Methods for including a child table in the output
 
-    public TableOutputSpec withChild(ForeignKey fk_from_child,          // Required
-                                     TableOutputSpec child_output_spec) // Optional
+    public TableOutputSpec withChild
+    (
+        ForeignKey fkFromChild,
+        Optional<TableOutputSpec> maybeChildOutputSpec
+    )
     {
-        requireArg(fk_from_child, "foreign key from child table");
+        requireArg(fkFromChild, "foreign key from child table");
 
-        if ( child_output_spec == null )
-            child_output_spec = factory.makeChildTableOutputSpec(fk_from_child, this);
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
+        TableOutputSpec childOutputSpec = maybeChildOutputSpec.orElseGet(() ->
+            factory.makeChildTableOutputSpec(fkFromChild, this)
+        );
 
-            copy.childSpecsByFK = CollFuns.associativeListWithEntry(childSpecsByFK, fk_from_child, child_output_spec);
-
-            return copy;
-        }
-        catch(CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return new TableOutputSpec(
+            relId,
+            dbmd,
+            factory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(outputFields),
+            rowOrdering,
+            Optional.of(rowElementName),
+            Optional.of(rowCollectionElementName),
+            Optional.of(CollFuns.associativeListWithEntry(childSpecsByFK, fkFromChild, childOutputSpec)),
+            Optional.of(parentSpecsByFK)
+        );
     }
-
 
     // Primary withChild implementation, all other withChild methods delegate to this one.
-    public TableOutputSpec withChild(RelId child_relid,               // Required
-                                     Set<String> reqd_fk_field_names,  // Optional.  Required if multiple fk's from this child table reference this parent.
-                                     TableOutputSpec child_output_spec)// Optional
+    public TableOutputSpec withChild
+    (
+        RelId childRelId,
+        Optional<Set<String>> reqdFkFieldNames,  // Required if multiple fk's from this child table reference this parent.
+        Optional<TableOutputSpec> childOutputSpec
+    )
     {
-        requireArg(child_relid, "child table relation identifier");
+        requireArg(childRelId, "child table relation identifier");
 
-        ForeignKey sought_fk = dbmd.getForeignKeyFromTo(child_relid,
-                                                        relId,
-                                                        reqd_fk_field_names,
-                                                        DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY);
+        ForeignKey soughtFk =
+            dbmd.getForeignKeyFromTo(
+                childRelId,
+                relId,
+                reqdFkFieldNames.orElse(null),
+                DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY
+            );
 
-        if ( sought_fk == null )
-            throw new IllegalArgumentException("No foreign key found from table " + child_relid + " to " + relId);
+        if ( soughtFk == null )
+            throw new IllegalArgumentException("No foreign key found from table " + childRelId + " to " + relId);
 
-        return withChild(sought_fk,
-                         child_output_spec);
+        return withChild(soughtFk, childOutputSpec);
     }
-
 
     /** Add a child table for inclusion in this table's output, with default output options.
         The child table should have exactly one foreign key to this table, otherwise the function
         allowing additionally a foreign key to be specified should be called instead. */
-    public TableOutputSpec withChild(String pq_child_rel_name)
+    public TableOutputSpec withChild(String pqChildRelName)
     {
-        requireArg(pq_child_rel_name, "child table name");
+        requireArg(pqChildRelName, "child table name");
 
-        return withChild(dbmd.toRelId(pq_child_rel_name),
-                         null,  // fk field names unspecified
-                         null); // default output spec
+        return withChild(dbmd.toRelId(pqChildRelName), Optional.empty(), Optional.empty());
     }
 
-    public TableOutputSpec withChild(String pq_child_rel_name,         // Required, possibly qualified table or view name.
-                                     Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this child table reference this parent.
+    public TableOutputSpec withChild
+    (
+        String pqChildRelName,
+        Optional<Set<String>> reqdFkFieldNames // Required if multiple fk's from this child table reference this parent.
+    )
     {
-        return withChild(dbmd.toRelId(pq_child_rel_name),
-                         reqd_fk_field_names,
-                         null);
+        return withChild(dbmd.toRelId(pqChildRelName), reqdFkFieldNames, Optional.empty());
     }
-
 
     /** Add a child table for inclusion in this table's output with specified output options.
         The child table should have exactly one foreign key to this table, otherwise the function
         allowing additionally a foreign key to be specified should be called instead. */
-    public TableOutputSpec withChild(TableOutputSpec child_output_spec) // Required
+    public TableOutputSpec withChild(TableOutputSpec childOutputSpec) // Required
     {
-        requireArg(child_output_spec, "child table output specification");
+        requireArg(childOutputSpec, "child table output specification");
 
-        return withChild(child_output_spec.getRelationId(),
-                         null, // specific fk unspecified
-                         child_output_spec);
+        return withChild(childOutputSpec.getRelationId(), Optional.empty(), Optional.of(childOutputSpec));
     }
 
-    public TableOutputSpec withChild(TableOutputSpec child_output_spec, // Required
-                                     Set<String> reqd_fk_field_names)   // Optional.  Required if multiple fk's from this child table reference this parent.
+    public TableOutputSpec withChild
+    (
+        TableOutputSpec childOutputSpec, // Required
+        Optional<Set<String>> reqdFkFieldNames
+    )
     {
-        requireArg(child_output_spec, "child table output specification");
+        requireArg(childOutputSpec, "child table output specification");
 
-        return withChild(child_output_spec.getRelationId(),
-                         reqd_fk_field_names,
-                         child_output_spec);
+        return withChild(childOutputSpec.getRelationId(), reqdFkFieldNames, Optional.of(childOutputSpec));
     }
 
     /** Convenience method to include all child tables with default options and naming.
@@ -421,24 +435,26 @@ public class TableOutputSpec implements Cloneable, Serializable {
      *  specifications will replace any existing specifications for child tables.*/
     public TableOutputSpec withAllChildTables()
     {
-        List<Pair<ForeignKey,TableOutputSpec>> child_specs_by_fk = new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
+        List<Pair<ForeignKey,TableOutputSpec>> childSpecs = new ArrayList<>();
 
-        for(ForeignKey fk: dbmd.getForeignKeysFromTo(null, this.relId, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY))
+        for ( ForeignKey fk: dbmd.getForeignKeysFromTo(null, this.relId, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY) )
         {
-            child_specs_by_fk.add(Pair.make(fk, factory.makeChildTableOutputSpec(fk, this)));
+            childSpecs.add(Pair.make(fk, factory.makeChildTableOutputSpec(fk, this)));
         }
 
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
-            copy.childSpecsByFK = child_specs_by_fk;
-
-            return copy;
-        }
-        catch(CloneNotSupportedException cnse)
-        {
-            throw new RuntimeException(cnse);
-        }
+        return new TableOutputSpec(
+            relId,
+            dbmd,
+            factory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(outputFields),
+            rowOrdering,
+            Optional.of(rowElementName),
+            Optional.of(rowCollectionElementName),
+            Optional.of(childSpecs),
+            Optional.of(parentSpecsByFK)
+        );
     }
 
     // Methods for including a child table in the output
@@ -449,69 +465,78 @@ public class TableOutputSpec implements Cloneable, Serializable {
     // Methods for including a parent table in the output
 
 
-    public TableOutputSpec withParent(ForeignKey fk_to_parent,            // Required
-                                      TableOutputSpec parent_output_spec) // Optional
+    public TableOutputSpec withParent
+    (
+        ForeignKey fkToParent,
+        Optional<TableOutputSpec> maybeParentOutputSpec
+    )
     {
-        requireArg(fk_to_parent, "foreign key to parent table");
+        requireArg(fkToParent, "foreign key to parent table");
 
-        if ( parent_output_spec == null )
-            parent_output_spec = factory.makeParentTableOutputSpec(fk_to_parent, this);
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
+        TableOutputSpec parentOutputSpec = maybeParentOutputSpec.orElseGet(() ->
+            factory.makeParentTableOutputSpec(fkToParent, this)
+        );
 
-            copy.parentSpecsByFK = CollFuns.associativeListWithEntry(parentSpecsByFK, fk_to_parent, parent_output_spec);
-
-            return copy;
-        }
-        catch(CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return new TableOutputSpec(
+            relId,
+            dbmd,
+            factory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(outputFields),
+            rowOrdering,
+            Optional.of(rowElementName),
+            Optional.of(rowCollectionElementName),
+            Optional.of(childSpecsByFK),
+            Optional.of(CollFuns.associativeListWithEntry(parentSpecsByFK, fkToParent, parentOutputSpec))
+        );
     }
 
     // Primary withParent implementation, all other withParent methods delegate to this one.
-    public TableOutputSpec withParent(RelId parent_relid,                // Required
-                                      Set<String> reqd_fk_field_names,    // Optional.  Required if multiple fk's from this table reference the parent.
-                                      TableOutputSpec parent_output_spec) // Optional.
+    public TableOutputSpec withParent
+    (
+        RelId parentRelId,
+        Optional<Set<String>> reqdFkFieldNames, // Required if multiple fk's from this table reference the parent.
+        Optional<TableOutputSpec> parentOutputSpec
+    )
     {
-        requireArg(parent_relid, "parent table relation identifier");
+        requireArg(parentRelId, "parent table relation identifier");
 
-        ForeignKey sought_fk = dbmd.getForeignKeyFromTo(relId,
-                                                        parent_relid,
-                                                        reqd_fk_field_names,
-                                                        DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY);
+        ForeignKey soughtFk =
+            dbmd.getForeignKeyFromTo(
+                relId,
+                parentRelId,
+                reqdFkFieldNames.orElse(null),
+                DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY
+            );
 
+        if ( soughtFk == null )
+            throw new IllegalArgumentException("No foreign key found from table " + relId + " to " + parentRelId);
 
-        if ( sought_fk == null )
-            throw new IllegalArgumentException("No foreign key found from table " + relId + " to " + parent_relid);
-
-        return withParent(sought_fk,
-                          parent_output_spec);
+        return withParent(soughtFk, parentOutputSpec);
     }
 
 
     /** Add a parent table for inclusion in this table's output, with default output options.
     The parent table should have exactly one foreign key from this table, otherwise the function
     allowing additionally a foreign key to be specified should be called instead. */
-    public TableOutputSpec withParent(String pq_parent_rel_name)
+    public TableOutputSpec withParent (String pqParentRelName)
     {
-        requireArg(pq_parent_rel_name, "parent table name");
+        requireArg(pqParentRelName, "parent table name");
 
-        return withParent(dbmd.toRelId(pq_parent_rel_name),
-                          null,  // fk field names unspecified
-                          null); // default output spec
+        return withParent(dbmd.toRelId(pqParentRelName), Optional.empty(), Optional.empty()); // default output spec
     }
 
 
-    public TableOutputSpec withParent(String pq_parent_rel_name,        // Required, possibly qualified table or view name
-                                      Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this table reference this parent.
+    public TableOutputSpec withParent
+    (
+        String pqParentRelName,        // Required, possibly qualified table or view name
+        Optional<Set<String>> reqdFkFieldNames   // Required if multiple fk's from this table reference this parent.
+    )
     {
-        requireArg(pq_parent_rel_name, "parent table name");
+        requireArg(pqParentRelName, "parent table name");
 
-        return withParent(dbmd.toRelId(pq_parent_rel_name),
-                          reqd_fk_field_names,
-                          null);  // default output spec
+        return withParent(dbmd.toRelId(pqParentRelName), reqdFkFieldNames, Optional.empty());
 
     }
 
@@ -519,23 +544,22 @@ public class TableOutputSpec implements Cloneable, Serializable {
     /** Add a parent table for inclusion in this table's output with specified output options.
     The parent table should have exactly one foreign key from this table, otherwise the function
     allowing additionally a foreign key to be specified should be called instead. */
-    public TableOutputSpec withParent(TableOutputSpec parent_output_spec)
+    public TableOutputSpec withParent(TableOutputSpec parentOutputSpec)
     {
-        requireArg(parent_output_spec, "parent table output specification");
+        requireArg(parentOutputSpec, "parent table output specification");
 
-        return withParent(parent_output_spec.getRelationId(),
-                          null, // specific fk unspecified
-                          parent_output_spec);
+        return withParent(parentOutputSpec.getRelationId(), Optional.empty(), Optional.of(parentOutputSpec));
     }
 
-    public TableOutputSpec withParent(TableOutputSpec parent_output_spec,
-                                      Set<String> reqd_fk_field_names)  // Optional.  Required if multiple fk's from this table reference this parent.
+    public TableOutputSpec withParent
+    (
+        TableOutputSpec parentOutputSpec,
+        Set<String> reqdFkFieldNames   // Required iff multiple fk's from this table reference this parent.
+    )
     {
-        requireArg(parent_output_spec, "parent table output specification");
+        requireArg(parentOutputSpec, "parent table output specification");
 
-        return withParent(parent_output_spec.getRelationId(),
-                          reqd_fk_field_names,
-                          parent_output_spec);
+        return withParent(parentOutputSpec.getRelationId(), Optional.of(reqdFkFieldNames), Optional.of(parentOutputSpec));
     }
 
     /** Convenience method to include all parent tables with default options and naming.
@@ -546,24 +570,26 @@ public class TableOutputSpec implements Cloneable, Serializable {
      *  specifications will replace any existing specifications for parent tables. */
     public TableOutputSpec withAllParentTables()
     {
-        List<Pair<ForeignKey,TableOutputSpec>> parent_specs_by_fk = new ArrayList<Pair<ForeignKey,TableOutputSpec>>();
+        List<Pair<ForeignKey,TableOutputSpec>> parentSpecs = new ArrayList<>();
 
-        for(ForeignKey fk: dbmd.getForeignKeysFromTo(this.relId, null, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY))
+        for ( ForeignKey fk: dbmd.getForeignKeysFromTo(this.relId, null, DBMD.ForeignKeyScope.REGISTERED_TABLES_ONLY) )
         {
-            parent_specs_by_fk.add(Pair.make(fk, factory.makeParentTableOutputSpec(fk, this)));
+            parentSpecs.add(Pair.make(fk, factory.makeParentTableOutputSpec(fk, this)));
         }
 
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
-            copy.parentSpecsByFK = parent_specs_by_fk;
-
-            return copy;
-        }
-        catch(CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return new TableOutputSpec(
+            relId,
+            dbmd,
+            factory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(outputFields),
+            rowOrdering,
+            Optional.of(rowElementName),
+            Optional.of(rowCollectionElementName),
+            Optional.of(childSpecsByFK),
+            Optional.of(parentSpecs)
+        );
     }
 
     // Methods for including a parent table in the output
@@ -573,101 +599,110 @@ public class TableOutputSpec implements Cloneable, Serializable {
     ///////////////////////////////////////////////////////////////////////////////////
     // Output fields customization
 
-    public TableOutputSpec withFields(List<OutputField> output_fields)
+    public TableOutputSpec withFields(List<OutputField> outputFields)
     {
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
-            copy.outputFields = output_fields;
-
-            return copy;
-        }
-        catch(CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return new TableOutputSpec(
+            relId,
+            dbmd,
+            factory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(outputFields),
+            rowOrdering,
+            Optional.of(rowElementName),
+            Optional.of(rowCollectionElementName),
+            Optional.of(childSpecsByFK),
+            Optional.of(parentSpecsByFK)
+        );
     }
 
-    public TableOutputSpec withoutFields(String... db_field_names)
+    public TableOutputSpec withoutFields(String... dbFieldNames)
     {
-        return withoutFields(new HashSet<String>(Arrays.asList(db_field_names)));
+        return withoutFields(new HashSet<>(Arrays.asList(dbFieldNames)));
     }
 
-    public TableOutputSpec withoutFields(Set<String> db_field_names)
+    public TableOutputSpec withoutFields(Set<String> dbFieldNames)
     {
-        List<OutputField> remaining = new ArrayList<OutputField>();
+        List<OutputField> remaining = new ArrayList<>();
 
-        for(OutputField of: outputFields)
+        for ( OutputField of: outputFields )
         {
-            if ( !db_field_names.contains(of.getField().getName()) )
+            if ( !dbFieldNames.contains(of.getField().getName()) )
                 remaining.add(of);
         }
 
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
-            copy.outputFields = remaining;
 
-            return copy;
-        }
-        catch(CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return new TableOutputSpec(
+            relId,
+            dbmd,
+            factory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(remaining),
+            rowOrdering,
+            Optional.of(rowElementName),
+            Optional.of(rowCollectionElementName),
+            Optional.of(childSpecsByFK),
+            Optional.of(parentSpecsByFK)
+        );
     }
 
-    public TableOutputSpec withoutFieldsOtherThan(String... db_field_names)
+    public TableOutputSpec withoutFieldsOtherThan(String... dbFieldNames)
     {
-        return withoutFieldsOtherThan(new HashSet<String>(Arrays.asList(db_field_names)));
+        return withoutFieldsOtherThan(new HashSet<>(Arrays.asList(dbFieldNames)));
     }
 
 
-    public TableOutputSpec withoutFieldsOtherThan(Set<String> db_field_names)
+    public TableOutputSpec withoutFieldsOtherThan(Set<String> dbFieldNames)
     {
-        List<OutputField> remaining = new ArrayList<OutputField>();
+        List<OutputField> remaining = new ArrayList<>();
 
-        for(OutputField of: outputFields)
+        for ( OutputField ofield: outputFields )
         {
-            if ( db_field_names.contains(of.getField().getName()) )
-                remaining.add(of);
+            if ( dbFieldNames.contains(ofield.getField().getName()) )
+                remaining.add(ofield);
         }
 
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
-            copy.outputFields = remaining;
-
-            return copy;
-        }
-        catch(CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return new TableOutputSpec(
+            relId,
+            dbmd,
+            factory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(remaining),
+            rowOrdering,
+            Optional.of(rowElementName),
+            Optional.of(rowCollectionElementName),
+            Optional.of(childSpecsByFK),
+            Optional.of(parentSpecsByFK)
+        );
     }
 
-    public TableOutputSpec withFieldAsElement(String db_field_name, String output_el_name)
+    public TableOutputSpec withFieldAsElement(String dbFieldName, String outputElName)
     {
-        List<OutputField> l = new ArrayList<OutputField>();
+        List<OutputField> outputFields = new ArrayList<>();
 
-        for(OutputField of: outputFields)
+        for ( OutputField ofield: this.outputFields)
         {
-            if ( of.getField().getName().equals(db_field_name) )
-                l.add(new OutputField(of.getField(), output_el_name));
+            if ( ofield.getField().getName().equals(dbFieldName) )
+                outputFields.add(new OutputField(ofield.getField(), outputElName));
             else
-                l.add(of);
+                outputFields.add(ofield);
         }
 
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
-            copy.outputFields = l;
-
-            return copy;
-        }
-        catch(CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return new TableOutputSpec(
+            relId,
+            dbmd,
+            factory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(outputFields),
+            rowOrdering,
+            Optional.of(rowElementName),
+            Optional.of(rowCollectionElementName),
+            Optional.of(childSpecsByFK),
+            Optional.of(parentSpecsByFK)
+        );
     }
 
     // Output fields customization
@@ -678,19 +713,21 @@ public class TableOutputSpec implements Cloneable, Serializable {
     // Row ordering customization
 
 
-    public TableOutputSpec orderedBy(RowOrdering row_ordering)
+    public TableOutputSpec orderedBy(RowOrdering newRowOrdering)
     {
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
-            copy.rowOrdering = row_ordering;
-
-            return copy;
-        }
-        catch(CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return new TableOutputSpec(
+            relId,
+            dbmd,
+            factory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(outputFields),
+            Optional.of(newRowOrdering),
+            Optional.of(rowElementName),
+            Optional.of(rowCollectionElementName),
+            Optional.of(childSpecsByFK),
+            Optional.of(parentSpecsByFK)
+       );
     }
 
     // Row ordering customization
@@ -701,92 +738,47 @@ public class TableOutputSpec implements Cloneable, Serializable {
     ///////////////////////////////////////////////////////////////////////////////////
     // Factory customization
 
-    public TableOutputSpec withFactory(Factory f)
+    public TableOutputSpec withFactory(Factory newFactory)
     {
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
-            copy.factory = f;
-
-            return copy;
-        }
-        catch(CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return new TableOutputSpec(
+            relId,
+            dbmd,
+            newFactory,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(outputFields),
+            rowOrdering,
+            Optional.of(rowElementName),
+            Optional.of(rowCollectionElementName),
+            Optional.of(childSpecsByFK),
+            Optional.of(parentSpecsByFK)
+        );
     }
 
     // Factory customization
     ///////////////////////////////////////////////////////////////////////////////////
 
 
+    @Override
+    public int hashCode() { return hashCode; }
 
-    ///////////////////////////////////////////////////////////////////////////////////
-    // Output XML Namespace customization
-
-    public TableOutputSpec withOutputXmlNamespace(String ns)
+    private int computeHashCode()
     {
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
-            copy.outputXmlNamespace = ns;
-
-            return copy;
-        }
-        catch(CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return
+            hashcode(relId)
+            + hashcode(dbmd)
+            + hashcode(factory)
+            + childCollectionsStyle.hashCode()
+            + hashcode(outputXmlNamespace)
+            + hashcode(outputFields)
+            + hashcode(childSpecsByFK)
+            + hashcode(parentSpecsByFK)
+            + hashcode(rowElementName)
+            + hashcode(rowCollectionElementName)
+            + hashcode(rowOrdering.orElse(null));
     }
 
-    // Output XML Namespace customization
-    ///////////////////////////////////////////////////////////////////////////////////
-
-
-    ///////////////////////////////////////////////////////////////////////////////////
-    // Child element collection style customization
-    // TODO: Finish regularizing these method names here and in the template, rebuild and publish.
-    public TableOutputSpec withChildCollectionsStyle(ChildCollectionsStyle child_colls_style)
-    {
-        try
-        {
-            TableOutputSpec copy = (TableOutputSpec)this.clone();
-            copy.childCollsStyle = child_colls_style;
-
-            return copy;
-        }
-        catch(CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // Child element collection style customization
-    ///////////////////////////////////////////////////////////////////////////////////
-
-
-    public int hashCode()
-    {
-        if ( hashCode == null )
-        {
-            hashCode = hashcode(relId)
-                     + hashcode(dbmd)
-                     + hashcode(factory)
-                     + hashcode(childCollsStyle)
-                     + hashcode(outputXmlNamespace)
-                     + hashcode(outputFields)
-                     + hashcode(childSpecsByFK)
-                     + hashcode(parentSpecsByFK)
-                     + hashcode(rowElementName)
-                     + hashcode(rowCollectionElementName)
-                     + hashcode(rowOrdering)
-                     ;
-
-        }
-
-        return hashCode;
-    }
-
+    @Override
     public boolean equals(Object o)
     {
         if ( !(o instanceof TableOutputSpec) )
@@ -799,21 +791,20 @@ public class TableOutputSpec implements Cloneable, Serializable {
                 return true;
             else
             {
-                if ( hashCode != null && tos.hashCode != null && !hashCode.equals(tos.hashCode()) )
+                if ( hashCode != tos.hashCode )
                     return false;
                 else
-                    return eqOrNull(relId,tos.relId)
-                        && eqOrNull(dbmd, tos.dbmd)
-                        && eqOrNull(factory, tos.factory)
-                        && eqOrNull(childCollsStyle, tos.childCollsStyle)
-                        && eqOrNull(outputXmlNamespace, tos.outputXmlNamespace)
-                        && eqOrNull(outputFields, tos.outputFields)
-                        && eqOrNull(childSpecsByFK, tos.childSpecsByFK)
-                        && eqOrNull(parentSpecsByFK, tos.parentSpecsByFK)
-                        && eqOrNull(rowCollectionElementName, tos.rowCollectionElementName)
-                        && eqOrNull(rowElementName, tos.rowElementName)
-                        && eqOrNull(rowOrdering, tos.rowOrdering)
-                        ;
+                    return Objects.equals(relId,tos.relId)
+                        && Objects.equals(dbmd, tos.dbmd)
+                        && Objects.equals(factory, tos.factory)
+                        && Objects.equals(childCollectionsStyle, tos.childCollectionsStyle)
+                        && Objects.equals(outputXmlNamespace, tos.outputXmlNamespace)
+                        && Objects.equals(outputFields, tos.outputFields)
+                        && Objects.equals(childSpecsByFK, tos.childSpecsByFK)
+                        && Objects.equals(parentSpecsByFK, tos.parentSpecsByFK)
+                        && Objects.equals(rowCollectionElementName, tos.rowCollectionElementName)
+                        && Objects.equals(rowElementName, tos.rowElementName)
+                        && Objects.equals(rowOrdering.orElse(null), tos.rowOrdering.orElse(null));
             }
         }
     }
@@ -822,27 +813,20 @@ public class TableOutputSpec implements Cloneable, Serializable {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Inner classes and interfaces
 
-    public static class OutputField implements Serializable {
+    public static class OutputField
+    {
+        private final Field field;
+        private final String outputElementName;
 
-        Field field;
-        String outputElementName;
-
-        public OutputField(Field field, String output_element_name)
+        public OutputField(Field field, String outputElementName)
         {
             this.field = requireArg(field, "field");
-            this.outputElementName = requireArg(output_element_name, "output element name");
+            this.outputElementName = requireArg(outputElementName, "output element name");
         }
 
-        public Field getField()
-        {
-            return field;
-        }
+        public Field getField() { return field; }
 
-
-        public String getOutputElementName()
-        {
-            return outputElementName;
-        }
+        public String getOutputElementName() { return outputElementName; }
 
 
         @Override
@@ -859,63 +843,53 @@ public class TableOutputSpec implements Cloneable, Serializable {
             OutputField other = (OutputField)o;
             return this.field.equals(other.field) && this.outputElementName.equals(other.outputElementName);
         }
-
-        private static final long serialVersionUID = 1L;
     }
 
-
-    public static abstract class RowOrdering implements Serializable {
-
+    public static abstract class RowOrdering
+    {
         // Get a list of expressions to order by, in terms of the table fields and the passed field qualifying alias.
-        public abstract List<String> getOrderByExpressions(String field_qualifying_alias);
+        public abstract List<String> getOrderByExpressions(String fieldQualifyingAlias);
 
         /** Convenience method for constructing order by expressions for field names. */
 
-        public static RowOrdering fields(final String... field_names)
+        public static RowOrdering fields(final String... fieldNames)
         {
             /** Convenience method for constructing order by expressions for field names.
              *  The field names may optionally including a trailing " asc" or " desc" to specify sort direction.
              */
             return new RowOrdering() {
-                public List<String> getOrderByExpressions(String field_qualifying_alias)
+                public List<String> getOrderByExpressions(String fieldQualifyingAlias)
                 {
-                    return dotQualify(asList(field_names), field_qualifying_alias);
+                    return dotQualify(asList(fieldNames), fieldQualifyingAlias);
                 }
-                private static final long serialVersionUID = 1L;
             };
         }
 
         /** Convenience method for constructing order by expressions for field names.
          *  The field names may optionally including a trailing " asc" or " desc" to specify sort direction.
          */
-        public static RowOrdering fields(final List<String> field_names)
+        public static RowOrdering fields(final List<String> fieldNames)
         {
             return new RowOrdering() {
-                public List<String> getOrderByExpressions(String field_qualifying_alias)
+                public List<String> getOrderByExpressions(String fieldQualifyingAlias)
                 {
-                    return dotQualify(field_names, field_qualifying_alias);
+                    return dotQualify(fieldNames, fieldQualifyingAlias);
                 }
-                private static final long serialVersionUID = 1L;
             };
         }
-
-        private static final long serialVersionUID = 1L;
     }
 
-    public interface Factory {
-
+    public interface Factory
+    {
         // These two functions are convenience methods intended for direct use by clients.
-        public TableOutputSpec table(RelId relid);
-        public TableOutputSpec table(String pq_table_name); // possibly qualified table name
+        TableOutputSpec table(RelId relId);
+        TableOutputSpec table(String pqTableName); // possibly qualified table name
 
         // These methods are used internally by TableOutputSpec to create parent/child output specs when they aren't specified when adding parent or child tables.
-        public TableOutputSpec makeChildTableOutputSpec(ForeignKey fk_from_child, TableOutputSpec attached_to_ospec);
-        public TableOutputSpec makeParentTableOutputSpec(ForeignKey fk_to_parent, TableOutputSpec attached_to_ospec);
-
+        TableOutputSpec makeChildTableOutputSpec(ForeignKey fkFromChild, TableOutputSpec attachedToOspec);
+        TableOutputSpec makeParentTableOutputSpec(ForeignKey fkToParent, TableOutputSpec attachedToOspec);
     }
 
     // Inner classes and interfaces
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    private static final long serialVersionUID = 1L;
 }

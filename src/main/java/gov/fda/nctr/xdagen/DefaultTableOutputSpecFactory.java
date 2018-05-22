@@ -1,153 +1,177 @@
 package gov.fda.nctr.xdagen;
 
-import static gov.fda.nctr.util.StringFuns.lc;
-import static gov.fda.nctr.util.StringFuns.stringFrom;
-import static gov.fda.nctr.xdagen.ChildCollectionsStyle.INLINE;
+import java.util.*;
+
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.ForeignKey;
 import gov.fda.nctr.dbmd.RelId;
-
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import static gov.fda.nctr.util.StringFuns.lc;
+import static gov.fda.nctr.util.StringFuns.stringFrom;
+import static gov.fda.nctr.xdagen.ChildCollectionsStyle.INLINE;
 
 
-public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory, Serializable {
+public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory
+{
+    private final DBMD dbmd;
 
-    DBMD dbmd;
-    ElementNamer elNamer;
-    String outputXmlNamespace;
-    ChildCollectionsStyle childCollsStyle;
+    private final ElementNamer elementNamer;
 
+    private final String outputXmlNamespace;
 
-    public DefaultTableOutputSpecFactory(DBMD dbmd,                                               // Required
-                                         ChildCollectionsStyle child_colls_style,                 // Required
-                                         String output_xml_namespace)                             // Optional (null for no namespace)
+    private final ChildCollectionsStyle childCollectionsStyle;
+
+    public DefaultTableOutputSpecFactory
+    (
+        DBMD dbmd,
+        ChildCollectionsStyle childCollectionsStyle,
+        String outputXmlNamespace
+    )
     {
-        this(dbmd,
-             child_colls_style,
-             new DefaultElementNamer(dbmd, child_colls_style),
-             output_xml_namespace);
+        this(dbmd, outputXmlNamespace, childCollectionsStyle, new DefaultElementNamer(dbmd, childCollectionsStyle));
     }
 
-    public DefaultTableOutputSpecFactory(DBMD dbmd,                                               // Required
-                                         ChildCollectionsStyle child_colls_style,                 // Required
-                                         ElementNamer el_namer,                                   // Required
-                                         String output_xml_namespace)                             // Optional (null for no namespace)
+    public DefaultTableOutputSpecFactory
+    (
+        DBMD dbmd,
+        String outputXmlNamespace,
+        ChildCollectionsStyle childCollectionsStyle,
+        ElementNamer elementNamer
+    )
     {
+        Objects.requireNonNull(dbmd);
+        Objects.requireNonNull(outputXmlNamespace);
+        Objects.requireNonNull(childCollectionsStyle);
+        Objects.requireNonNull(elementNamer);
+
         this.dbmd = dbmd;
-        this.childCollsStyle = child_colls_style;
-        this.elNamer = el_namer;
-        this.outputXmlNamespace = output_xml_namespace;
+        this.outputXmlNamespace = outputXmlNamespace;
+        this.childCollectionsStyle = childCollectionsStyle;
+        this.elementNamer = elementNamer;
+    }
+
+    @Override
+    public TableOutputSpec table(RelId relId)
+    {
+        return new TableOutputSpec(
+            relId,
+            dbmd,
+            this,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(elementNamer.getDefaultRowElementName(relId)),
+            Optional.of(elementNamer.getDefaultRowCollectionElementName(relId))
+        );
+    }
+
+    @Override
+    public TableOutputSpec table(String pqTableName)
+    {
+        return table(dbmd.toRelId(pqTableName));
     }
 
 
     @Override
-    public TableOutputSpec table(RelId relid)
+    public TableOutputSpec makeChildTableOutputSpec
+    (
+        ForeignKey fkFromChild,
+        TableOutputSpec attachedToOspec
+    )
     {
-        return new TableOutputSpec(relid,
-                                   dbmd,
-                                   this,
-                                   childCollsStyle,
-                                   outputXmlNamespace,
-                                   elNamer.getDefaultRowElementName(relid),
-                                   elNamer.getDefaultRowCollectionElementName(relid));
+        RelId childRelId = fkFromChild.getSourceRelationId();
+        RelId withinRelId = attachedToOspec.getRelationId();
+
+        Set<String> fkFieldNames = new HashSet<>(fkFromChild.getSourceFieldNames());
+
+        String rowElName = elementNamer.getChildRowElementNameWithinParent(childRelId, withinRelId, Optional.of(fkFieldNames));
+        String rowCollElName = elementNamer.getChildRowCollectionElementNameWithinParent(childRelId, withinRelId, Optional.of(fkFieldNames));
+
+        return new TableOutputSpec(
+            childRelId,
+            dbmd,
+            this,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(rowElName),
+            Optional.of(rowCollElName)
+        );
     }
 
     @Override
-    public TableOutputSpec table(String pq_table_name)
+    public TableOutputSpec makeParentTableOutputSpec
+    (
+        ForeignKey fkToParent,
+        TableOutputSpec attachedToOspec
+    )
     {
-        return table(dbmd.toRelId(pq_table_name));
+        RelId parentRelid = fkToParent.getTargetRelationId();
+        RelId withinRelid = attachedToOspec.getRelationId();
+
+        Set<String> fkFieldNames = new HashSet<>(fkToParent.getSourceFieldNames());
+
+        String rowElName =
+            elementNamer.getParentRowElementNameWithinChild(
+                withinRelid,
+                parentRelid,
+                Optional.of(fkFieldNames)
+            );
+
+        return new TableOutputSpec(
+            parentRelid,
+            dbmd,
+            this,
+            childCollectionsStyle,
+            outputXmlNamespace,
+            Optional.of(rowElName),
+            Optional.empty()
+        );
     }
 
-
-    @Override
-    public TableOutputSpec makeChildTableOutputSpec(ForeignKey fk_from_child, TableOutputSpec within_ospec)
+    public interface ElementNamer
     {
-        RelId child_relid = fk_from_child.getSourceRelationId();
-        RelId within_relid = within_ospec.getRelationId();
+        String getDefaultRowElementName(RelId relId);
 
-        Set<String> fk_field_names = new HashSet<String>(fk_from_child.getSourceFieldNames());
+        String getDefaultRowCollectionElementName(RelId relId);
 
-        String row_el_name = elNamer.getChildRowElementNameWithinParent(child_relid, within_relid, fk_field_names);
-        String row_coll_el_name = elNamer.getChildRowCollectionElementNameWithinParent(child_relid, within_relid, fk_field_names);
+        String getChildRowElementNameWithinParent(
+            RelId childRelId,
+            RelId parentRelId,
+            Optional<Set<String>> fkFieldNames // set of child fk field names used to disambiguate fk's
+        );
 
-        return new TableOutputSpec(child_relid,
-                                   dbmd,
-                                   this,
-                                   childCollsStyle,
-                                   outputXmlNamespace,
-                                   row_el_name,
-                                   row_coll_el_name);
+        String getChildRowCollectionElementNameWithinParent(
+            RelId childRelId,
+            RelId parentRelId,
+            Optional<Set<String>> fkFieldName // set of child fk field names used to disambiguate fk's
+        );
+
+        String getParentRowElementNameWithinChild(
+            RelId childRelId,
+            RelId parentRelId,
+            Optional<Set<String>> fkFieldNames
+        );
     }
 
-    @Override
-    public TableOutputSpec makeParentTableOutputSpec(ForeignKey fk_to_parent, TableOutputSpec within_ospec)
+    public static class DefaultElementNamer implements ElementNamer
     {
-        RelId parent_relid = fk_to_parent.getTargetRelationId();
-        RelId within_relid = within_ospec.getRelationId();
+        private final DBMD dbmd;
+        private final ChildCollectionsStyle childCollectionsStyle;
 
-        Set<String> fk_field_names = new HashSet<String>(fk_to_parent.getSourceFieldNames());
-
-        String row_el_name = elNamer.getParentRowElementNameWithinChild(within_relid, parent_relid, fk_field_names);
-
-        return new TableOutputSpec(parent_relid,
-                                   dbmd,
-                                   this,
-                                   childCollsStyle,
-                                   outputXmlNamespace,
-                                   row_el_name,
-                                   null); // no collection element name necessary for parent spec
-
-    }
-
-    public interface ElementNamer {
-
-        public String getDefaultRowElementName(RelId rel_id);
-
-        public String getDefaultRowCollectionElementName(RelId rel_id);
-
-        public String getChildRowElementNameWithinParent(RelId child_rel_id,
-                                             RelId parent_rel_id,
-                                             Set<String> reqd_fk_field_names); // optional, set of child fk field names used to disambiguate fk's
-
-        public String getChildRowCollectionElementNameWithinParent(RelId child_rel_id,
-                                                                   RelId parent_rel_id,
-                                                                   Set<String> reqd_fk_field_names); // optional
-
-        public String getParentRowElementNameWithinChild(RelId child_rel_id,
-                                                         RelId parent_rel_id,
-                                                         Set<String> reqd_fk_field_names); // optional
-
-    }
-
-
-    public static class DefaultElementNamer implements ElementNamer, Serializable {
-
-        DBMD dbmd;
-
-        ChildCollectionsStyle childCollsStyle;
-
-
-        public DefaultElementNamer(DBMD dbmd,
-                                   ChildCollectionsStyle collection_style)
+        public DefaultElementNamer(DBMD dbmd, ChildCollectionsStyle childCollectionsStyle)
         {
             this.dbmd = dbmd;
-            this.childCollsStyle = collection_style;
-        }
-
-
-        @Override
-        public String getDefaultRowElementName(RelId rel_id)
-        {
-            return rel_id.getName().toLowerCase();
+            this.childCollectionsStyle = childCollectionsStyle;
         }
 
         @Override
-        public String getDefaultRowCollectionElementName(RelId rel_id)
+        public String getDefaultRowElementName(RelId relId)
         {
-            return rel_id.getName().toLowerCase() + "-listing";
+            return relId.getName().toLowerCase();
+        }
+
+        @Override
+        public String getDefaultRowCollectionElementName(RelId relId)
+        {
+            return relId.getName().toLowerCase() + "-listing";
         }
 
 
@@ -156,65 +180,64 @@ public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory, S
          *  2) the set of fk field names has been specified.
         */
         @Override
-        public String getChildRowCollectionElementNameWithinParent(RelId child_rel_id,
-                                                                   RelId parent_rel_id,
-                                                                   Set<String> fk_field_names)
+        public String getChildRowCollectionElementNameWithinParent
+        (
+            RelId childRelId,
+            RelId parentRelId,
+            Optional<Set<String>> fkFieldName
+        )
         {
-            // Are there multiple fk's from this child to this parent?  If so, use a fully qualified name if we have enough information to (fk_field_names).
-            List<ForeignKey> fks = dbmd.getForeignKeysFromTo(child_rel_id, parent_rel_id);
+            // Are there multiple fk's from this child to this parent?  If so, use a fully qualified name if we have enough information to (fkFieldNames).
+            List<ForeignKey> fks = dbmd.getForeignKeysFromTo(childRelId, parentRelId);
 
-            if ( fks.size() <= 1 || fk_field_names == null )
+            if ( fks.size() <= 1 || !fkFieldName.isPresent() )
             {
-                return getDefaultRowCollectionElementName(child_rel_id);
+                return getDefaultRowCollectionElementName(childRelId);
             }
             else
             {
-                ForeignKey fk = dbmd.getForeignKeyHavingFieldSetAmong(fk_field_names, fks);
+                ForeignKey fk = dbmd.getForeignKeyHavingFieldSetAmong(fkFieldName.get(), fks);
 
                 if ( fk == null )
-                    throw new IllegalArgumentException("Foreign key with field set " + fk_field_names + " not found from " +
-                                                       child_rel_id + " to " + parent_rel_id + ".");
+                    throw new IllegalArgumentException("Foreign key with field set " + fkFieldName.get() + " not found from " +
+                    childRelId + " to " + parentRelId + ".");
 
                 return getFullyQualifiedChildRowCollectionElementNameWithinParent(fk);
             }
         }
 
-        /** Returns a simple name based on the child relation id alone, unless:
-         *  1) there are multiple fks from this child to parent, and
-         *  2) the set of fk field names has been specified, and
-         *  3) the xml collection style setting is inline (for wrapped child elements,
-         *     the wrapper parent name has the job of disambiguating so the child name
-         *     can be simple).
-        */
         @Override
-        public String getChildRowElementNameWithinParent(RelId child_rel_id,
-                                                         RelId parent_rel_id,
-                                                         Set<String> fk_field_names)
+        public String getChildRowElementNameWithinParent
+        (
+            RelId childRelId,
+            RelId parentRelId,
+            Optional<Set<String>> fkFieldNames
+        )
         {
-            if ( childCollsStyle == ChildCollectionsStyle.WRAPPED ) // Wrapped child row elements don't need qualified names.
-                return getDefaultRowElementName(child_rel_id);
+            if ( childCollectionsStyle == ChildCollectionsStyle.WRAPPED ) // Wrapped child row elements don't need qualified names.
+                return getDefaultRowElementName(childRelId);
             else  // INLINE (child-) collection elements case
             {
                 // Are there multiple fk's from this child to this parent?
                 // If so this one will need to be distinguished with a qualified name.
-                List<ForeignKey> child_fks_to_parent = dbmd.getForeignKeysFromTo(child_rel_id, parent_rel_id);
+                List<ForeignKey> child_fks_to_parent = dbmd.getForeignKeysFromTo(childRelId, parentRelId);
 
                 // Is this child table also a parent of the parent table?
                 // If so, this child table's child elements in the parent will need to be distinguished from the possible parent entries.
-                List<ForeignKey> parent_fks_to_child = dbmd.getForeignKeysFromTo(parent_rel_id, child_rel_id); // yes, parent->child on purpose here!
+                List<ForeignKey> parent_fks_to_child = dbmd.getForeignKeysFromTo(parentRelId, childRelId); // yes, parent->child on purpose here!
 
-                boolean need_qualified_name = child_fks_to_parent.size() > 1 || parent_fks_to_child.size() > 0;
+                boolean needQualifiedName = child_fks_to_parent.size() > 1 || parent_fks_to_child.size() > 0;
 
-                boolean can_form_qualified_name = fk_field_names != null;
+                boolean canFormQualifiedName = fkFieldNames.isPresent();
 
-                if ( need_qualified_name && can_form_qualified_name )
+                if ( needQualifiedName && canFormQualifiedName )
                 {
                     // We find the actual foreign key so we can get a predictable properly ordered list of the foreign key names when forming the names.
-                    ForeignKey fk = dbmd.getForeignKeyHavingFieldSetAmong(fk_field_names, child_fks_to_parent);
+                    ForeignKey fk = dbmd.getForeignKeyHavingFieldSetAmong(fkFieldNames.get(), child_fks_to_parent);
 
                     if ( fk == null )
-                        throw new IllegalArgumentException("Foreign key with field set " + fk_field_names + " not found from " +
-                                                           child_rel_id + " to " + parent_rel_id + ".");
+                        throw new IllegalArgumentException("Foreign key with field set " + fkFieldNames + " not found from " +
+                        childRelId + " to " + parentRelId + ".");
 
                     if ( child_fks_to_parent.size() == 1 ) // This is the only fk from this child to the parent, so we only need to distinguish this link from the parent links.
                         return "child-" + getDefaultRowElementName(fk.getSourceRelationId());
@@ -223,49 +246,54 @@ public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory, S
                 }
                 else // Just make a simple unqualified name
                 {
-                    return getDefaultRowElementName(child_rel_id);
+                    return getDefaultRowElementName(childRelId);
                 }
             }
+
         }
 
-
         @Override
-        public String getParentRowElementNameWithinChild(RelId child_rel_id, RelId parent_rel_id, Set<String> fk_field_names)
+        public String getParentRowElementNameWithinChild
+        (
+            RelId childRelId,
+            RelId parentRelId,
+            Optional<Set<String>> fkFieldNames
+        )
         {
             // If this is a multiple parent for this child, we'll need a qualfied name.
-            List<ForeignKey> child_fks_to_parent = dbmd.getForeignKeysFromTo(child_rel_id, parent_rel_id);
+            List<ForeignKey> childFksToParent = dbmd.getForeignKeysFromTo(childRelId, parentRelId);
 
             // For the case of inline (child) collection elements, make sure the parent rel is not also a child of the child rel, which could also cause a name conflict.
-            List<ForeignKey> parent_fks_to_child = childCollsStyle == INLINE ? dbmd.getForeignKeysFromTo(parent_rel_id, child_rel_id) // yes, parent->child on purpose here!
-                                                                             : null;
+            List<ForeignKey> parentFksToChild =
+                childCollectionsStyle == INLINE ? dbmd.getForeignKeysFromTo(parentRelId, childRelId) // yes, parent->child on purpose here!
+                : null;
 
-            boolean need_qualified_name = child_fks_to_parent.size() > 1 ||
-                                          (childCollsStyle == INLINE && parent_fks_to_child.size() > 0);
+            boolean needQualifiedName =
+                childFksToParent.size() > 1 ||
+                (childCollectionsStyle == INLINE && parentFksToChild.size() > 0);
 
-            boolean can_form_qualified_name = fk_field_names != null;
+            boolean canFormQualifiedName = fkFieldNames.isPresent();
 
-            if ( need_qualified_name && can_form_qualified_name )
+            if ( needQualifiedName && canFormQualifiedName )
             {
-                ForeignKey fk = dbmd.getForeignKeyHavingFieldSetAmong(fk_field_names, child_fks_to_parent);
+                ForeignKey fk = dbmd.getForeignKeyHavingFieldSetAmong(fkFieldNames.get(), childFksToParent);
 
                 if ( fk == null )
-                    throw new IllegalArgumentException("Foreign key with field set " + fk_field_names + " not found from " +
-                                                       child_rel_id + " to " + parent_rel_id + ".");
+                    throw new IllegalArgumentException("Foreign key with field set " + fkFieldNames + " not found from " +
+                    childRelId + " to " + parentRelId + ".");
 
-                if ( child_fks_to_parent.size() == 1 ) // There aren't multiple fks to this parent from the child, so just distinguish it from the children.
+                if ( childFksToParent.size() == 1 ) // There aren't multiple fks to this parent from the child, so just distinguish it from the children.
                     return "parent-" + getDefaultRowElementName(fk.getTargetRelationId());
                 else
                     return getFullyQualifiedParentRowElementNameWithinChild(fk);
             }
             else // Just make a simple unqualified name.
             {
-                return getDefaultRowElementName(parent_rel_id);
+                return getDefaultRowElementName(parentRelId);
             }
-
         }
 
-
-        public String getFullyQualifiedChildRowCollectionElementNameWithinParent(ForeignKey fk)
+        private String getFullyQualifiedChildRowCollectionElementNameWithinParent(ForeignKey fk)
         {
             return getDefaultRowCollectionElementName(fk.getSourceRelationId()) + "-from-" + stringFrom(lc(fk.getSourceFieldNames()),"-");
         }
@@ -275,19 +303,18 @@ public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory, S
             return getDefaultRowElementName(fk.getSourceRelationId()) + "-child-referencing-via-" + stringFrom(lc(fk.getSourceFieldNames()),"-");
         }
 
-        public String getFullyQualifiedParentRowElementNameWithinChild(ForeignKey fk)
+        private String getFullyQualifiedParentRowElementNameWithinChild(ForeignKey fk)
         {
             return getDefaultRowElementName(fk.getTargetRelationId()) + "-parent-referenced-via-" + stringFrom(lc(fk.getSourceFieldNames()),"-");
         }
-
 
         @Override
         public int hashCode()
         {
             final int prime = 31;
             int result = 1;
-            result = prime * result + ((childCollsStyle == null) ? 0 : childCollsStyle.hashCode());
-            result = prime * result + ((dbmd == null) ? 0 : dbmd.hashCode());
+            result = prime * result + dbmd.hashCode();
+            result = prime * result + childCollectionsStyle.hashCode();
             return result;
         }
 
@@ -297,24 +324,13 @@ public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory, S
         {
             if (this == obj)
                 return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
+            if (obj == null || getClass() != obj.getClass())
                 return false;
             DefaultElementNamer other = (DefaultElementNamer) obj;
-            if (childCollsStyle != other.childCollsStyle)
+            if ( childCollectionsStyle != other.childCollectionsStyle )
                 return false;
-            if (dbmd == null)
-            {
-                if (other.dbmd != null)
-                    return false;
-            }
-            else if (!dbmd.equals(other.dbmd))
-                return false;
-            return true;
+            return dbmd.equals(other.dbmd);
         }
-
-        private static final long serialVersionUID = 1L;
     }
 
     @Override
@@ -322,10 +338,10 @@ public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory, S
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((childCollsStyle == null) ? 0 : childCollsStyle.hashCode());
-        result = prime * result + ((dbmd == null) ? 0 : dbmd.hashCode());
-        result = prime * result + ((elNamer == null) ? 0 : elNamer.hashCode());
-        result = prime * result + ((outputXmlNamespace == null) ? 0 : outputXmlNamespace.hashCode());
+        result = prime * result + dbmd.hashCode();
+        result = prime * result + outputXmlNamespace.hashCode();
+        result = prime * result + childCollectionsStyle.hashCode();
+        result = prime * result + elementNamer.hashCode();
         return result;
     }
 
@@ -334,36 +350,17 @@ public class DefaultTableOutputSpecFactory implements TableOutputSpec.Factory, S
     {
         if (this == obj)
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
+        if (obj == null  || getClass() != obj.getClass())
             return false;
         DefaultTableOutputSpecFactory other = (DefaultTableOutputSpecFactory) obj;
-        if (childCollsStyle != other.childCollsStyle)
+        if (!dbmd.equals(other.dbmd))
             return false;
-        if (dbmd == null)
-        {
-            if (other.dbmd != null)
-                return false;
-        }
-        else if (!dbmd.equals(other.dbmd))
+        if ( !outputXmlNamespace.equals(other.outputXmlNamespace) )
             return false;
-        if (elNamer == null)
-        {
-            if (other.elNamer != null)
-                return false;
-        }
-        else if (!elNamer.equals(other.elNamer))
+        if ( childCollectionsStyle != other.childCollectionsStyle )
             return false;
-        if (outputXmlNamespace == null)
-        {
-            if (other.outputXmlNamespace != null)
-                return false;
-        }
-        else if (!outputXmlNamespace.equals(other.outputXmlNamespace))
+        if (!elementNamer.equals(other.elementNamer))
             return false;
         return true;
     }
-
-    private static final long serialVersionUID = 1L;
 }

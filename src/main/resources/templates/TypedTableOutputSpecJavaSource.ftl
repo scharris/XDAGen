@@ -1,36 +1,35 @@
-package ${target_package};
+package ${targetPackage};
 
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 
 import gov.fda.nctr.xdagen.TableOutputSpec;
-import gov.fda.nctr.xdagen.ChildCollectionsStyle;
 import gov.fda.nctr.dbmd.DBMD;
 import gov.fda.nctr.dbmd.RelId;
 import gov.fda.nctr.dbmd.ForeignKey;
 
 
-<#assign class_name = namer.getTypedTableOutputSpecClassName(relid)/>
+<#assign class_name = namer.getTypedTableOutputSpecClassName(relId)/>
 
 public class ${class_name} extends TableOutputSpec {
 
   public ${class_name}(DBMD dbmd, TableOutputSpec.Factory tos_factory, ChildCollectionsStyle child_colls_style, String xml_namespace)
   {
-    super(new RelId(<#if relid.catalog??>"${relid.catalog}"<#else>null</#if>,<#rt>
-                    <#if relid.schema??>"${relid.schema}"<#else>null</#if>,<#t>
-                    <#if relid.name??>"${relid.name}"<#else>null</#if>)<#lt>,
+    super(new RelId(<#if relId.catalog??>"${relId.catalog}"<#else>null</#if>,<#rt>
+                    <#if relId.schema??>"${relId.schema}"<#else>null</#if>,<#t>
+                    <#if relId.name??>"${relId.name}"<#else>null</#if>)<#lt>,
           dbmd,
           tos_factory,
           child_colls_style,
           xml_namespace);
   }
 
-<#list fks_from_child_tables as fk_from_child>
+<#list fksFromChildTables as fk_from_child>
   <#assign method_name = namer.getChildAdditionMethodName(fk_from_child)/><#t>
-  <#assign child_relid = fk_from_child.sourceRelationId/><#t>
-  <#assign child_ospec_class_name = namer.getTypedTableOutputSpecClassName(child_relid)/><#t>
-  /** Add child table ${child_relid} with particular output specification. */
+  <#assign childRelId = fk_from_child.sourceRelationId/><#t>
+  <#assign child_ospec_class_name = namer.getTypedTableOutputSpecClassName(childRelId)/><#t>
+  /** Add child table ${childRelId} with particular output specification. */
   public ${class_name} ${method_name}(${child_ospec_class_name} child_ospec)
   {
     Set<String> fk_field_names = new HashSet<String>();
@@ -39,15 +38,15 @@ public class ${class_name} extends TableOutputSpec {
     </#list>
 
     return (${class_name})
-      super.withChild(new RelId(<#if child_relid.catalog??>"${child_relid.catalog}"<#else>null</#if>,<#rt>
-                                <#if child_relid.schema??>"${child_relid.schema}"<#else>null</#if>,<#t>
-                                <#if child_relid.name??>"${child_relid.name}"<#else>null</#if>),<#lt>
+      super.withChild(new RelId(<#if childRelId.catalog??>"${childRelId.catalog}"<#else>null</#if>,<#rt>
+                                <#if childRelId.schema??>"${childRelId.schema}"<#else>null</#if>,<#t>
+                                <#if childRelId.name??>"${childRelId.name}"<#else>null</#if>),<#lt>
                       fk_field_names,
                       child_ospec);
 
   }
 
-  /** Add child table ${child_relid} with default output specification. */
+  /** Add child table ${childRelId} with default output specification. */
   public ${class_name} ${method_name}()
   {
     return ${method_name}(new ${child_ospec_class_name}(this.dbmd, this.factory, this.childCollsStyle, this.outputXmlNamespace));
@@ -55,11 +54,11 @@ public class ${class_name} extends TableOutputSpec {
 </#list>
 
 
-<#list fks_to_parent_tables as fk_to_parent>
+<#list fksToParentTables as fk_to_parent>
   <#assign method_name = namer.getParentAdditionMethodName(fk_to_parent)/><#t>
-  <#assign parent_relid = fk_to_parent.targetRelationId/><#t>
-  <#assign parent_ospec_class_name = namer.getTypedTableOutputSpecClassName(parent_relid)/><#t>
-  /** Add parent table ${parent_relid} with particular output specification. */
+  <#assign parentRelId = fk_to_parent.targetRelationId/><#t>
+  <#assign parent_ospec_class_name = namer.getTypedTableOutputSpecClassName(parentRelId)/><#t>
+  /** Add parent table ${parentRelId} with particular output specification. */
   public ${class_name} ${method_name}(${parent_ospec_class_name} parent_ospec)
   {
     Set<String> fk_field_names = new HashSet<String>();
@@ -68,15 +67,15 @@ public class ${class_name} extends TableOutputSpec {
     </#list>
 
     return (${class_name})
-      super.withParent(new RelId(<#if parent_relid.catalog??>"${parent_relid.catalog}"<#else>null</#if>,<#rt>
-                                 <#if parent_relid.schema??>"${parent_relid.schema}"<#else>null</#if>,<#t>
-                                 <#if parent_relid.name??>"${parent_relid.name}"<#else>null</#if>),<#lt>
+      super.withParent(new RelId(<#if parentRelId.catalog??>"${parentRelId.catalog}"<#else>null</#if>,<#rt>
+                                 <#if parentRelId.schema??>"${parentRelId.schema}"<#else>null</#if>,<#t>
+                                 <#if parentRelId.name??>"${parentRelId.name}"<#else>null</#if>),<#lt>
                        fk_field_names,
                        parent_ospec);
 
   }
 
-  /** Add parent table ${parent_relid} with default output specification. */
+  /** Add parent table ${parentRelId} with default output specification. */
   public ${class_name} ${method_name}()
   {
     return ${method_name}(new ${parent_ospec_class_name}(this.dbmd, this.factory, this.childCollsStyle, this.outputXmlNamespace));
@@ -94,11 +93,11 @@ public class ${class_name} extends TableOutputSpec {
   }
 
   @Override
-  public ${class_name} withChild(RelId child_relid,               // Required
+  public ${class_name} withChild(RelId childRelId,               // Required
                                  Set<String> reqd_fk_field_names,  // Optional.  Required if multiple fk's from this child table reference this parent.
                                  TableOutputSpec child_output_spec)
   {
-    return (${class_name})super.withChild(child_relid, reqd_fk_field_names, child_output_spec);
+    return (${class_name})super.withChild(childRelId, reqd_fk_field_names, child_output_spec);
   }
 
   @Override
@@ -141,11 +140,11 @@ public class ${class_name} extends TableOutputSpec {
   }
 
   @Override
-  public ${class_name} withParent(RelId parent_relid,               // Required
+  public ${class_name} withParent(RelId parentRelId,               // Required
                                   Set<String> reqd_fk_field_names,  // Optional.  Required if multiple fk's from this child table reference this parent.
                                   TableOutputSpec parent_output_spec)
   {
-    return (${class_name})super.withParent(parent_relid, reqd_fk_field_names, parent_output_spec);
+    return (${class_name})super.withParent(parentRelId, reqd_fk_field_names, parent_output_spec);
   }
 
   @Override

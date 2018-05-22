@@ -8,12 +8,10 @@ import java.io.Serializable;
  * @author sharris
  */
 
-public class Pair<C1,C2> implements Serializable {
+public class Pair<C1,C2> {
 
-    private static final long serialVersionUID = 1L;
-
-    private C1 fst;
-    private C2 snd;
+    private final C1 fst;
+    private final C2 snd;
 
     public Pair(C1 fst, C2 snd)
     {
@@ -27,7 +25,7 @@ public class Pair<C1,C2> implements Serializable {
 
     public static <C1,C2> Pair<C1,C2> make(C1 fst, C2 snd)
     {
-        return new Pair<C1,C2>(fst, snd);
+        return new Pair<>(fst, snd);
     }
 
     public boolean equals(Object other)
@@ -44,8 +42,7 @@ public class Pair<C1,C2> implements Serializable {
 
     public int hashCode()
     {
-        return (fst != null ? fst.hashCode() : 0 ) +
-               (snd != null ? snd.hashCode() : 0);
+        return (fst != null ? fst.hashCode() : 0 ) + 17 * (snd != null ? snd.hashCode() : 0);
     }
 
     public String toString()

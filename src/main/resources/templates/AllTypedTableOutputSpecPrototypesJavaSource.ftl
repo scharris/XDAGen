@@ -1,20 +1,19 @@
-package ${target_package};
+package ${targetPackage};
 
 import gov.fda.nctr.xdagen.TableOutputSpec;
 import gov.fda.nctr.xdagen.DefaultTableOutputSpecFactory;
-import gov.fda.nctr.xdagen.ChildCollectionsStyle;
 import gov.fda.nctr.dbmd.DBMD;
 
 <#assign class_name = namer.prototypesClassName/>
 
 public class ${class_name} {
 
-  public static final String XML_NAMESPACE = "${xdagen_output_xml_namespace}";
+  public static final String XML_NAMESPACE = "${xdagenOutputXmlNamespace}";
 
-  public static final ChildCollectionsStyle CHILD_COLLECTIONS_STYLE = ${child_collections_style};
+  public static final ChildCollectionsStyle CHILD_COLLECTIONS_STYLE = ${childCollectionsStyle};
 
-<#list relids as relid>
-  public static ${namer.getTypedTableOutputSpecClassName(relid)} ${namer.getPrototypeMemberName(relid)};
+<#list relIds as relId>
+  public static ${namer.getTypedTableOutputSpecClassName(relId)} ${namer.getPrototypeMemberName(relId)};
 </#list>
 
   public static class Initializer {
@@ -26,8 +25,8 @@ public class ${class_name} {
       {
         if ( !initialized )
         {
-          <#list relids as relid>
-          ${namer.getPrototypeMemberName(relid)} = new ${namer.getTypedTableOutputSpecClassName(relid)}(dbmd, tos_factory, CHILD_COLLECTIONS_STYLE, XML_NAMESPACE);
+          <#list relIds as relId>
+          ${namer.getPrototypeMemberName(relId)} = new ${namer.getTypedTableOutputSpecClassName(relId)}(dbmd, tos_factory, CHILD_COLLECTIONS_STYLE, XML_NAMESPACE);
           </#list>
 
           initialized = true;
